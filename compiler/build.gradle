@@ -1,0 +1,13 @@
+apply plugin: 'java'
+apply plugin: 'maven'
+
+group = 'com.readdle.codegen'
+
+dependencies {
+    compile project(':library')
+    compile 'com.squareup:javapoet:1.9.0'
+    compile 'com.android.support:support-annotations:27.0.2'
+}
+
+sourceCompatibility = "1.7"
+targetCompatibility = "1.7"
