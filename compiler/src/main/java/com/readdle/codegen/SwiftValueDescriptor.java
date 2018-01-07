@@ -94,7 +94,7 @@ class SwiftValueDescriptor {
 
         swiftWriter.emitEmptyLine();
         swiftWriter.emitStatement("// Decoding SwiftValue type with JavaCoder");
-        swiftWriter.emitStatement(String.format("public static func from(javaObject: jobject) throws ->%s {", simpleTypeName));
+        swiftWriter.emitStatement(String.format("public static func from(javaObject: jobject) throws -> %s {", simpleTypeName));
         swiftWriter.emitStatement(String.format("return try JavaDecoder(forPackage: \"%s\").decode(%s.self, from: javaObject)", javaPackage, simpleTypeName));
         swiftWriter.emitStatement("}");
 

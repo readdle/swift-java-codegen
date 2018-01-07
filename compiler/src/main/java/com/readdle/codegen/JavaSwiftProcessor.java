@@ -1,5 +1,6 @@
 package com.readdle.codegen;
 
+import com.readdle.codegen.anotation.SwiftReference;
 import com.readdle.codegen.anotation.SwiftValue;
 
 import java.io.File;
@@ -75,6 +76,7 @@ public class JavaSwiftProcessor extends AbstractProcessor {
     public boolean process(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv) {
 
         Map<String, SwiftValueDescriptor> swiftValues = new HashMap<>();
+        Map<String, SwiftReferenceDescriptor> swiftReferences = new HashMap<>();
 
         for (Element annotatedElement : roundEnv.getElementsAnnotatedWith(SwiftValue.class)) {
             // Check if a class has been annotated with @SwiftValue
@@ -96,6 +98,26 @@ public class JavaSwiftProcessor extends AbstractProcessor {
             }
         }
 
+        for (Element annotatedElement : roundEnv.getElementsAnnotatedWith(SwiftReference.class)) {
+            // Check if a class has been annotated with @SwiftValue
+            if (annotatedElement.getKind() != ElementKind.CLASS) {
+                error(annotatedElement, "Only classes can be annotated with @%s", SwiftReference.class.getSimpleName());
+                return true; // Exit processing
+            }
+
+            // We can cast it, because we know that it of ElementKind.CLASS
+            TypeElement typeElement = (TypeElement) annotatedElement;
+
+            try {
+                SwiftReferenceDescriptor swiftReferenceDescriptor = new SwiftReferenceDescriptor(typeElement, messager);
+                swiftReferences.put(swiftReferenceDescriptor.getSwiftType(), swiftReferenceDescriptor);
+            }
+            catch (IllegalArgumentException e) {
+                error(annotatedElement, e.getMessage());
+                return true; // Exit processing
+            }
+        }
+
         for (SwiftValueDescriptor valueDescriptor: swiftValues.values()) {
 
             for (SwiftFuncDescriptor function : valueDescriptor.functions) {
@@ -104,6 +126,21 @@ public class JavaSwiftProcessor extends AbstractProcessor {
 
             try {
                 File file = valueDescriptor.generateCode(sourcePath);
+                messager.printMessage(Diagnostic.Kind.NOTE, file.getName() + " generated");
+            } catch (IOException e) {
+                error(null, "Can't write to file: " + e.getMessage());
+                return true; // Exit processing
+            }
+        }
+
+        for (SwiftReferenceDescriptor referenceDescriptor: swiftReferences.values()) {
+
+            for (SwiftFuncDescriptor function : referenceDescriptor.functions) {
+                messager.printMessage(Diagnostic.Kind.NOTE, function.toString());
+            }
+
+            try {
+                File file = referenceDescriptor.generateCode(sourcePath);
                 messager.printMessage(Diagnostic.Kind.NOTE, file.getName() + " generated");
             } catch (IOException e) {
                 error(null, "Can't write to file: " + e.getMessage());
