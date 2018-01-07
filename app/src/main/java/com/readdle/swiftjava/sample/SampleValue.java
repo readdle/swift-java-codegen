@@ -1,6 +1,8 @@
 package com.readdle.swiftjava.sample;
 
-import com.readdle.codegen.anotation.SwiftMethod;
+import com.readdle.codegen.anotation.SwiftError;
+import com.readdle.codegen.anotation.SwiftFunc;
+import com.readdle.codegen.anotation.SwiftParamName;
 import com.readdle.codegen.anotation.SwiftValue;
 
 import android.support.annotation.NonNull;
@@ -16,13 +18,22 @@ public class SampleValue {
     public String str3;
 
     // Swift JNI private constructor
-    private SampleValue() {
+    public SampleValue() {
 
     }
 
-    @SwiftMethod
+    @SwiftFunc
+    public static native void initCoder();
+
+    @SwiftFunc
     public static native SampleValue getRandomValue();
 
-    @SwiftMethod
+    @SwiftFunc
     public native void saveValue();
+
+    @SwiftFunc
+    public native Boolean isSame(@NonNull @SwiftParamName SampleValue other);
+
+    @SwiftFunc
+    public static native void funcThrows() throws SwiftError;
 }

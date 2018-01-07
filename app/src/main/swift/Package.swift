@@ -18,7 +18,8 @@ let package = Package(
     targets: [
         .target(
             name: "SampleAppCore",
-            dependencies: [],
+            // TODO: remove this dependencies
+            dependencies: ["JavaCoder", "java_swift"],
             path: "Sources"
         ),
         .target(

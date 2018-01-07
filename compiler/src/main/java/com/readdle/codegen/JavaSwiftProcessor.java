@@ -97,6 +97,11 @@ public class JavaSwiftProcessor extends AbstractProcessor {
         }
 
         for (SwiftValueDescriptor valueDescriptor: swiftValues.values()) {
+
+            for (SwiftFuncDescriptor function : valueDescriptor.functions) {
+                messager.printMessage(Diagnostic.Kind.NOTE, function.toString());
+            }
+
             try {
                 File file = valueDescriptor.generateCode(sourcePath);
                 messager.printMessage(Diagnostic.Kind.NOTE, file.getName() + " generated");

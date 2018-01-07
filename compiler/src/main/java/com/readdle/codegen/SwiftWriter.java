@@ -35,6 +35,10 @@ public class SwiftWriter {
         this.writer.append("\n");
     }
 
+    public void emit(String statement) throws IOException {
+        this.writer.append(statement);
+    }
+
     public void emitStatement(String statement) throws IOException {
         this.writer.append(statement);
         this.writer.append("\n");

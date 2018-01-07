@@ -1,25 +1,46 @@
 package com.readdle.codegen;
 
+import com.readdle.codegen.anotation.SwiftParamName;
+
+import android.support.annotation.NonNull;
+
+import javax.lang.model.element.VariableElement;
 
 public class SwiftParamDescriptor {
 
-    public final String name;
-    public final String swiftType;
-    public final boolean isOptional;
-    public final String description;
+    final String name;
+    final String paramName;
+    final SwiftEnvironment.Type swiftType;
+    final boolean isOptional;
+    final String description;
 
-    public SwiftParamDescriptor(String name, String swiftType) {
-        this(name, swiftType, true, null);
+    SwiftParamDescriptor(VariableElement variableElement) {
+        this.name = variableElement.getSimpleName().toString();
+        this.swiftType = SwiftEnvironment.parseJavaType(variableElement.asType().toString());
+        this.isOptional = variableElement.getAnnotation(NonNull.class) == null;
+        this.description = null;
+
+        SwiftParamName swiftParamName = variableElement.getAnnotation(SwiftParamName.class);
+        if (swiftParamName != null) {
+            if (swiftParamName.name().isEmpty()) {
+                paramName = name;
+            }
+            else {
+                paramName = swiftParamName.name();
+            }
+        }
+        else {
+            paramName = null;
+        }
     }
 
-    public SwiftParamDescriptor(String name, String swiftType, boolean isOptional) {
-        this(name, swiftType, isOptional, null);
-    }
-
-    public SwiftParamDescriptor(String name, String swiftType, boolean isOptional, String description) {
-        this.name = name;
-        this.swiftType = swiftType;
-        this.isOptional = isOptional;
-        this.description = description;
+    @Override
+    public String toString() {
+        return "SwiftParamDescriptor{" +
+                "name='" + name + '\'' +
+                ", swiftType='" + swiftType + '\'' +
+                ", isOptional=" + isOptional +
+                ", description='" + description + '\'' +
+                '}';
     }
 }

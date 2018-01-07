@@ -1,9 +1,12 @@
 package com.readdle.codegen;
 
+import com.readdle.codegen.anotation.SwiftFunc;
 import com.readdle.codegen.anotation.SwiftValue;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.LinkedList;
+import java.util.List;
 
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
@@ -21,6 +24,8 @@ class SwiftValueDescriptor {
     private String javaPackage;
     private String simpleTypeName;
     private String[] importPackages;
+
+    List<SwiftFuncDescriptor> functions = new LinkedList<>();
 
     SwiftValueDescriptor(TypeElement classElement) throws IllegalArgumentException {
         this.annotatedClassElement = classElement;
@@ -44,23 +49,40 @@ class SwiftValueDescriptor {
                     classElement.getQualifiedName().toString(), SwiftValue.class.getSimpleName()));
         }
 
+        boolean hasEmptyConstructor = false;
+
         // Check if an empty constructor is given
         for (Element enclosed : classElement.getEnclosedElements()) {
             if (enclosed.getKind() == ElementKind.CONSTRUCTOR) {
                 ExecutableElement constructorElement = (ExecutableElement) enclosed;
                 if (constructorElement.getParameters().size() == 0) {
-                    // Found an empty constructor
-                    return;
+                    hasEmptyConstructor = true;
+                    break;
                 }
             }
         }
 
-        // No empty constructor found
-        throw new IllegalArgumentException(String.format("The class %s must provide an public empty default constructor",
-                classElement.getQualifiedName().toString()));
+        if (!hasEmptyConstructor) {
+            // No empty constructor found
+            throw new IllegalArgumentException(String.format("The class %s must provide an public empty default constructor",
+                    classElement.getQualifiedName().toString()));
+        }
+
+        for (Element element : classElement.getEnclosedElements()) {
+            if (element.getKind() == ElementKind.METHOD && element.getAnnotation(SwiftFunc.class) != null) {
+                ExecutableElement executableElement = (ExecutableElement) element;
+                if (!executableElement.getModifiers().contains(Modifier.NATIVE)) {
+                    throw new IllegalArgumentException(String.format("%s is not native method. Only native methods can be annotated with @%s",
+                            executableElement.getSimpleName(), SwiftFunc.class.getSimpleName()));
+                }
+
+                functions.add(new SwiftFuncDescriptor(executableElement));
+            }
+        }
+
     }
 
-    public File generateCode(File dirPath) throws IOException {
+    File generateCode(File dirPath) throws IOException {
         File swiftExtensionFile = new File(dirPath, simpleTypeName + SUFFIX);
         SwiftWriter swiftWriter = new SwiftWriter(swiftExtensionFile);
 
@@ -83,6 +105,11 @@ class SwiftValueDescriptor {
         swiftWriter.emitStatement("}");
 
         swiftWriter.endExtension();
+
+        for (SwiftFuncDescriptor function : functions) {
+            function.generateCode(swiftWriter, javaPackage, simpleTypeName);
+        }
+
         swiftWriter.close();
         return swiftExtensionFile;
     }

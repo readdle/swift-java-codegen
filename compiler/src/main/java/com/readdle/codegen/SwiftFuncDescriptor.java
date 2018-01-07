@@ -3,87 +3,138 @@ package com.readdle.codegen;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
+import java.io.IOException;
 import java.util.LinkedList;
 import java.util.List;
 
-public class SwiftFuncDescriptor {
+import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.Modifier;
+import javax.lang.model.element.VariableElement;
+
+class SwiftFuncDescriptor {
 
     @NonNull
-    public final String name;
+    String name;
 
-    public final boolean isStatic;
-
-    @Nullable
-    private final String returnSwiftType;
-    private final boolean isReturnTypeOptional;
+    boolean isStatic;
+    boolean isThrown;
 
     @Nullable
-    private final String description;
+    private SwiftEnvironment.Type returnSwiftType;
+    private boolean isReturnTypeOptional;
+
+    @Nullable
+    private String description;
 
     private List<SwiftParamDescriptor> params = new LinkedList<>();
 
-    private SwiftFuncDescriptor(Builder builder) {
-        name = builder.name;
-        isStatic = builder.isStatic;
-        returnSwiftType = builder.returnSwiftType;
-        isReturnTypeOptional = builder.isReturnTypeOptional;
-        description = builder.description;
-        params = builder.params;
+    SwiftFuncDescriptor(ExecutableElement executableElement) {
+        this.name = executableElement.getSimpleName().toString();
+        this.isStatic = executableElement.getModifiers().contains(Modifier.STATIC);
+        this.isThrown = executableElement.getThrownTypes() != null && executableElement.getThrownTypes().size() > 0;
+        this.returnSwiftType = SwiftEnvironment.parseJavaType(executableElement.getReturnType().toString());
+        this.isReturnTypeOptional = executableElement.getAnnotation(NonNull.class) == null;
+
+        for (VariableElement variableElement : executableElement.getParameters()) {
+            params.add(new SwiftParamDescriptor(variableElement));
+        }
     }
 
-    public static Builder newBuilder(String name) {
-        return new Builder(name);
+    void generateCode(SwiftWriter swiftWriter, String javaPackage, String swiftType) throws IOException {
+        String swiftFuncName = "Java_" + javaPackage.replace(".", "_") + "_" + swiftType + "_" + name;
+
+        swiftWriter.emitEmptyLine();
+        swiftWriter.emitStatement(String.format("@_silgen_name(\"%s\")", swiftFuncName));
+        swiftWriter.emit(String.format("public func %s(env: UnsafeMutablePointer<JNIEnv?>, %s", swiftFuncName, isStatic ? "clazz: jclass" : "this: jobject"));
+
+        for (SwiftParamDescriptor param : params) {
+            swiftWriter.emit(", j" + param.name + ": jobject");
+        }
+
+        swiftWriter.emit(String.format(")%s {\n", returnSwiftType != null ? " -> jobject?" : ""));
+        swiftWriter.emitEmptyLine();
+
+        if (!isStatic) {
+            swiftWriter.emitStatement(String.format("let swiftSelf: %s", swiftType));
+        }
+
+        for (SwiftParamDescriptor param : params) {
+            swiftWriter.emitStatement(String.format("let %s: %s", param.name, param.swiftType.swiftType));
+        }
+
+        swiftWriter.emitStatement("do {");
+
+        if (!isStatic) {
+            swiftWriter.emitStatement(String.format("swiftSelf = try %s.from(javaObject: this)", swiftType));
+        }
+
+        for (SwiftParamDescriptor param : params) {
+            swiftWriter.emitStatement(String.format("%1$s = try %2$s.from(javaObject: j%1$s)", param.name, param.swiftType.swiftType));
+        }
+        swiftWriter.emitStatement("}");
+        swiftWriter.emitStatement("catch {");
+        swiftWriter.emitStatement("let errorString = String(reflecting: type(of: error)) + String(describing: error)");
+        swiftWriter.emitStatement("JNI.api.ThrowNew(JNI.env, SwiftRuntimeErrorClass, errorString)");
+        swiftWriter.emitStatement(String.format("return%s", returnSwiftType != null ? " nil" : ""));
+        swiftWriter.emitStatement("}");
+
+        if (isThrown) {
+            swiftWriter.emitStatement("do {");
+        }
+
+        swiftWriter.emit(String.format("%s%s%s.%s(",
+                returnSwiftType != null ? "let result = " : "",
+                isThrown ? "try " : "",
+                isStatic ? swiftType : "swiftSelf",
+                name));
+
+        for (int i = 0; i < params.size(); i++) {
+            SwiftParamDescriptor param = params.get(i);
+            String paramName = param.paramName != null ? param.paramName + ": " : "";
+            if (i == 0) {
+                swiftWriter.emit(paramName + param.name);
+            }
+            else {
+                swiftWriter.emit(", " + paramName + param.name);
+            }
+        }
+        swiftWriter.emit(")\n");
+
+        if (isThrown) {
+            swiftWriter.emitStatement("}");
+            swiftWriter.emitStatement("catch {");
+            swiftWriter.emitStatement("let errorString = String(reflecting: type(of: error)) + String(describing: error)");
+            swiftWriter.emitStatement("JNI.api.ThrowNew(JNI.env, SwiftErrorClass, errorString)");
+            swiftWriter.emitStatement(String.format("return%s", returnSwiftType != null ? " nil" : ""));
+            swiftWriter.emitStatement("}");
+        }
+
+        if (returnSwiftType != null) {
+            swiftWriter.emitStatement("do {");
+            swiftWriter.emitStatement("return try result.javaObject()");
+            swiftWriter.emitStatement("}");
+            swiftWriter.emitStatement("catch {");
+            swiftWriter.emitStatement("let errorString = String(reflecting: type(of: error)) + String(describing: error)");
+            swiftWriter.emitStatement("JNI.api.ThrowNew(JNI.env, SwiftRuntimeErrorClass, errorString)");
+            swiftWriter.emitStatement("return nil");
+            swiftWriter.emitStatement("}");
+        }
+
+        swiftWriter.emitStatement("}");
+
+        swiftWriter.emitEmptyLine();
     }
 
-    public static Builder newBuilder(SwiftFuncDescriptor copy) {
-        Builder builder = new Builder(copy.name);
-        builder.isStatic = copy.isStatic;
-        builder.returnSwiftType = copy.returnSwiftType;
-        builder.isReturnTypeOptional = copy.isReturnTypeOptional;
-        builder.description = copy.description;
-        builder.params = copy.params;
-        return builder;
-    }
-
-    public static final class Builder {
-        private String name;
-        private boolean isStatic = false;
-        private String returnSwiftType = null;
-        private boolean isReturnTypeOptional = false;
-        private String description = null;
-        private List<SwiftParamDescriptor> params = new LinkedList<>();
-
-        private Builder(String name) {
-            this.name = name;
-        }
-
-        public Builder setIsStatic(boolean val) {
-            isStatic = val;
-            return this;
-        }
-
-        public Builder setReturnSwiftType(String val) {
-            returnSwiftType = val;
-            return this;
-        }
-
-        public Builder setIsReturnTypeOptional(boolean val) {
-            isReturnTypeOptional = val;
-            return this;
-        }
-
-        public Builder setDescription(String val) {
-            description = val;
-            return this;
-        }
-
-        public Builder addParams(SwiftParamDescriptor paramDescriptor) {
-            params.add(paramDescriptor);
-            return this;
-        }
-
-        public SwiftFuncDescriptor build() {
-            return new SwiftFuncDescriptor(this);
-        }
+    @Override
+    public String toString() {
+        return "SwiftFuncDescriptor{" +
+                "name='" + name + '\'' +
+                ", isStatic=" + isStatic +
+                ", isThrown=" + isThrown +
+                ", returnSwiftType='" + returnSwiftType + '\'' +
+                ", isReturnTypeOptional=" + isReturnTypeOptional +
+                ", description='" + description + '\'' +
+                ", params=" + params +
+                '}';
     }
 }
