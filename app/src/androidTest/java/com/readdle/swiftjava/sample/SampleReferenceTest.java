@@ -56,10 +56,18 @@ public class SampleReferenceTest {
 
     @Test
     public void testDelegate() {
-        SampleDelegateAndroid delegateAndroid = new SampleDelegateAndroid();
+        final boolean[] isFlag = new boolean[1];
+        SampleDelegateAndroid delegateAndroid = new SampleDelegateAndroid() {
+
+            @Override
+            void onSetSampleValue(SampleValue value) {
+                isFlag[0] = true;
+            }
+        };
         sampleReference.setDelegate(delegateAndroid);
         Assert.assertTrue(System.currentTimeMillis() - sampleReference.tick() < 1000);
         Assert.assertTrue(delegateAndroid.sampleValue.equals(sampleReference.getRandomValue()));
+        Assert.assertTrue(isFlag[0]);
         delegateAndroid.release();
     }
 

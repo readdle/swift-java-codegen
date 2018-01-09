@@ -7,7 +7,7 @@ import android.support.annotation.NonNull;
 import android.util.Log;
 
 @SwiftDelegate(importPackages = {"SampleAppCore"}, protocols = {"SampleDelegate"})
-public class SampleDelegateAndroid {
+public abstract class SampleDelegateAndroid {
 
     // Swift JNI private native pointer
     private long nativePointer = 0L;
@@ -28,6 +28,7 @@ public class SampleDelegateAndroid {
     @SwiftCallbackFunc
     public void setSampleValue(SampleValue value) {
         sampleValue = value;
+        onSetSampleValue(value);
         Log.i("TAG", value.toString());
     }
 
@@ -45,5 +46,7 @@ public class SampleDelegateAndroid {
     public static Long getTimestamp() {
         return System.currentTimeMillis();
     }
+
+    abstract void onSetSampleValue(SampleValue value);
 
 }

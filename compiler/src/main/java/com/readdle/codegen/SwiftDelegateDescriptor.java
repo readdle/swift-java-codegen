@@ -26,7 +26,7 @@ public class SwiftDelegateDescriptor {
     private String javaPackage;
     String simpleTypeName;
     private String[] importPackages;
-    private String pointerBasicTypeSig;
+    String pointerBasicTypeSig;
 
     List<SwiftFuncDescriptor> functions = new LinkedList<>();
     List<SwiftCallbackFuncDescriptor> callbackFunctions = new LinkedList<>();
@@ -47,12 +47,6 @@ public class SwiftDelegateDescriptor {
             TypeElement classTypeElement = (TypeElement) classTypeMirror.asElement();
             simpleTypeName = classTypeElement.getSimpleName().toString();
             javaPackage = classElement.getQualifiedName().toString().replace("." + simpleTypeName, "");
-        }
-
-        // Check if it's an abstract class
-        if (classElement.getModifiers().contains(Modifier.ABSTRACT)) {
-            throw new IllegalArgumentException(String.format("The class %s is abstract. You can't annotate abstract classes with @%s",
-                    classElement.getQualifiedName().toString(), SwiftDelegate.class.getSimpleName()));
         }
 
         ExecutableElement initExecutableElement = null;
