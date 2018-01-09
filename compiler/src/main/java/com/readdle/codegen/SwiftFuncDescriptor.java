@@ -1,8 +1,5 @@
 package com.readdle.codegen;
 
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
-
 import java.io.IOException;
 import java.util.LinkedList;
 import java.util.List;
@@ -13,17 +10,14 @@ import javax.lang.model.element.VariableElement;
 
 class SwiftFuncDescriptor {
 
-    @NonNull
     String name;
 
     boolean isStatic;
     boolean isThrown;
 
-    @Nullable
     private SwiftEnvironment.Type returnSwiftType;
     private boolean isReturnTypeOptional;
 
-    @Nullable
     private String description;
 
     private List<SwiftParamDescriptor> params = new LinkedList<>();
@@ -33,7 +27,7 @@ class SwiftFuncDescriptor {
         this.isStatic = executableElement.getModifiers().contains(Modifier.STATIC);
         this.isThrown = executableElement.getThrownTypes() != null && executableElement.getThrownTypes().size() > 0;
         this.returnSwiftType = SwiftEnvironment.parseJavaType(executableElement.getReturnType().toString());
-        this.isReturnTypeOptional = executableElement.getAnnotation(NonNull.class) == null;
+        this.isReturnTypeOptional = JavaSwiftProcessor.isNullable(executableElement);
 
         for (VariableElement variableElement : executableElement.getParameters()) {
             params.add(new SwiftParamDescriptor(variableElement));

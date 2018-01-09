@@ -2,8 +2,6 @@ package com.readdle.codegen;
 
 import com.readdle.codegen.anotation.SwiftParamName;
 
-import android.support.annotation.NonNull;
-
 import javax.lang.model.element.VariableElement;
 
 public class SwiftParamDescriptor {
@@ -17,7 +15,7 @@ public class SwiftParamDescriptor {
     SwiftParamDescriptor(VariableElement variableElement) {
         this.name = variableElement.getSimpleName().toString();
         this.swiftType = SwiftEnvironment.parseJavaType(variableElement.asType().toString());
-        this.isOptional = variableElement.getAnnotation(NonNull.class) == null;
+        this.isOptional = JavaSwiftProcessor.isNullable(variableElement);
         this.description = null;
 
         SwiftParamName swiftParamName = variableElement.getAnnotation(SwiftParamName.class);

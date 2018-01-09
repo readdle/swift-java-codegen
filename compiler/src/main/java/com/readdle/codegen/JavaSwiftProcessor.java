@@ -8,6 +8,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -17,8 +18,10 @@ import javax.annotation.processing.Messager;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.annotation.processing.RoundEnvironment;
 import javax.lang.model.SourceVersion;
+import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
+import javax.lang.model.element.Name;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
@@ -192,5 +195,19 @@ public class JavaSwiftProcessor extends AbstractProcessor {
 
     private void error(Element e, String msg, Object... args) {
         messager.printMessage(Diagnostic.Kind.ERROR, String.format(msg, args), e);
+    }
+
+    static boolean isNullable(Element element) {
+        List<? extends AnnotationMirror> mirrors = element.getAnnotationMirrors();
+        for (AnnotationMirror mirror : mirrors) {
+            Name simpleName = mirror.getAnnotationType().asElement().getSimpleName();
+            if (simpleName.contentEquals("NonNull")) {
+                return false;
+            }
+            if (simpleName.contentEquals("NotNull")) {
+                return false;
+            }
+        }
+        return true;
     }
 }

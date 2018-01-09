@@ -1,20 +1,14 @@
 package com.readdle.codegen;
 
-
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
-
 import java.util.regex.Pattern;
 
 class SwiftEnvironment {
 
     static class Type {
-        @NonNull
         final String swiftType;
-        @Nullable
         final String javaPackage;
 
-        Type(@NonNull String swiftType, @Nullable String javaPackage) {
+        Type(String swiftType, String javaPackage) {
             this.swiftType = swiftType;
             this.javaPackage = javaPackage;
         }
@@ -28,7 +22,6 @@ class SwiftEnvironment {
         }
     }
 
-    @Nullable
     public static Type parseJavaType(String javaType) {
         switch (javaType) {
             case "void":
