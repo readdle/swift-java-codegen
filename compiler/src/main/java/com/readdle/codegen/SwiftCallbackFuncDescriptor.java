@@ -70,22 +70,39 @@ public class SwiftCallbackFuncDescriptor {
         for (int i = 0; i < params.size(); i++) {
             SwiftParamDescriptor param = params.get(i);
             String paramName = param.paramName != null ? param.paramName : "_";
+            String paramType = param.swiftType.swiftType + (param.isOptional ? "?" : "");
             if (i == 0) {
-                swiftWriter.emit(paramName + " " + param.name + ": " + param.swiftType.swiftType);
+                swiftWriter.emit(paramName + " " + param.name + ": " + paramType);
             }
             else {
-                swiftWriter.emit(", " + paramName + " " + param.name + ": " + param.swiftType.swiftType);
+                swiftWriter.emit(", " + paramName + " " + param.name + ": " + paramType);
             }
         }
-        swiftWriter.emit(String.format(")%s {\n", returnSwiftType != null ? " -> " + returnSwiftType.swiftType : ""));
+
+        if (returnSwiftType == null) {
+            swiftWriter.emit(") {\n");
+        }
+        else {
+            String returnParamType = isReturnTypeOptional ? returnSwiftType.swiftType + "?" : returnSwiftType.swiftType;
+            swiftWriter.emit(String.format(") -> %s {\n", returnParamType));
+        }
 
         for (SwiftParamDescriptor param : params) {
-            swiftWriter.emitStatement(String.format("let j%s: jobject", param.name));
+            swiftWriter.emitStatement(String.format("let java%s: JNIArgumentProtocol", param.name));
         }
 
         swiftWriter.emitStatement("do {");
         for (SwiftParamDescriptor param : params) {
-            swiftWriter.emitStatement(String.format("j%s = try %s.javaObject()", param.name, param.name));
+            if (param.isOptional) {
+                swiftWriter.emitStatement(String.format("if let %1$s = %1$s {", param.name));
+                swiftWriter.emitStatement(String.format("java%1$s = try %1$s.javaObject()", param.name));
+                swiftWriter.emitStatement("} else {");
+                swiftWriter.emitStatement(String.format("java%s = jnull()", param.name));
+                swiftWriter.emitStatement("}");
+            }
+            else {
+                swiftWriter.emitStatement(String.format("java%s = try %s.javaObject()", param.name, param.name));
+            }
         }
 
         swiftWriter.emitStatement("}");
@@ -121,7 +138,7 @@ public class SwiftCallbackFuncDescriptor {
         swiftWriter.emit(String.format(jniMethodTemplate, swiftType, name));
 
         for (SwiftParamDescriptor param : params) {
-            swiftWriter.emitStatement(String.format(", j%s", param.name));
+            swiftWriter.emitStatement(String.format(", java%s", param.name));
         }
 
         if (returnSwiftType != null) {
@@ -130,6 +147,15 @@ public class SwiftCallbackFuncDescriptor {
         else {
             swiftWriter.emit(")\n");
         }
+
+        swiftWriter.emitStatement("if let throwable = JNI.ExceptionCheck() {");
+        if (isThrown) {
+            swiftWriter.emitStatement("throw NSError(domain: \"JavaException\", code: 1)");
+        }
+        else {
+            swiftWriter.emitStatement("fatalError(\"JavaException\")");
+        }
+        swiftWriter.emitStatement("}");
 
         if (returnSwiftType != null) {
             swiftWriter.emitStatement("do {");

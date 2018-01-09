@@ -48,7 +48,7 @@ class SwiftFuncDescriptor {
         swiftWriter.emit(String.format("public func %s(env: UnsafeMutablePointer<JNIEnv?>, %s", swiftFuncName, isStatic ? "clazz: jclass" : "this: jobject"));
 
         for (SwiftParamDescriptor param : params) {
-            swiftWriter.emit(", j" + param.name + ": jobject");
+            swiftWriter.emit(String.format(", j%s: jobject%s", param.name, param.isOptional ? "?" : ""));
         }
 
         swiftWriter.emit(String.format(")%s {\n", returnSwiftType != null ? " -> jobject?" : ""));
@@ -59,7 +59,7 @@ class SwiftFuncDescriptor {
         }
 
         for (SwiftParamDescriptor param : params) {
-            swiftWriter.emitStatement(String.format("let %s: %s", param.name, param.swiftType.swiftType));
+            swiftWriter.emitStatement(String.format("let %s: %s%s", param.name, param.swiftType.swiftType, param.isOptional ? "?" : ""));
         }
 
         swiftWriter.emitStatement("do {");
@@ -69,7 +69,16 @@ class SwiftFuncDescriptor {
         }
 
         for (SwiftParamDescriptor param : params) {
-            swiftWriter.emitStatement(String.format("%1$s = try %2$s.from(javaObject: j%1$s)", param.name, param.swiftType.swiftType));
+            if (param.isOptional) {
+                swiftWriter.emitStatement(String.format("if let j%1$s = j%1$s {", param.name));
+                swiftWriter.emitStatement(String.format("%1$s = try %2$s.from(javaObject: j%1$s)", param.name, param.swiftType.swiftType));
+                swiftWriter.emitStatement("} else {");
+                swiftWriter.emitStatement(String.format("%s = nil", param.name));
+                swiftWriter.emitStatement("}");
+            }
+            else {
+                swiftWriter.emitStatement(String.format("%1$s = try %2$s.from(javaObject: j%1$s)", param.name, param.swiftType.swiftType));
+            }
         }
         swiftWriter.emitStatement("}");
         swiftWriter.emitStatement("catch {");
@@ -111,7 +120,12 @@ class SwiftFuncDescriptor {
 
         if (returnSwiftType != null) {
             swiftWriter.emitStatement("do {");
-            swiftWriter.emitStatement("return try result.javaObject()");
+            if (isReturnTypeOptional) {
+                swiftWriter.emitStatement("return try result?.javaObject()");
+            }
+            else {
+                swiftWriter.emitStatement("return try result.javaObject()");
+            }
             swiftWriter.emitStatement("}");
             swiftWriter.emitStatement("catch {");
             swiftWriter.emitStatement("let errorString = String(reflecting: type(of: error)) + String(describing: error)");

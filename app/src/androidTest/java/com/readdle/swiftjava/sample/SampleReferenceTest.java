@@ -55,6 +55,11 @@ public class SampleReferenceTest {
     }
 
     @Test
+    public void testNil() {
+        Assert.assertNull(sampleReference.funcWithNil());
+    }
+
+    @Test
     public void testDelegate() {
         final boolean[] isFlag = new boolean[1];
         SampleDelegateAndroid delegateAndroid = new SampleDelegateAndroid() {
@@ -68,6 +73,7 @@ public class SampleReferenceTest {
         Assert.assertTrue(System.currentTimeMillis() - sampleReference.tick() < 1000);
         Assert.assertTrue(delegateAndroid.sampleValue.equals(sampleReference.getRandomValue()));
         Assert.assertTrue(isFlag[0]);
+        Assert.assertNull(sampleReference.funcWithNil());
         delegateAndroid.release();
     }
 

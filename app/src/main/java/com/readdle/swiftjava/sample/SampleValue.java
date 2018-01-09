@@ -27,13 +27,13 @@ public class SampleValue {
     @SwiftFunc
     public static native void initCoder();
 
-    @SwiftFunc
+    @NonNull @SwiftFunc
     public static native SampleValue getRandomValue();
 
     @SwiftFunc
     public native void saveValue();
 
-    @SwiftFunc
+    @NonNull @SwiftFunc
     public native Boolean isSame(@NonNull @SwiftParamName SampleValue other);
 
     @SwiftFunc

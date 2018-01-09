@@ -4,6 +4,7 @@ import com.readdle.codegen.anotation.SwiftCallbackFunc;
 import com.readdle.codegen.anotation.SwiftDelegate;
 
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.util.Log;
 
 @SwiftDelegate(importPackages = {"SampleAppCore"}, protocols = {"SampleDelegate"})
@@ -26,10 +27,12 @@ public abstract class SampleDelegateAndroid {
     SampleValue sampleValue = null;
 
     @SwiftCallbackFunc
-    public void setSampleValue(SampleValue value) {
+    public void setSampleValue(@Nullable SampleValue value) {
         sampleValue = value;
         onSetSampleValue(value);
-        Log.i("TAG", value.toString());
+        if (value != null) {
+            Log.i("TAG", value.toString());
+        }
     }
 
     @NonNull @SwiftCallbackFunc
@@ -38,13 +41,18 @@ public abstract class SampleDelegateAndroid {
     }
 
     @SwiftCallbackFunc
-    public static void setTimestamp(Long value) {
+    public static void setTimestamp(@NonNull Long value) {
         Log.i("TAG", value.toString());
     }
 
     @NonNull @SwiftCallbackFunc
     public static Long getTimestamp() {
         return System.currentTimeMillis();
+    }
+
+    @Nullable @SwiftCallbackFunc
+    public SampleValue funcWithNil() {
+        return null;
     }
 
     abstract void onSetSampleValue(SampleValue value);

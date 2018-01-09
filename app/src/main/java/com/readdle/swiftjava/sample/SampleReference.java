@@ -4,6 +4,9 @@ import com.readdle.codegen.anotation.SwiftError;
 import com.readdle.codegen.anotation.SwiftFunc;
 import com.readdle.codegen.anotation.SwiftReference;
 
+import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
+
 @SwiftReference(importPackages = {"SampleAppCore"})
 public class SampleReference {
 
@@ -18,21 +21,28 @@ public class SampleReference {
     // Swift JNI release method
     public native void release();
 
-    @SwiftFunc
+    @NonNull @SwiftFunc
     public native SampleValue getRandomValue();
 
     @SwiftFunc
-    public native void saveValue(SampleValue value);
+    public native void saveValue(@NonNull SampleValue value);
 
     @SwiftFunc
     public native void funcThrows() throws SwiftError;
 
-    @SwiftFunc
+    @Nullable @SwiftFunc
+    public native SampleReference funcWithNil();
+
+    @NonNull @SwiftFunc
     public static native SampleReference init();
+
+    // TODO: Impossible to generate for now. Add extra check for JavaSwift protocol before casting to .javaObject()
+    //@Nullable @SwiftFunc
+    //public native SampleDelegateAndroid getDelegate();
 
     @SwiftFunc
     public native void setDelegate(SampleDelegateAndroid delegate);
 
-    @SwiftFunc
+    @NonNull @SwiftFunc
     public native Long tick();
 }

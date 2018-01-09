@@ -2,14 +2,15 @@ import Foundation
 
 public protocol SampleDelegate: class {
 
-    func setSampleValue(_ value: SampleValue)
+    func setSampleValue(_ value: SampleValue?)
 
     func getSampleValue() -> SampleValue
+
+    func funcWithNil() -> SampleValue?
 
     static func getTimestamp() -> Int64
 
     static func setTimestamp(_ value: Int64)
-    
 }
 
 private extension SampleDelegate {
@@ -28,6 +29,11 @@ public class SampleReference {
 	public init() {
 		
 	}
+
+    // TODO: need some extra work for returning abstract type
+//    public func getDelegate() -> SampleDelegate?  {
+//        return self.delegate
+//    }
 
     public func setDelegate(_ delegate: SampleDelegate?) {
         self.delegate = delegate
@@ -53,5 +59,10 @@ public class SampleReference {
             return delegate.timeStampTest()
         }
         return  -1
+    }
+
+    public func funcWithNil() -> SampleValue? {
+        delegate?.setSampleValue(nil)
+        return delegate?.funcWithNil()
     }
 }
