@@ -1,8 +1,8 @@
 package com.readdle.codegen;
 
-
+import com.readdle.codegen.anotation.SwiftCallbackFunc;
+import com.readdle.codegen.anotation.SwiftDelegate;
 import com.readdle.codegen.anotation.SwiftFunc;
-import com.readdle.codegen.anotation.SwiftReference;
 
 import java.io.File;
 import java.io.IOException;
@@ -18,25 +18,28 @@ import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.MirroredTypeException;
 
-public class SwiftReferenceDescriptor {
+public class SwiftDelegateDescriptor {
 
     static final String SUFFIX = "Android.swift";
 
     private TypeElement annotatedClassElement;
-    String javaPackage;
+    private String javaPackage;
     String simpleTypeName;
-    String[] importPackages;
-    String pointerBasicTypeSig;
+    private String[] importPackages;
+    private String pointerBasicTypeSig;
 
     List<SwiftFuncDescriptor> functions = new LinkedList<>();
+    List<SwiftCallbackFuncDescriptor> callbackFunctions = new LinkedList<>();
+    String[] protocols;
 
-    SwiftReferenceDescriptor(TypeElement classElement) throws IllegalArgumentException {
+    SwiftDelegateDescriptor(TypeElement classElement) throws IllegalArgumentException {
         this.annotatedClassElement = classElement;
 
         // Get the full QualifiedTypeName
         try {
-            SwiftReference annotation = classElement.getAnnotation(SwiftReference.class);
+            SwiftDelegate annotation = classElement.getAnnotation(SwiftDelegate.class);
             importPackages = annotation.importPackages();
+            protocols = annotation.protocols();
             simpleTypeName = classElement.getSimpleName().toString();
             javaPackage = classElement.getQualifiedName().toString().replace("." + simpleTypeName, "");
         } catch (MirroredTypeException mte) {
@@ -49,13 +52,14 @@ public class SwiftReferenceDescriptor {
         // Check if it's an abstract class
         if (classElement.getModifiers().contains(Modifier.ABSTRACT)) {
             throw new IllegalArgumentException(String.format("The class %s is abstract. You can't annotate abstract classes with @%s",
-                    classElement.getQualifiedName().toString(), SwiftReference.class.getSimpleName()));
+                    classElement.getQualifiedName().toString(), SwiftDelegate.class.getSimpleName()));
         }
 
+        ExecutableElement initExecutableElement = null;
         ExecutableElement retainExecutableElement = null;
         ExecutableElement releaseExecutableElement = null;
         boolean hasNativePointer = false;
-        boolean hasEmptyConstructor = false;
+
 
         for (Element element : classElement.getEnclosedElements()) {
             if (element.getKind() == ElementKind.METHOD) {
@@ -74,6 +78,13 @@ public class SwiftReferenceDescriptor {
                     }
                     releaseExecutableElement = executableElement;
                 }
+                if (executableElement.getSimpleName().toString().equals("init")) {
+                    if (!executableElement.getModifiers().contains(Modifier.NATIVE)) {
+                        throw new IllegalArgumentException(String.format("%s is not native method",
+                                executableElement.getSimpleName()));
+                    }
+                    initExecutableElement = executableElement;
+                }
             }
 
             if (element.getKind() == ElementKind.FIELD) {
@@ -81,13 +92,6 @@ public class SwiftReferenceDescriptor {
                 if (variableElement.getSimpleName().toString().equals("nativePointer")
                         && variableElement.asType().toString().equals("long")) {
                     hasNativePointer = true;
-                }
-            }
-
-            if (element.getKind() == ElementKind.CONSTRUCTOR && !hasEmptyConstructor) {
-                ExecutableElement constructorElement = (ExecutableElement) element;
-                if (constructorElement.getParameters().size() == 0 && constructorElement.getModifiers().contains(Modifier.PRIVATE)) {
-                    hasEmptyConstructor = true;
                 }
             }
         }
@@ -114,12 +118,12 @@ public class SwiftReferenceDescriptor {
             throw new IllegalArgumentException(String.format("%s doesn't contain nativePointer field", simpleTypeName));
         }
 
-        if (!hasEmptyConstructor) {
-            throw new IllegalArgumentException(String.format("%s doesn't contain private empty constructor", simpleTypeName));
+        if (initExecutableElement == null) {
+            throw new IllegalArgumentException(String.format("%s doesn't contain init native method", simpleTypeName));
         }
 
         if (releaseExecutableElement == null) {
-            throw new IllegalArgumentException(String.format("%s doesn't contain release method", simpleTypeName));
+            throw new IllegalArgumentException(String.format("%s doesn't contain release native method", simpleTypeName));
         }
         else {
             functions.add(new SwiftFuncDescriptor(releaseExecutableElement));
@@ -139,6 +143,16 @@ public class SwiftReferenceDescriptor {
 
                 functions.add(new SwiftFuncDescriptor(executableElement));
             }
+
+            if (element.getKind() == ElementKind.METHOD && element.getAnnotation(SwiftCallbackFunc.class) != null) {
+                ExecutableElement executableElement = (ExecutableElement) element;
+                if (executableElement.getModifiers().contains(Modifier.NATIVE)) {
+                    throw new IllegalArgumentException(String.format("%s is native method. Only java methods can be annotated with @%s",
+                            executableElement.getSimpleName(), SwiftCallbackFunc.class.getSimpleName()));
+                }
+
+                callbackFunctions.add(new SwiftCallbackFuncDescriptor(executableElement));
+            }
         }
     }
 
@@ -154,15 +168,37 @@ public class SwiftReferenceDescriptor {
         if (pointerBasicTypeSig != null) {
             swiftWriter.emitStatement(String.format("fileprivate let javaPointerClass = JNI.GlobalFindClass(\"%s\")!", pointerBasicTypeSig));
             swiftWriter.emitStatement("fileprivate let javaSwiftPointerFiled = JNI.api.GetFieldID(JNI.env, javaPointerClass, \"nativePointer\", \"J\")");
-        }
-        else {
+        } else {
             swiftWriter.emitStatement("fileprivate let javaSwiftPointerFiled = JNI.api.GetFieldID(JNI.env, javaClass, \"nativePointer\", \"J\")");
         }
 
-        swiftWriter.emitStatement(String.format("fileprivate let javaConstructor = try! JNI.getJavaEmptyConstructor(forClass: \"%s/%s\")", javaPackage.replace(".", "/"), simpleTypeName));
+        swiftWriter.emitStatement("fileprivate let javaConstructor = JNI.api.GetMethodID(JNI.env, javaClass, \"<init>\", \"(J)V\")!");
 
         swiftWriter.emitEmptyLine();
-        swiftWriter.beginExtension(simpleTypeName);
+        swiftWriter.emit(String.format("public class %s", simpleTypeName));
+        for (int i = 0; i < protocols.length; i++) {
+            if (i == 0) {
+                swiftWriter.emit(": " + protocols[0]);
+            }
+            else {
+                swiftWriter.emit(", " + protocols[i]);
+            }
+        }
+        swiftWriter.emit(" {\n");
+
+        swiftWriter.emitEmptyLine();
+        swiftWriter.emitStatement("let jniObject: jobject");
+
+        swiftWriter.emitEmptyLine();
+        swiftWriter.emitStatement("public init(jniObject: jobject) {");
+        // TODO: throw exception
+        swiftWriter.emitStatement("self.jniObject = JNI.api.NewGlobalRef(JNI.env, jniObject)!");
+        swiftWriter.emitStatement("}");
+
+        swiftWriter.emitEmptyLine();
+        swiftWriter.emitStatement("deinit {");
+        swiftWriter.emitStatement("JNI.api.DeleteGlobalRef(JNI.env, jniObject)");
+        swiftWriter.emitStatement("}");
 
         swiftWriter.emitEmptyLine();
         swiftWriter.emitStatement("// Get swift object from pointer");
@@ -174,10 +210,7 @@ public class SwiftReferenceDescriptor {
         swiftWriter.emitEmptyLine();
         swiftWriter.emitStatement("// Create java object with native pointer");
         swiftWriter.emitStatement("public func javaObject() throws -> jobject {");
-        swiftWriter.emitStatement("let nativePointer = jlong(Int(bitPattern: Unmanaged.passRetained(self).toOpaque()))");
-        swiftWriter.emitStatement("guard let result = JNI.NewObject(javaClass, methodID: javaConstructor) else {\nthrow NSError(domain: \"CantCreateObject\", code: 1)\n}");
-        swiftWriter.emitStatement("JNI.api.SetLongField(JNI.env, result, javaSwiftPointerFiled, nativePointer)");
-        swiftWriter.emitStatement("return result");
+        swiftWriter.emitStatement("return jniObject");
         swiftWriter.emitStatement("}");
 
         swiftWriter.emitEmptyLine();
@@ -186,13 +219,20 @@ public class SwiftReferenceDescriptor {
         swiftWriter.emitStatement("Unmanaged.passUnretained(self).release()");
         swiftWriter.emitStatement("}");
 
-        swiftWriter.emitEmptyLine();
-        swiftWriter.emitStatement("// Unbalanced retain");
-        swiftWriter.emitStatement("public func retain() {");
-        swiftWriter.emitStatement("Unmanaged.passUnretained(self).retain()");
-        swiftWriter.emitStatement("}");
+        for (SwiftCallbackFuncDescriptor function : callbackFunctions) {
+            function.generateCode(swiftWriter, javaPackage, simpleTypeName);
+        }
 
         swiftWriter.endExtension();
+
+        String swiftFuncName = "Java_" + javaPackage.replace(".", "_") + "_" + simpleTypeName + "_init";
+        swiftWriter.emitEmptyLine();
+        swiftWriter.emitStatement(String.format("@_silgen_name(\"%s\")", swiftFuncName));
+        swiftWriter.emitStatement(String.format("public func %s(env: UnsafeMutablePointer<JNIEnv?>, this: jobject) {", swiftFuncName));
+        swiftWriter.emitStatement(String.format("let swiftSelf = %s(jniObject: this)", simpleTypeName));
+        swiftWriter.emitStatement("let nativePointer = jlong(Int(bitPattern: Unmanaged.passRetained(swiftSelf).toOpaque()))");
+        swiftWriter.emitStatement("JNI.api.SetLongField(JNI.env, this, javaSwiftPointerFiled, nativePointer)");
+        swiftWriter.emitStatement("}");
 
         for (SwiftFuncDescriptor function : functions) {
             function.generateCode(swiftWriter, javaPackage, simpleTypeName);
@@ -200,13 +240,5 @@ public class SwiftReferenceDescriptor {
 
         swiftWriter.close();
         return swiftExtensionFile;
-    }
-
-    /**
-     *
-     * @return qualified name
-     */
-    public String getSwiftType() {
-        return simpleTypeName;
     }
 }

@@ -22,7 +22,7 @@ public class SampleReferenceTest {
         System.loadLibrary("SampleAppCoreBridge");
         SampleValue.initCoder();
 
-        this.sampleReference = new SampleReference();
+        this.sampleReference = SampleReference.init();
     }
 
     @After
@@ -52,6 +52,15 @@ public class SampleReferenceTest {
         } catch (SwiftError swiftError) {
             Assert.assertTrue(swiftError.getMessage() != null);
         }
+    }
+
+    @Test
+    public void testDelegate() {
+        SampleDelegateAndroid delegateAndroid = new SampleDelegateAndroid();
+        sampleReference.setDelegate(delegateAndroid);
+        Assert.assertTrue(System.currentTimeMillis() - sampleReference.tick() < 1000);
+        Assert.assertTrue(delegateAndroid.sampleValue.equals(sampleReference.getRandomValue()));
+        delegateAndroid.release();
     }
 
 }

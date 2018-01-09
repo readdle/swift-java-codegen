@@ -1,5 +1,6 @@
 package com.readdle.codegen;
 
+import com.readdle.codegen.anotation.SwiftDelegate;
 import com.readdle.codegen.anotation.SwiftReference;
 import com.readdle.codegen.anotation.SwiftValue;
 
@@ -77,6 +78,7 @@ public class JavaSwiftProcessor extends AbstractProcessor {
 
         Map<String, SwiftValueDescriptor> swiftValues = new HashMap<>();
         Map<String, SwiftReferenceDescriptor> swiftReferences = new HashMap<>();
+        Map<String, SwiftDelegateDescriptor> swiftDelegates = new HashMap<>();
 
         for (Element annotatedElement : roundEnv.getElementsAnnotatedWith(SwiftValue.class)) {
             // Check if a class has been annotated with @SwiftValue
@@ -109,8 +111,28 @@ public class JavaSwiftProcessor extends AbstractProcessor {
             TypeElement typeElement = (TypeElement) annotatedElement;
 
             try {
-                SwiftReferenceDescriptor swiftReferenceDescriptor = new SwiftReferenceDescriptor(typeElement, messager);
+                SwiftReferenceDescriptor swiftReferenceDescriptor = new SwiftReferenceDescriptor(typeElement);
                 swiftReferences.put(swiftReferenceDescriptor.getSwiftType(), swiftReferenceDescriptor);
+            }
+            catch (IllegalArgumentException e) {
+                error(annotatedElement, e.getMessage());
+                return true; // Exit processing
+            }
+        }
+
+        for (Element annotatedElement : roundEnv.getElementsAnnotatedWith(SwiftDelegate.class)) {
+            // Check if a class has been annotated with @SwiftValue
+            if (annotatedElement.getKind() != ElementKind.CLASS) {
+                error(annotatedElement, "Only classes can be annotated with @%s", SwiftDelegate.class.getSimpleName());
+                return true; // Exit processing
+            }
+
+            // We can cast it, because we know that it of ElementKind.CLASS
+            TypeElement typeElement = (TypeElement) annotatedElement;
+
+            try {
+                SwiftDelegateDescriptor delegateDescriptor = new SwiftDelegateDescriptor(typeElement);
+                swiftDelegates.put(delegateDescriptor.simpleTypeName, delegateDescriptor);
             }
             catch (IllegalArgumentException e) {
                 error(annotatedElement, e.getMessage());
@@ -141,6 +163,21 @@ public class JavaSwiftProcessor extends AbstractProcessor {
 
             try {
                 File file = referenceDescriptor.generateCode(sourcePath);
+                messager.printMessage(Diagnostic.Kind.NOTE, file.getName() + " generated");
+            } catch (IOException e) {
+                error(null, "Can't write to file: " + e.getMessage());
+                return true; // Exit processing
+            }
+        }
+
+        for (SwiftDelegateDescriptor delegateDescriptor: swiftDelegates.values()) {
+
+            for (SwiftFuncDescriptor function : delegateDescriptor.functions) {
+                messager.printMessage(Diagnostic.Kind.NOTE, function.toString());
+            }
+
+            try {
+                File file = delegateDescriptor.generateCode(sourcePath);
                 messager.printMessage(Diagnostic.Kind.NOTE, file.getName() + " generated");
             } catch (IOException e) {
                 error(null, "Can't write to file: " + e.getMessage());

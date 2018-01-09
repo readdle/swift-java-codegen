@@ -7,6 +7,8 @@ import com.readdle.codegen.anotation.SwiftValue;
 
 import android.support.annotation.NonNull;
 
+import java.util.Objects;
+
 @SwiftValue(importPackages = {"SampleAppCore"})
 public class SampleValue {
 
@@ -17,7 +19,7 @@ public class SampleValue {
     @NonNull
     public String str3;
 
-    // Swift JNI private constructor
+    // Swift JNI constructor
     public SampleValue() {
 
     }
@@ -36,4 +38,19 @@ public class SampleValue {
 
     @SwiftFunc
     public static native void funcThrows() throws SwiftError;
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof SampleValue)) return false;
+        SampleValue that = (SampleValue) o;
+        return Objects.equals(str1, that.str1) &&
+                Objects.equals(str2, that.str2) &&
+                Objects.equals(str3, that.str3);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(str1, str2, str3);
+    }
 }
