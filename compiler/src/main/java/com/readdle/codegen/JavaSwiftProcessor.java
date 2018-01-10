@@ -188,9 +188,33 @@ public class JavaSwiftProcessor extends AbstractProcessor {
             }
         }
 
+        try {
+            generateJavaSwift(sourcePath);
+        } catch (IOException e) {
+            error(null, "Can't write to file: " + e.getMessage());
+            return true; // Exit processing
+        }
+
         messager.printMessage(Diagnostic.Kind.NOTE, "SwiftJava finished successfully!");
 
 	    return false;
+    }
+
+    void generateJavaSwift(File dirPath) throws IOException {
+        // TODO: check if already generated
+        File swiftExtensionFile = new File(dirPath, "JavaSwift.swift");
+        SwiftWriter swiftWriter = new SwiftWriter(swiftExtensionFile);
+        swiftWriter.emitImports(new String[0]);
+        swiftWriter.emitEmptyLine();
+        swiftWriter.emitStatement("public let SwiftErrorClass = JNI.GlobalFindClass(\"com/readdle/codegen/anotation/SwiftError\")");
+        swiftWriter.emitStatement("public let SwiftRuntimeErrorClass = JNI.GlobalFindClass(\"com/readdle/codegen/anotation/SwiftRuntimeError\")");
+        swiftWriter.emitEmptyLine();
+        // TODO: remove when JavaCoder become deprecated
+        swiftWriter.emitStatement("@_silgen_name(\"Java_com_readdle_codegen_anotation_JavaSwift_init\")");
+        swiftWriter.emitStatement("public func Java_com_readdle_codegen_anotation_JavaBridgeable_init(env: UnsafeMutablePointer<JNIEnv?>, clazz: jclass) {");
+        swiftWriter.emitStatement("JavaCoderConfig.RegisterBasicJavaTypes()");
+        swiftWriter.emitStatement("}");
+        swiftWriter.close();
     }
 
     private void error(Element e, String msg, Object... args) {

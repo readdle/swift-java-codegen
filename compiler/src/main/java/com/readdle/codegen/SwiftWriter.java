@@ -23,6 +23,7 @@ public class SwiftWriter {
         this.writer.append("/* Don't change it manually! */\n");
 
         this.writer.append("import Foundation\n");
+        this.writer.append("import Java\n");
         this.writer.append("import java_swift\n");
         this.writer.append("import JavaCoder\n");
 
