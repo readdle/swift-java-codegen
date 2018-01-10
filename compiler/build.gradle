@@ -1,11 +1,3 @@
-apply plugin: 'java'
-apply plugin: 'maven'
-
-group = 'com.readdle.codegen'
-
 dependencies {
     compile project(':library')
 }
-
-sourceCompatibility = "1.7"
-targetCompatibility = "1.7"
