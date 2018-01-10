@@ -1,13 +1,10 @@
 package com.readdle.codegen;
 
-import com.readdle.codegen.anotation.SwiftParamName;
-
 import javax.lang.model.element.VariableElement;
 
 public class SwiftParamDescriptor {
 
     final String name;
-    final String paramName;
     final SwiftEnvironment.Type swiftType;
     final boolean isOptional;
     final String description;
@@ -17,19 +14,6 @@ public class SwiftParamDescriptor {
         this.swiftType = SwiftEnvironment.parseJavaType(variableElement.asType().toString());
         this.isOptional = JavaSwiftProcessor.isNullable(variableElement);
         this.description = null;
-
-        SwiftParamName swiftParamName = variableElement.getAnnotation(SwiftParamName.class);
-        if (swiftParamName != null) {
-            if (swiftParamName.name().isEmpty()) {
-                paramName = name;
-            }
-            else {
-                paramName = swiftParamName.name();
-            }
-        }
-        else {
-            paramName = null;
-        }
     }
 
     @Override

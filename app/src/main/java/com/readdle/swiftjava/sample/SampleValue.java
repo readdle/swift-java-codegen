@@ -2,7 +2,6 @@ package com.readdle.swiftjava.sample;
 
 import com.readdle.codegen.anotation.SwiftError;
 import com.readdle.codegen.anotation.SwiftFunc;
-import com.readdle.codegen.anotation.SwiftParamName;
 import com.readdle.codegen.anotation.SwiftValue;
 
 import android.support.annotation.NonNull;
@@ -33,8 +32,8 @@ public class SampleValue {
     @SwiftFunc
     public native void saveValue();
 
-    @NonNull @SwiftFunc
-    public native Boolean isSame(@NonNull @SwiftParamName SampleValue other);
+    @NonNull @SwiftFunc("isSame(other:)")
+    public native Boolean isSame(@NonNull SampleValue other);
 
     @SwiftFunc
     public static native void funcThrows() throws SwiftError;

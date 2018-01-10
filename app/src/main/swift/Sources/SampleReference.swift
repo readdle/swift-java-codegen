@@ -2,7 +2,7 @@ import Foundation
 
 public protocol SampleDelegate: class {
 
-    func setSampleValue(_ value: SampleValue?)
+    func setSampleValue(value: SampleValue?)
 
     func getSampleValue() -> SampleValue
 
@@ -54,15 +54,14 @@ public class SampleReference {
     public func tick() -> Int64 {
         if let delegate = self.delegate {
             let value = getRandomValue()
-            delegate.setSampleValue(value)
-            delegate.getSampleValue()
+            delegate.setSampleValue(value: value)
             return delegate.timeStampTest()
         }
         return  -1
     }
 
     public func funcWithNil() -> SampleValue? {
-        delegate?.setSampleValue(nil)
+        delegate?.setSampleValue(value: nil)
         return delegate?.funcWithNil()
     }
 }

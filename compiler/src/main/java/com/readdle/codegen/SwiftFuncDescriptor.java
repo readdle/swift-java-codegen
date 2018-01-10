@@ -1,6 +1,10 @@
 package com.readdle.codegen;
 
+import com.readdle.codegen.anotation.SwiftFunc;
+
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -21,6 +25,7 @@ class SwiftFuncDescriptor {
     private String description;
 
     private List<SwiftParamDescriptor> params = new LinkedList<>();
+    private List<String> paramNames = new LinkedList<>();
 
     SwiftFuncDescriptor(ExecutableElement executableElement) {
         this.name = executableElement.getSimpleName().toString();
@@ -31,6 +36,35 @@ class SwiftFuncDescriptor {
 
         for (VariableElement variableElement : executableElement.getParameters()) {
             params.add(new SwiftParamDescriptor(variableElement));
+        }
+
+        SwiftFunc swiftFunc = executableElement.getAnnotation(SwiftFunc.class);
+
+        if (swiftFunc != null && !swiftFunc.value().isEmpty()) {
+            String funcFullName = swiftFunc.value();
+            int paramStart = funcFullName.indexOf("(");
+            int paramEnd = funcFullName.indexOf(")");
+            if (paramStart > 0 && paramEnd > 0 && paramEnd > paramStart) {
+                this.name = funcFullName.substring(0, paramStart);
+                String arguments = funcFullName.substring(paramStart + 1, paramEnd);
+                String[] paramNames = arguments.split(":");
+                if (paramNames.length == params.size()) {
+                    for (String paramName : paramNames) {
+                        this.paramNames.add(paramName + ": ");
+                    }
+                }
+                else {
+                    throw new IllegalArgumentException("Wrong count of arguments in func name");
+                }
+            }
+            else {
+                throw new IllegalArgumentException("Wrong func name");
+            }
+        }
+        else {
+            for (int i = 0; i < params.size(); i++) {
+                paramNames.add("");
+            }
         }
     }
 
@@ -93,12 +127,11 @@ class SwiftFuncDescriptor {
 
         for (int i = 0; i < params.size(); i++) {
             SwiftParamDescriptor param = params.get(i);
-            String paramName = param.paramName != null ? param.paramName + ": " : "";
             if (i == 0) {
-                swiftWriter.emit(paramName + param.name);
+                swiftWriter.emit(paramNames.get(i) + param.name);
             }
             else {
-                swiftWriter.emit(", " + paramName + param.name);
+                swiftWriter.emit(", " + paramNames.get(i) + param.name);
             }
         }
         swiftWriter.emit(")\n");

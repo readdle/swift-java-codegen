@@ -1,6 +1,10 @@
 package com.readdle.codegen;
 
+import com.readdle.codegen.anotation.SwiftCallbackFunc;
+import com.readdle.codegen.anotation.SwiftFunc;
+
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -23,6 +27,7 @@ public class SwiftCallbackFuncDescriptor {
     private String sig;
 
     private List<SwiftParamDescriptor> params = new LinkedList<>();
+    private List<String> paramNames = new LinkedList<>();
 
     SwiftCallbackFuncDescriptor(ExecutableElement executableElement) {
         this.name = executableElement.getSimpleName().toString();
@@ -46,6 +51,33 @@ public class SwiftCallbackFuncDescriptor {
         else {
             sig += "V";
         }
+
+        SwiftCallbackFunc swiftFunc = executableElement.getAnnotation(SwiftCallbackFunc.class);
+
+        if (swiftFunc != null && !swiftFunc.value().isEmpty()) {
+            String funcFullName = swiftFunc.value();
+            int paramStart = funcFullName.indexOf("(");
+            int paramEnd = funcFullName.indexOf(")");
+            if (paramStart > 0 && paramEnd > 0 && paramEnd > paramStart) {
+                this.name = funcFullName.substring(0, paramStart);
+                String arguments = funcFullName.substring(paramStart + 1, paramEnd);
+                String[] paramNames = arguments.split(":");
+                if (paramNames.length == params.size()) {
+                    this.paramNames = Arrays.asList(paramNames);
+                }
+                else {
+                    throw new IllegalArgumentException("Wrong count of arguments in func name");
+                }
+            }
+            else {
+                throw new IllegalArgumentException("Wrong func name");
+            }
+        }
+        else {
+            for (int i = 0; i < params.size(); i++) {
+                paramNames.add("_");
+            }
+        }
     }
 
     void generateCode(SwiftWriter swiftWriter, String javaPackage, String swiftType) throws IOException {
@@ -62,13 +94,12 @@ public class SwiftCallbackFuncDescriptor {
         swiftWriter.emit(String.format("public %s func %s(", isStatic ? "static" : "", name));
         for (int i = 0; i < params.size(); i++) {
             SwiftParamDescriptor param = params.get(i);
-            String paramName = param.paramName != null ? param.paramName : "_";
             String paramType = param.swiftType.swiftType + (param.isOptional ? "?" : "");
             if (i == 0) {
-                swiftWriter.emit(paramName + " " + param.name + ": " + paramType);
+                swiftWriter.emit(paramNames.get(i) + " " + param.name + ": " + paramType);
             }
             else {
-                swiftWriter.emit(", " + paramName + " " + param.name + ": " + paramType);
+                swiftWriter.emit(", " + paramNames.get(i) + " " + param.name + ": " + paramType);
             }
         }
 

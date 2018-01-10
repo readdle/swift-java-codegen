@@ -26,7 +26,7 @@ public abstract class SampleDelegateAndroid {
 
     SampleValue sampleValue = null;
 
-    @SwiftCallbackFunc
+    @SwiftCallbackFunc("setSampleValue(value:)")
     public void setSampleValue(@Nullable SampleValue value) {
         sampleValue = value;
         onSetSampleValue(value);
