@@ -68,6 +68,8 @@ public class JavaSwiftProcessor extends AbstractProcessor {
     public Set<String> getSupportedAnnotationTypes() {
         Set<String> annotations = new LinkedHashSet<>();
         annotations.add(com.readdle.codegen.anotation.SwiftValue.class.getCanonicalName());
+        annotations.add(com.readdle.codegen.anotation.SwiftReference.class.getCanonicalName());
+        annotations.add(com.readdle.codegen.anotation.SwiftDelegate.class.getCanonicalName());
         return annotations;
     }
 
