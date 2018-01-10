@@ -79,6 +79,8 @@ public class JavaSwiftProcessor extends AbstractProcessor {
     @Override
     public boolean process(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv) {
 
+        messager.printMessage(Diagnostic.Kind.NOTE, "Start SwiftJava code generation:");
+
         Map<String, SwiftValueDescriptor> swiftValues = new HashMap<>();
         Map<String, SwiftReferenceDescriptor> swiftReferences = new HashMap<>();
         Map<String, SwiftDelegateDescriptor> swiftDelegates = new HashMap<>();
