@@ -37,7 +37,7 @@ class SwiftEnvironment {
             case "java.math.BigInteger":
                 return new Type("UInt64", null);
             case "java.lang.Boolean":
-                return new Type("Boolean", null);
+                return new Type("Bool", null);
             case "java.lang.String":
                 return new Type("String", null);
             case "android.net.Uri":
