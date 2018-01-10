@@ -21,28 +21,25 @@ public class SampleReference {
     // Swift JNI release method
     public native void release();
 
-    @NonNull @SwiftFunc
+    @NonNull
     public native SampleValue getRandomValue();
 
-    @SwiftFunc
     public native void saveValue(@NonNull SampleValue value);
 
-    @SwiftFunc
     public native void funcThrows() throws SwiftError;
 
-    @Nullable @SwiftFunc
+    @Nullable
     public native SampleReference funcWithNil();
 
-    @NonNull @SwiftFunc
+    @NonNull
     public static native SampleReference init();
 
     // TODO: Impossible to generate for now. Add extra check for JavaSwift protocol before casting to .javaObject()
     //@Nullable @SwiftFunc
     //public native SampleDelegateAndroid getDelegate();
 
-    @SwiftFunc
     public native void setDelegate(SampleDelegateAndroid delegate);
 
-    @NonNull @SwiftFunc
+    @NonNull
     public native Long tick();
 }

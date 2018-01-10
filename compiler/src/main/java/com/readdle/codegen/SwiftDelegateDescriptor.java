@@ -119,23 +119,14 @@ public class SwiftDelegateDescriptor {
         if (releaseExecutableElement == null) {
             throw new IllegalArgumentException(String.format("%s doesn't contain release native method", simpleTypeName));
         }
-        else {
-            functions.add(new SwiftFuncDescriptor(releaseExecutableElement));
-        }
-
-        if (retainExecutableElement != null) {
-            functions.add(new SwiftFuncDescriptor(retainExecutableElement));
-        }
 
         for (Element element : classElement.getEnclosedElements()) {
-            if (element.getKind() == ElementKind.METHOD && element.getAnnotation(SwiftFunc.class) != null) {
+            if (element.getKind() == ElementKind.METHOD) {
                 ExecutableElement executableElement = (ExecutableElement) element;
-                if (!executableElement.getModifiers().contains(Modifier.NATIVE)) {
-                    throw new IllegalArgumentException(String.format("%s is not native method. Only native methods can be annotated with @%s",
-                            executableElement.getSimpleName(), SwiftFunc.class.getSimpleName()));
+                // Except init. We generate it's manually
+                if (executableElement.getModifiers().contains(Modifier.NATIVE) && !executableElement.getSimpleName().contentEquals("init")) {
+                    functions.add(new SwiftFuncDescriptor(executableElement));
                 }
-
-                functions.add(new SwiftFuncDescriptor(executableElement));
             }
 
             if (element.getKind() == ElementKind.METHOD && element.getAnnotation(SwiftCallbackFunc.class) != null) {

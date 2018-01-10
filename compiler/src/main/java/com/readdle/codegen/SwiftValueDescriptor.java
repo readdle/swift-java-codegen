@@ -69,14 +69,11 @@ class SwiftValueDescriptor {
         }
 
         for (Element element : classElement.getEnclosedElements()) {
-            if (element.getKind() == ElementKind.METHOD && element.getAnnotation(SwiftFunc.class) != null) {
+            if (element.getKind() == ElementKind.METHOD) {
                 ExecutableElement executableElement = (ExecutableElement) element;
-                if (!executableElement.getModifiers().contains(Modifier.NATIVE)) {
-                    throw new IllegalArgumentException(String.format("%s is not native method. Only native methods can be annotated with @%s",
-                            executableElement.getSimpleName(), SwiftFunc.class.getSimpleName()));
+                if (executableElement.getModifiers().contains(Modifier.NATIVE)) {
+                    functions.add(new SwiftFuncDescriptor(executableElement));
                 }
-
-                functions.add(new SwiftFuncDescriptor(executableElement));
             }
         }
 

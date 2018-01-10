@@ -23,19 +23,16 @@ public class SampleValue {
 
     }
 
-    @SwiftFunc
     public static native void initCoder();
 
-    @NonNull @SwiftFunc
+    @NonNull
     public static native SampleValue getRandomValue();
 
-    @SwiftFunc
     public native void saveValue();
 
     @NonNull @SwiftFunc("isSame(other:)")
     public native Boolean isSame(@NonNull SampleValue other);
 
-    @SwiftFunc
     public static native void funcThrows() throws SwiftError;
 
     @Override
