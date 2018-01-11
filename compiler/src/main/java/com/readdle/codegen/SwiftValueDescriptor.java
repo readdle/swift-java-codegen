@@ -92,13 +92,13 @@ class SwiftValueDescriptor {
         swiftWriter.emitEmptyLine();
         swiftWriter.emitStatement("// Decoding SwiftValue type with JavaCoder");
         swiftWriter.emitStatement(String.format("public static func from(javaObject: jobject) throws -> %s {", simpleTypeName));
-        swiftWriter.emitStatement(String.format("return try JavaDecoder(forPackage: \"%s\").decode(%s.self, from: javaObject)", javaPackage, simpleTypeName));
+        swiftWriter.emitStatement(String.format("return try JavaDecoder(forPackage: \"%s\").decode(%s.self, from: javaObject)", javaPackage.replace(".", "/"), simpleTypeName));
         swiftWriter.emitStatement("}");
 
         swiftWriter.emitEmptyLine();
         swiftWriter.emitStatement("// Encoding SwiftValue type with JavaCoder");
         swiftWriter.emitStatement("public func javaObject() throws -> jobject {");
-        swiftWriter.emitStatement(String.format("return try JavaEncoder(forPackage: \"%s\").encode(self)", javaPackage));
+        swiftWriter.emitStatement(String.format("return try JavaEncoder(forPackage: \"%s\").encode(self)", javaPackage.replace(".", "/")));
         swiftWriter.emitStatement("}");
 
         swiftWriter.endExtension();
