@@ -46,7 +46,7 @@ public class SwiftCallbackFuncDescriptor {
         sig += ")";
 
         if (returnSwiftType != null) {
-            sig += "L" + javaClassToSig(executableElement.getReturnType().toString());
+            sig += javaClassToSig(executableElement.getReturnType().toString());
         }
         else {
             sig += "V";

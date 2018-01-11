@@ -2,7 +2,6 @@ package com.readdle.codegen;
 
 import com.readdle.codegen.anotation.SwiftCallbackFunc;
 import com.readdle.codegen.anotation.SwiftDelegate;
-import com.readdle.codegen.anotation.SwiftFunc;
 
 import java.io.File;
 import java.io.IOException;
@@ -18,22 +17,25 @@ import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.MirroredTypeException;
 
-public class SwiftDelegateDescriptor {
+class SwiftDelegateDescriptor {
 
-    static final String SUFFIX = "Android.swift";
+    private static final String SUFFIX = "Android.swift";
 
     private TypeElement annotatedClassElement;
     private String javaPackage;
     String simpleTypeName;
     private String[] importPackages;
-    String pointerBasicTypeSig;
+    private String pointerBasicTypeSig;
 
     List<SwiftFuncDescriptor> functions = new LinkedList<>();
-    List<SwiftCallbackFuncDescriptor> callbackFunctions = new LinkedList<>();
-    String[] protocols;
+    private List<SwiftCallbackFuncDescriptor> callbackFunctions = new LinkedList<>();
+    private String[] protocols;
+
+    private boolean isInterface;
 
     SwiftDelegateDescriptor(TypeElement classElement) throws IllegalArgumentException {
         this.annotatedClassElement = classElement;
+        this.isInterface = classElement.getKind() == ElementKind.INTERFACE;
 
         // Get the full QualifiedTypeName
         try {
@@ -49,75 +51,69 @@ public class SwiftDelegateDescriptor {
             javaPackage = classElement.getQualifiedName().toString().replace("." + simpleTypeName, "");
         }
 
-        ExecutableElement initExecutableElement = null;
-        ExecutableElement retainExecutableElement = null;
-        ExecutableElement releaseExecutableElement = null;
-        boolean hasNativePointer = false;
+        if (!isInterface) {
 
+            ExecutableElement initExecutableElement = null;
+            ExecutableElement releaseExecutableElement = null;
+            boolean hasNativePointer = false;
 
-        for (Element element : classElement.getEnclosedElements()) {
-            if (element.getKind() == ElementKind.METHOD) {
-                ExecutableElement executableElement = (ExecutableElement) element;
-                if (executableElement.getSimpleName().toString().equals("retain")) {
-                    if (!executableElement.getModifiers().contains(Modifier.NATIVE)) {
-                        throw new IllegalArgumentException(String.format("%s is not native method",
-                                executableElement.getSimpleName()));
+            for (Element element : classElement.getEnclosedElements()) {
+                if (element.getKind() == ElementKind.METHOD) {
+                    ExecutableElement executableElement = (ExecutableElement) element;
+                    if (executableElement.getSimpleName().toString().equals("release")) {
+                        if (!executableElement.getModifiers().contains(Modifier.NATIVE)) {
+                            throw new IllegalArgumentException(String.format("%s is not native method",
+                                    executableElement.getSimpleName()));
+                        }
+                        releaseExecutableElement = executableElement;
                     }
-                    retainExecutableElement = executableElement;
+                    if (executableElement.getSimpleName().toString().equals("init")) {
+                        if (!executableElement.getModifiers().contains(Modifier.NATIVE)) {
+                            throw new IllegalArgumentException(String.format("%s is not native method",
+                                    executableElement.getSimpleName()));
+                        }
+                        initExecutableElement = executableElement;
+                    }
                 }
-                if (executableElement.getSimpleName().toString().equals("release")) {
-                    if (!executableElement.getModifiers().contains(Modifier.NATIVE)) {
-                        throw new IllegalArgumentException(String.format("%s is not native method",
-                                executableElement.getSimpleName()));
+
+                if (element.getKind() == ElementKind.FIELD) {
+                    VariableElement variableElement = (VariableElement) element;
+                    if (variableElement.getSimpleName().toString().equals("nativePointer")
+                            && variableElement.asType().toString().equals("long")) {
+                        hasNativePointer = true;
                     }
-                    releaseExecutableElement = executableElement;
-                }
-                if (executableElement.getSimpleName().toString().equals("init")) {
-                    if (!executableElement.getModifiers().contains(Modifier.NATIVE)) {
-                        throw new IllegalArgumentException(String.format("%s is not native method",
-                                executableElement.getSimpleName()));
-                    }
-                    initExecutableElement = executableElement;
                 }
             }
 
-            if (element.getKind() == ElementKind.FIELD) {
-                VariableElement variableElement = (VariableElement) element;
-                if (variableElement.getSimpleName().toString().equals("nativePointer")
-                        && variableElement.asType().toString().equals("long")) {
-                    hasNativePointer = true;
-                }
-            }
-        }
-
-        if (!hasNativePointer) {
-            TypeElement typeElement = classElement;
-            while (typeElement.getSuperclass() != null && !hasNativePointer) {
-                typeElement = (TypeElement) ((DeclaredType)typeElement.getSuperclass()).asElement();
-                for (Element element : typeElement.getEnclosedElements()) {
-                    if (element.getKind() == ElementKind.FIELD) {
-                        VariableElement variableElement = (VariableElement) element;
-                        if (variableElement.getSimpleName().toString().equals("nativePointer")
-                                && variableElement.asType().toString().equals("long")) {
-                            hasNativePointer = true;
-                            pointerBasicTypeSig = classElement.getQualifiedName().toString().replace(".", "/");
-                            break;
+            if (!hasNativePointer) {
+                TypeElement typeElement = classElement;
+                while (typeElement.getSuperclass() != null && !hasNativePointer) {
+                    typeElement = (TypeElement) ((DeclaredType) typeElement.getSuperclass()).asElement();
+                    for (Element element : typeElement.getEnclosedElements()) {
+                        if (element.getKind() == ElementKind.FIELD) {
+                            VariableElement variableElement = (VariableElement) element;
+                            if (variableElement.getSimpleName().toString().equals("nativePointer")
+                                    && variableElement.asType().toString().equals("long")) {
+                                hasNativePointer = true;
+                                pointerBasicTypeSig = classElement.getQualifiedName().toString().replace(".", "/");
+                                break;
+                            }
                         }
                     }
                 }
             }
-        }
 
-        if (!hasNativePointer) {
-            throw new IllegalArgumentException(String.format("%s doesn't contain nativePointer field", simpleTypeName));
-        }
+            if (!hasNativePointer) {
+                throw new IllegalArgumentException(String.format("%s doesn't contain nativePointer field", simpleTypeName));
+            }
 
-        if (initExecutableElement == null) {
-            throw new IllegalArgumentException(String.format("%s doesn't contain init native method", simpleTypeName));
-        }
+            if (initExecutableElement == null) {
+                throw new IllegalArgumentException(String.format("%s doesn't contain init native method", simpleTypeName));
+            }
 
-        if (releaseExecutableElement == null) {
-            throw new IllegalArgumentException(String.format("%s doesn't contain release native method", simpleTypeName));
+            if (releaseExecutableElement == null) {
+                throw new IllegalArgumentException(String.format("%s doesn't contain release native method", simpleTypeName));
+            }
         }
 
         for (Element element : classElement.getEnclosedElements()) {
@@ -150,14 +146,15 @@ public class SwiftDelegateDescriptor {
         swiftWriter.emitEmptyLine();
 
         swiftWriter.emitStatement(String.format("fileprivate let javaClass = JNI.GlobalFindClass(\"%s/%s\")!", javaPackage.replace(".", "/"), simpleTypeName));
-        if (pointerBasicTypeSig != null) {
-            swiftWriter.emitStatement(String.format("fileprivate let javaPointerClass = JNI.GlobalFindClass(\"%s\")!", pointerBasicTypeSig));
-            swiftWriter.emitStatement("fileprivate let javaSwiftPointerFiled = JNI.api.GetFieldID(JNI.env, javaPointerClass, \"nativePointer\", \"J\")");
-        } else {
-            swiftWriter.emitStatement("fileprivate let javaSwiftPointerFiled = JNI.api.GetFieldID(JNI.env, javaClass, \"nativePointer\", \"J\")");
-        }
 
-        swiftWriter.emitStatement("fileprivate let javaConstructor = JNI.api.GetMethodID(JNI.env, javaClass, \"<init>\", \"(J)V\")!");
+        if (!isInterface) {
+            if (pointerBasicTypeSig != null) {
+                swiftWriter.emitStatement(String.format("fileprivate let javaPointerClass = JNI.GlobalFindClass(\"%s\")!", pointerBasicTypeSig));
+                swiftWriter.emitStatement("fileprivate let javaSwiftPointerFiled = JNI.api.GetFieldID(JNI.env, javaPointerClass, \"nativePointer\", \"J\")");
+            } else {
+                swiftWriter.emitStatement("fileprivate let javaSwiftPointerFiled = JNI.api.GetFieldID(JNI.env, javaClass, \"nativePointer\", \"J\")");
+            }
+        }
 
         swiftWriter.emitEmptyLine();
         swiftWriter.emit(String.format("public class %s", simpleTypeName));
@@ -185,23 +182,32 @@ public class SwiftDelegateDescriptor {
         swiftWriter.emitStatement("JNI.api.DeleteGlobalRef(JNI.env, jniObject)");
         swiftWriter.emitStatement("}");
 
-        swiftWriter.emitEmptyLine();
-        swiftWriter.emitStatement("// Get swift object from pointer");
-        swiftWriter.emitStatement(String.format("public static func from(javaObject: jobject) throws -> %s {", simpleTypeName));
-        swiftWriter.emitStatement("guard let pointer = UnsafeRawPointer(bitPattern: Int(JNI.api.GetLongField(JNI.env, javaObject, javaSwiftPointerFiled))) else {\nthrow NSError(domain: \"NullPointerException\", code: 1)\n}");
-        swiftWriter.emitStatement(String.format("return Unmanaged<%s>.fromOpaque(pointer).takeUnretainedValue()", simpleTypeName));
-        swiftWriter.emitStatement("}");
+        if (isInterface) {
+            swiftWriter.emitEmptyLine();
+            swiftWriter.emitStatement("// Create swift object");
+            swiftWriter.emitStatement(String.format("public static func from(javaObject: jobject) throws -> %s {", simpleTypeName));
+            swiftWriter.emitStatement(String.format("return %s(jniObject: javaObject)", simpleTypeName));
+            swiftWriter.emitStatement("}");
+        }
+        else {
+            swiftWriter.emitEmptyLine();
+            swiftWriter.emitStatement("// Get swift object from pointer");
+            swiftWriter.emitStatement(String.format("public static func from(javaObject: jobject) throws -> %s {", simpleTypeName));
+            swiftWriter.emitStatement("guard let pointer = UnsafeRawPointer(bitPattern: Int(JNI.api.GetLongField(JNI.env, javaObject, javaSwiftPointerFiled))) else {\nthrow NSError(domain: \"NullPointerException\", code: 1)\n}");
+            swiftWriter.emitStatement(String.format("return Unmanaged<%s>.fromOpaque(pointer).takeUnretainedValue()", simpleTypeName));
+            swiftWriter.emitStatement("}");
+
+            swiftWriter.emitEmptyLine();
+            swiftWriter.emitStatement("// Unbalance release");
+            swiftWriter.emitStatement("public func release() {");
+            swiftWriter.emitStatement("Unmanaged.passUnretained(self).release()");
+            swiftWriter.emitStatement("}");
+        }
 
         swiftWriter.emitEmptyLine();
         swiftWriter.emitStatement("// Create java object with native pointer");
         swiftWriter.emitStatement("public func javaObject() throws -> jobject {");
         swiftWriter.emitStatement("return jniObject");
-        swiftWriter.emitStatement("}");
-
-        swiftWriter.emitEmptyLine();
-        swiftWriter.emitStatement("// Unbalance release");
-        swiftWriter.emitStatement("public func release() {");
-        swiftWriter.emitStatement("Unmanaged.passUnretained(self).release()");
         swiftWriter.emitStatement("}");
 
         for (SwiftCallbackFuncDescriptor function : callbackFunctions) {
@@ -210,14 +216,16 @@ public class SwiftDelegateDescriptor {
 
         swiftWriter.endExtension();
 
-        String swiftFuncName = "Java_" + javaPackage.replace(".", "_") + "_" + simpleTypeName + "_init";
-        swiftWriter.emitEmptyLine();
-        swiftWriter.emitStatement(String.format("@_silgen_name(\"%s\")", swiftFuncName));
-        swiftWriter.emitStatement(String.format("public func %s(env: UnsafeMutablePointer<JNIEnv?>, this: jobject) {", swiftFuncName));
-        swiftWriter.emitStatement(String.format("let swiftSelf = %s(jniObject: this)", simpleTypeName));
-        swiftWriter.emitStatement("let nativePointer = jlong(Int(bitPattern: Unmanaged.passRetained(swiftSelf).toOpaque()))");
-        swiftWriter.emitStatement("JNI.api.SetLongField(JNI.env, this, javaSwiftPointerFiled, nativePointer)");
-        swiftWriter.emitStatement("}");
+        if (!isInterface) {
+            String swiftFuncName = "Java_" + javaPackage.replace(".", "_") + "_" + simpleTypeName + "_init";
+            swiftWriter.emitEmptyLine();
+            swiftWriter.emitStatement(String.format("@_silgen_name(\"%s\")", swiftFuncName));
+            swiftWriter.emitStatement(String.format("public func %s(env: UnsafeMutablePointer<JNIEnv?>, this: jobject) {", swiftFuncName));
+            swiftWriter.emitStatement(String.format("let swiftSelf = %s(jniObject: this)", simpleTypeName));
+            swiftWriter.emitStatement("let nativePointer = jlong(Int(bitPattern: Unmanaged.passRetained(swiftSelf).toOpaque()))");
+            swiftWriter.emitStatement("JNI.api.SetLongField(JNI.env, this, javaSwiftPointerFiled, nativePointer)");
+            swiftWriter.emitStatement("}");
+        }
 
         for (SwiftFuncDescriptor function : functions) {
             function.generateCode(swiftWriter, javaPackage, simpleTypeName);
