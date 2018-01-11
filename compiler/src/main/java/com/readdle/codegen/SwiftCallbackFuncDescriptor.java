@@ -80,13 +80,12 @@ public class SwiftCallbackFuncDescriptor {
         }
     }
 
-    void generateCode(SwiftWriter swiftWriter, String javaPackage, String swiftType) throws IOException {
+    void generateCode(SwiftWriter swiftWriter, String javaFullName, String swiftType) throws IOException {
 
         swiftWriter.emitEmptyLine();
-        swiftWriter.emitStatement(String.format("static let javaMethod%1$s = try! JNI.%5$s(forClass:\"%2$s/%3$s\", method: \"%1$s\", sig: \"%4$s\")",
+        swiftWriter.emitStatement(String.format("static let javaMethod%1$s = try! JNI.%4$s(forClass:\"%2$s\", method: \"%1$s\", sig: \"%3$s\")",
                 name,
-                javaPackage.replace(".", "/"),
-                swiftType,
+                javaFullName,
                 sig,
                 isStatic ? "getStaticJavaMethod" : "getJavaMethod"));
 

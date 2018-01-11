@@ -1,7 +1,5 @@
 package com.readdle.codegen;
 
-
-import com.readdle.codegen.anotation.SwiftFunc;
 import com.readdle.codegen.anotation.SwiftReference;
 
 import java.io.File;
@@ -18,15 +16,15 @@ import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.MirroredTypeException;
 
-public class SwiftReferenceDescriptor {
+class SwiftReferenceDescriptor {
 
-    static final String SUFFIX = "Android.swift";
+    private static final String SUFFIX = "Android.swift";
 
     private TypeElement annotatedClassElement;
-    String javaPackage;
-    String simpleTypeName;
-    String[] importPackages;
-    String pointerBasicTypeSig;
+    private String javaFullName;
+    private String simpleTypeName;
+    private String[] importPackages;
+    private String pointerBasicTypeSig;
 
     List<SwiftFuncDescriptor> functions = new LinkedList<>();
 
@@ -38,12 +36,18 @@ public class SwiftReferenceDescriptor {
             SwiftReference annotation = classElement.getAnnotation(SwiftReference.class);
             importPackages = annotation.importPackages();
             simpleTypeName = classElement.getSimpleName().toString();
-            javaPackage = classElement.getQualifiedName().toString().replace("." + simpleTypeName, "");
+            javaFullName = classElement.getQualifiedName().toString().replace(".", "/");
         } catch (MirroredTypeException mte) {
             DeclaredType classTypeMirror = (DeclaredType) mte.getTypeMirror();
             TypeElement classTypeElement = (TypeElement) classTypeMirror.asElement();
             simpleTypeName = classTypeElement.getSimpleName().toString();
-            javaPackage = classElement.getQualifiedName().toString().replace("." + simpleTypeName, "");
+            javaFullName = classElement.getQualifiedName().toString().replace(".", "/");
+        }
+
+        Element enclosingElement = classElement.getEnclosingElement();
+        while (enclosingElement != null && enclosingElement.getKind() == ElementKind.CLASS) {
+            javaFullName = JavaSwiftProcessor.replaceLast(javaFullName, '/', '$');
+            enclosingElement = enclosingElement.getEnclosingElement();
         }
 
         // Check if it's an abstract class
@@ -52,7 +56,6 @@ public class SwiftReferenceDescriptor {
                     classElement.getQualifiedName().toString(), SwiftReference.class.getSimpleName()));
         }
 
-        ExecutableElement retainExecutableElement = null;
         ExecutableElement releaseExecutableElement = null;
         boolean hasNativePointer = false;
         boolean hasEmptyConstructor = false;
@@ -60,13 +63,6 @@ public class SwiftReferenceDescriptor {
         for (Element element : classElement.getEnclosedElements()) {
             if (element.getKind() == ElementKind.METHOD) {
                 ExecutableElement executableElement = (ExecutableElement) element;
-                if (executableElement.getSimpleName().toString().equals("retain")) {
-                    if (!executableElement.getModifiers().contains(Modifier.NATIVE)) {
-                        throw new IllegalArgumentException(String.format("%s is not native method",
-                                executableElement.getSimpleName()));
-                    }
-                    retainExecutableElement = executableElement;
-                }
                 if (executableElement.getSimpleName().toString().equals("release")) {
                     if (!executableElement.getModifiers().contains(Modifier.NATIVE)) {
                         throw new IllegalArgumentException(String.format("%s is not native method",
@@ -140,7 +136,7 @@ public class SwiftReferenceDescriptor {
         swiftWriter.emitImports(importPackages);
         swiftWriter.emitEmptyLine();
 
-        swiftWriter.emitStatement(String.format("fileprivate let javaClass = JNI.GlobalFindClass(\"%s/%s\")!", javaPackage.replace(".", "/"), simpleTypeName));
+        swiftWriter.emitStatement(String.format("fileprivate let javaClass = JNI.GlobalFindClass(\"%s\")!", javaFullName));
         if (pointerBasicTypeSig != null) {
             swiftWriter.emitStatement(String.format("fileprivate let javaPointerClass = JNI.GlobalFindClass(\"%s\")!", pointerBasicTypeSig));
             swiftWriter.emitStatement("fileprivate let javaSwiftPointerFiled = JNI.api.GetFieldID(JNI.env, javaPointerClass, \"nativePointer\", \"J\")");
@@ -149,7 +145,7 @@ public class SwiftReferenceDescriptor {
             swiftWriter.emitStatement("fileprivate let javaSwiftPointerFiled = JNI.api.GetFieldID(JNI.env, javaClass, \"nativePointer\", \"J\")");
         }
 
-        swiftWriter.emitStatement(String.format("fileprivate let javaConstructor = try! JNI.getJavaEmptyConstructor(forClass: \"%s/%s\")", javaPackage.replace(".", "/"), simpleTypeName));
+        swiftWriter.emitStatement(String.format("fileprivate let javaConstructor = try! JNI.getJavaEmptyConstructor(forClass: \"%s\")", javaFullName));
 
         swiftWriter.emitEmptyLine();
         swiftWriter.beginExtension(simpleTypeName);
@@ -185,7 +181,7 @@ public class SwiftReferenceDescriptor {
         swiftWriter.endExtension();
 
         for (SwiftFuncDescriptor function : functions) {
-            function.generateCode(swiftWriter, javaPackage, simpleTypeName);
+            function.generateCode(swiftWriter, javaFullName, simpleTypeName);
         }
 
         swiftWriter.close();

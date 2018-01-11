@@ -22,7 +22,7 @@ class SwiftDelegateDescriptor {
     private static final String SUFFIX = "Android.swift";
 
     private TypeElement annotatedClassElement;
-    private String javaPackage;
+    private String javaFullName;
     String simpleTypeName;
     private String[] importPackages;
     private String pointerBasicTypeSig;
@@ -43,12 +43,19 @@ class SwiftDelegateDescriptor {
             importPackages = annotation.importPackages();
             protocols = annotation.protocols();
             simpleTypeName = classElement.getSimpleName().toString();
-            javaPackage = classElement.getQualifiedName().toString().replace("." + simpleTypeName, "");
+            javaFullName = classElement.getQualifiedName().toString().replace(".", "/");
+
         } catch (MirroredTypeException mte) {
             DeclaredType classTypeMirror = (DeclaredType) mte.getTypeMirror();
             TypeElement classTypeElement = (TypeElement) classTypeMirror.asElement();
             simpleTypeName = classTypeElement.getSimpleName().toString();
-            javaPackage = classElement.getQualifiedName().toString().replace("." + simpleTypeName, "");
+            javaFullName = classElement.getQualifiedName().toString().replace(".", "/");
+        }
+
+        Element enclosingElement = classElement.getEnclosingElement();
+        while (enclosingElement != null && enclosingElement.getKind() == ElementKind.CLASS) {
+            javaFullName = JavaSwiftProcessor.replaceLast(javaFullName, '/', '$');
+            enclosingElement = enclosingElement.getEnclosingElement();
         }
 
         if (!isInterface) {
@@ -145,7 +152,7 @@ class SwiftDelegateDescriptor {
         swiftWriter.emitImports(importPackages);
         swiftWriter.emitEmptyLine();
 
-        swiftWriter.emitStatement(String.format("fileprivate let javaClass = JNI.GlobalFindClass(\"%s/%s\")!", javaPackage.replace(".", "/"), simpleTypeName));
+        swiftWriter.emitStatement(String.format("fileprivate let javaClass = JNI.GlobalFindClass(\"%s\")!", javaFullName));
 
         if (!isInterface) {
             if (pointerBasicTypeSig != null) {
@@ -211,13 +218,13 @@ class SwiftDelegateDescriptor {
         swiftWriter.emitStatement("}");
 
         for (SwiftCallbackFuncDescriptor function : callbackFunctions) {
-            function.generateCode(swiftWriter, javaPackage, simpleTypeName);
+            function.generateCode(swiftWriter, javaFullName, simpleTypeName);
         }
 
         swiftWriter.endExtension();
 
         if (!isInterface) {
-            String swiftFuncName = "Java_" + javaPackage.replace(".", "_") + "_" + simpleTypeName + "_init";
+            String swiftFuncName = "Java_" + javaFullName.replace("/", "_").replace("$", "_") + "_init";
             swiftWriter.emitEmptyLine();
             swiftWriter.emitStatement(String.format("@_silgen_name(\"%s\")", swiftFuncName));
             swiftWriter.emitStatement(String.format("public func %s(env: UnsafeMutablePointer<JNIEnv?>, this: jobject) {", swiftFuncName));
@@ -228,7 +235,7 @@ class SwiftDelegateDescriptor {
         }
 
         for (SwiftFuncDescriptor function : functions) {
-            function.generateCode(swiftWriter, javaPackage, simpleTypeName);
+            function.generateCode(swiftWriter, javaFullName, simpleTypeName);
         }
 
         swiftWriter.close();

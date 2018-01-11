@@ -1,6 +1,5 @@
 package com.readdle.codegen;
 
-import com.readdle.codegen.anotation.SwiftFunc;
 import com.readdle.codegen.anotation.SwiftValue;
 
 import java.io.File;
@@ -22,6 +21,7 @@ class SwiftValueDescriptor {
 
     private TypeElement annotatedClassElement;
     private String javaPackage;
+    private String javaFullName;
     private String simpleTypeName;
     private String[] importPackages;
 
@@ -36,12 +36,22 @@ class SwiftValueDescriptor {
             importPackages = annotation.importPackages();
             simpleTypeName = classElement.getSimpleName().toString();
             javaPackage = classElement.getQualifiedName().toString().replace("." + simpleTypeName, "");
+            javaFullName = classElement.getQualifiedName().toString().replace(".", "/");
         } catch (MirroredTypeException mte) {
             DeclaredType classTypeMirror = (DeclaredType) mte.getTypeMirror();
             TypeElement classTypeElement = (TypeElement) classTypeMirror.asElement();
             simpleTypeName = classTypeElement.getSimpleName().toString();
             javaPackage = classElement.getQualifiedName().toString().replace("." + simpleTypeName, "");
+            javaFullName = classElement.getQualifiedName().toString().replace(".", "/");
         }
+
+        Element enclosingElement = classElement.getEnclosingElement();
+        while (enclosingElement != null && enclosingElement.getKind() == ElementKind.CLASS) {
+            javaFullName = JavaSwiftProcessor.replaceLast(javaFullName, '/', '$');
+            javaPackage = javaFullName.substring(0, javaFullName.lastIndexOf("."));
+            enclosingElement = enclosingElement.getEnclosingElement();
+        }
+
 
         // Check if it's an abstract class
         if (classElement.getModifiers().contains(Modifier.ABSTRACT)) {
@@ -104,7 +114,7 @@ class SwiftValueDescriptor {
         swiftWriter.endExtension();
 
         for (SwiftFuncDescriptor function : functions) {
-            function.generateCode(swiftWriter, javaPackage, simpleTypeName);
+            function.generateCode(swiftWriter, javaFullName, simpleTypeName);
         }
 
         swiftWriter.close();

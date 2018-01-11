@@ -238,4 +238,12 @@ public class JavaSwiftProcessor extends AbstractProcessor {
         }
         return true;
     }
+
+    static String replaceLast(String text, char replace, char replacement) {
+        int index = text.lastIndexOf(replace);
+        if (index >= 0) {
+            return text.substring(0, index) + replacement + text.substring(index + 1, text.length());
+        }
+        return text;
+    }
 }
