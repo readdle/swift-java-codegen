@@ -46,6 +46,8 @@ class SwiftEnvironment {
                 return new Type("Date", null);
             case "java.nio.ByteBuffer":
                 return new Type("Data", null);
+            case "java.lang.Exception":
+                return new Type("Error", null);
             default:
                 try {
                     if (javaType.startsWith("java.util.ArrayList<")) {
