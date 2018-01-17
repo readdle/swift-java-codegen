@@ -143,10 +143,10 @@ public class SwiftCallbackFuncDescriptor {
         String jniMethodTemplate;
         if (returnSwiftType != null) {
             if (!isStatic) {
-                jniMethodTemplate = "guard let result = JNI.CallObjectMethod(jniObject, methodID: %s.javaMethod%s";
+                jniMethodTemplate = "guard let result = JNI.CallObjectMethod(jniObject, %s.javaMethod%s";
             }
             else {
-                jniMethodTemplate = "guard let result = JNI.CallStaticObjectMethod(javaClass, methodID: %s.javaMethod%s";
+                jniMethodTemplate = "guard let result = JNI.CallStaticObjectMethod(javaClass, %s.javaMethod%s";
             }
         }
         else {
