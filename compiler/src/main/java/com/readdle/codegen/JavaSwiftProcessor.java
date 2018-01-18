@@ -85,6 +85,7 @@ public class JavaSwiftProcessor extends AbstractProcessor {
                 swiftValues.put(swiftValueDescriptor.getSwiftType(), swiftValueDescriptor);
             }
             catch (IllegalArgumentException e) {
+                e.printStackTrace();
                 error(annotatedElement, e.getMessage());
                 return true; // Exit processing
             }
@@ -105,6 +106,7 @@ public class JavaSwiftProcessor extends AbstractProcessor {
                 swiftReferences.put(swiftReferenceDescriptor.getSwiftType(), swiftReferenceDescriptor);
             }
             catch (IllegalArgumentException e) {
+                e.printStackTrace();
                 error(annotatedElement, e.getMessage());
                 return true; // Exit processing
             }
@@ -125,6 +127,7 @@ public class JavaSwiftProcessor extends AbstractProcessor {
                 swiftDelegates.put(delegateDescriptor.simpleTypeName, delegateDescriptor);
             }
             catch (IllegalArgumentException e) {
+                e.printStackTrace();
                 error(annotatedElement, e.getMessage());
                 return true; // Exit processing
             }
@@ -133,6 +136,7 @@ public class JavaSwiftProcessor extends AbstractProcessor {
         try {
             generateJavaSwift(filer);
         } catch (IOException e) {
+            e.printStackTrace();
             error(null, "Can't write to file: " + e.getMessage());
             return true; // Exit processing
         }
@@ -147,6 +151,7 @@ public class JavaSwiftProcessor extends AbstractProcessor {
                 File file = valueDescriptor.generateCode();
                 messager.printMessage(Diagnostic.Kind.NOTE, file.getName() + " generated");
             } catch (IOException e) {
+                e.printStackTrace();
                 error(null, "Can't write to file: " + e.getMessage());
                 return true; // Exit processing
             }
@@ -162,6 +167,7 @@ public class JavaSwiftProcessor extends AbstractProcessor {
                 File file = referenceDescriptor.generateCode();
                 messager.printMessage(Diagnostic.Kind.NOTE, file.getName() + " generated");
             } catch (IOException e) {
+                e.printStackTrace();
                 error(null, "Can't write to file: " + e.getMessage());
                 return true; // Exit processing
             }
@@ -177,6 +183,7 @@ public class JavaSwiftProcessor extends AbstractProcessor {
                 File file = delegateDescriptor.generateCode();
                 messager.printMessage(Diagnostic.Kind.NOTE, file.getName() + " generated");
             } catch (IOException e) {
+                e.printStackTrace();
                 error(null, "Can't write to file: " + e.getMessage());
                 return true; // Exit processing
             }
