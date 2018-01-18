@@ -182,7 +182,7 @@ public class SwiftCallbackFuncDescriptor {
 
         if (returnSwiftType != null) {
             swiftWriter.emitStatement("do {");
-            swiftWriter.emitStatement(String.format("return try %s.from(javaObject: result)", returnSwiftType.swiftType));
+            swiftWriter.emitStatement(String.format("return try %s.from(javaObject: result)", returnSwiftType.swiftConstructorType));
             swiftWriter.emitStatement("}");
             swiftWriter.emitStatement("catch {");
             swiftWriter.emitStatement("let errorString = String(reflecting: type(of: error)) + String(describing: error)");

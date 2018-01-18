@@ -99,13 +99,13 @@ class SwiftFuncDescriptor {
         for (SwiftParamDescriptor param : params) {
             if (param.isOptional) {
                 swiftWriter.emitStatement(String.format("if let j%1$s = j%1$s {", param.name));
-                swiftWriter.emitStatement(String.format("%1$s = try %2$s.from(javaObject: j%1$s)", param.name, param.swiftType.swiftType));
+                swiftWriter.emitStatement(String.format("%1$s = try %2$s.from(javaObject: j%1$s)", param.name, param.swiftType.swiftConstructorType));
                 swiftWriter.emitStatement("} else {");
                 swiftWriter.emitStatement(String.format("%s = nil", param.name));
                 swiftWriter.emitStatement("}");
             }
             else {
-                swiftWriter.emitStatement(String.format("%1$s = try %2$s.from(javaObject: j%1$s)", param.name, param.swiftType.swiftType));
+                swiftWriter.emitStatement(String.format("%1$s = try %2$s.from(javaObject: j%1$s)", param.name, param.swiftType.swiftConstructorType));
             }
         }
         swiftWriter.emitStatement("}");

@@ -7,10 +7,18 @@ class SwiftEnvironment {
     static class Type {
         final String swiftType;
         final String javaPackage;
+        final String swiftConstructorType;
 
         Type(String swiftType, String javaPackage) {
             this.swiftType = swiftType;
             this.javaPackage = javaPackage;
+            this.swiftConstructorType = swiftType;
+        }
+
+        Type(String swiftType, String javaPackage, String swiftConstructorType) {
+            this.swiftType = swiftType;
+            this.javaPackage = javaPackage;
+            this.swiftConstructorType = swiftConstructorType;
         }
 
         @Override
@@ -47,7 +55,7 @@ class SwiftEnvironment {
             case "java.nio.ByteBuffer":
                 return new Type("Data", null);
             case "java.lang.Exception":
-                return new Type("Error", null);
+                return new Type("Error", null, "NSError");
             default:
                 try {
                     if (javaType.startsWith("java.util.ArrayList<")) {
