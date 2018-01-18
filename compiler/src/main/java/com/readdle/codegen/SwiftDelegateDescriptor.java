@@ -19,6 +19,8 @@ import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.MirroredTypeException;
 import javax.tools.StandardLocation;
 
+import static com.readdle.codegen.JavaSwiftProcessor.FOLDER;
+
 class SwiftDelegateDescriptor {
 
     private static final String SUFFIX = "Android.swift";
@@ -56,7 +58,7 @@ class SwiftDelegateDescriptor {
         }
 
         try {
-            swiftFilePath = filer.createResource(StandardLocation.SOURCE_OUTPUT, "SwiftGenerated", simpleTypeName + SUFFIX, classElement).toUri().getPath();
+            swiftFilePath = filer.createResource(StandardLocation.SOURCE_OUTPUT, FOLDER, simpleTypeName + SUFFIX, classElement).toUri().getPath();
         } catch (IOException e) {
             e.printStackTrace();
             throw new IllegalArgumentException("Can't create swift file");

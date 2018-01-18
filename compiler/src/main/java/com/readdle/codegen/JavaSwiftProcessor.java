@@ -31,6 +31,8 @@ import javax.tools.StandardLocation;
 
 public class JavaSwiftProcessor extends AbstractProcessor {
 
+    public static final String FOLDER = "SwiftGenerated";
+
     private Types typeUtils;
     private Elements elementUtils;
     private Filer filer;
@@ -128,6 +130,13 @@ public class JavaSwiftProcessor extends AbstractProcessor {
             }
         }
 
+        try {
+            generateJavaSwift(filer);
+        } catch (IOException e) {
+            error(null, "Can't write to file: " + e.getMessage());
+            return true; // Exit processing
+        }
+
         for (SwiftValueDescriptor valueDescriptor: swiftValues.values()) {
 
             for (SwiftFuncDescriptor function : valueDescriptor.functions) {
@@ -173,21 +182,14 @@ public class JavaSwiftProcessor extends AbstractProcessor {
             }
         }
 
-        try {
-            generateJavaSwift(filer);
-        } catch (IOException e) {
-            error(null, "Can't write to file: " + e.getMessage());
-            return true; // Exit processing
-        }
-
         messager.printMessage(Diagnostic.Kind.NOTE, "SwiftJava finished successfully!");
 
 	    return false;
     }
 
     private void generateJavaSwift(Filer filer) throws IOException {
-        String swiftFilePath = filer.createResource(StandardLocation.SOURCE_OUTPUT, "SwiftGenerated", "SwiftJava.swift", (Element[]) null).toUri().getPath();
-        File swiftExtensionFile = new File(swiftFilePath);
+        File swiftExtensionFile = new File(filer.createResource(StandardLocation.SOURCE_OUTPUT, FOLDER, "SwiftJava.swift", (Element[]) null).toUri().getPath());
+        swiftExtensionFile.getParentFile().mkdirs();
         SwiftWriter swiftWriter = new SwiftWriter(swiftExtensionFile);
         swiftWriter.emitImports(new String[0]);
         swiftWriter.emitEmptyLine();
