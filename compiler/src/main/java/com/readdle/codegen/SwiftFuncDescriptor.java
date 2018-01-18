@@ -69,7 +69,7 @@ class SwiftFuncDescriptor {
     }
 
     void generateCode(SwiftWriter swiftWriter, String javaFullName, String swiftType) throws IOException {
-        String swiftFuncName = "Java_" + javaFullName.replace("/", "_").replace("$", "_") + "_" + name;
+        String swiftFuncName = "Java_" + javaFullName.replace("/", "_").replace("$", "_00024") + "_" + name;
 
         swiftWriter.emitEmptyLine();
         swiftWriter.emitStatement(String.format("@_silgen_name(\"%s\")", swiftFuncName));

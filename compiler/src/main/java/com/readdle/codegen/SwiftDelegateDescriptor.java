@@ -224,7 +224,7 @@ class SwiftDelegateDescriptor {
         swiftWriter.endExtension();
 
         if (!isInterface) {
-            String swiftFuncName = "Java_" + javaFullName.replace("/", "_").replace("$", "_") + "_init";
+            String swiftFuncName = "Java_" + javaFullName.replace("/", "_").replace("$", "_00024") + "_init";
             swiftWriter.emitEmptyLine();
             swiftWriter.emitStatement(String.format("@_silgen_name(\"%s\")", swiftFuncName));
             swiftWriter.emitStatement(String.format("public func %s(env: UnsafeMutablePointer<JNIEnv?>, this: jobject) {", swiftFuncName));
