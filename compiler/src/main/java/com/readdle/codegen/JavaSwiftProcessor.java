@@ -36,8 +36,6 @@ public class JavaSwiftProcessor extends AbstractProcessor {
     private Filer filer;
     private Messager messager;
 
-    private File sourcePath;
-
     @Override
     public synchronized void init(ProcessingEnvironment processingEnv) {
         super.init(processingEnv);
@@ -45,23 +43,6 @@ public class JavaSwiftProcessor extends AbstractProcessor {
         elementUtils = processingEnv.getElementUtils();
         filer = processingEnv.getFiler();
         messager = processingEnv.getMessager();
-
-        // TODO: try to find better way to get GeneratedSources path
-        try {
-            Filer filer = processingEnv.getFiler();
-            FileObject resource = filer.createResource(StandardLocation.SOURCE_OUTPUT, "", "tmp", (Element[]) null);
-            String projectPath = resource.toUri().getPath();
-            projectPath = projectPath.substring(0, projectPath.lastIndexOf("/build/"));
-            resource.delete();
-            sourcePath = new File(projectPath, "/src/main/swift/.build/generated");
-
-            if (sourcePath.mkdirs()) {
-                messager.printMessage(Diagnostic.Kind.NOTE, "GeneratedSources was created");
-            }
-        }
-        catch (Exception e) {
-            messager.printMessage(Diagnostic.Kind.ERROR, "Can't get source dir: " + e.getMessage());
-        }
     }
 
     @Override
@@ -80,7 +61,7 @@ public class JavaSwiftProcessor extends AbstractProcessor {
 
     @Override
     public boolean process(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv) {
-
+        Filer filer = processingEnv.getFiler();
         messager.printMessage(Diagnostic.Kind.NOTE, "Start SwiftJava code generation:");
 
         Map<String, SwiftValueDescriptor> swiftValues = new HashMap<>();
@@ -98,7 +79,7 @@ public class JavaSwiftProcessor extends AbstractProcessor {
             TypeElement typeElement = (TypeElement) annotatedElement;
 
             try {
-                SwiftValueDescriptor swiftValueDescriptor = new SwiftValueDescriptor(typeElement);
+                SwiftValueDescriptor swiftValueDescriptor = new SwiftValueDescriptor(typeElement, filer);
                 swiftValues.put(swiftValueDescriptor.getSwiftType(), swiftValueDescriptor);
             }
             catch (IllegalArgumentException e) {
@@ -118,7 +99,7 @@ public class JavaSwiftProcessor extends AbstractProcessor {
             TypeElement typeElement = (TypeElement) annotatedElement;
 
             try {
-                SwiftReferenceDescriptor swiftReferenceDescriptor = new SwiftReferenceDescriptor(typeElement);
+                SwiftReferenceDescriptor swiftReferenceDescriptor = new SwiftReferenceDescriptor(typeElement, filer);
                 swiftReferences.put(swiftReferenceDescriptor.getSwiftType(), swiftReferenceDescriptor);
             }
             catch (IllegalArgumentException e) {
@@ -138,7 +119,7 @@ public class JavaSwiftProcessor extends AbstractProcessor {
             TypeElement typeElement = (TypeElement) annotatedElement;
 
             try {
-                SwiftDelegateDescriptor delegateDescriptor = new SwiftDelegateDescriptor(typeElement);
+                SwiftDelegateDescriptor delegateDescriptor = new SwiftDelegateDescriptor(typeElement, filer);
                 swiftDelegates.put(delegateDescriptor.simpleTypeName, delegateDescriptor);
             }
             catch (IllegalArgumentException e) {
@@ -154,7 +135,7 @@ public class JavaSwiftProcessor extends AbstractProcessor {
             }
 
             try {
-                File file = valueDescriptor.generateCode(sourcePath);
+                File file = valueDescriptor.generateCode();
                 messager.printMessage(Diagnostic.Kind.NOTE, file.getName() + " generated");
             } catch (IOException e) {
                 error(null, "Can't write to file: " + e.getMessage());
@@ -169,7 +150,7 @@ public class JavaSwiftProcessor extends AbstractProcessor {
             }
 
             try {
-                File file = referenceDescriptor.generateCode(sourcePath);
+                File file = referenceDescriptor.generateCode();
                 messager.printMessage(Diagnostic.Kind.NOTE, file.getName() + " generated");
             } catch (IOException e) {
                 error(null, "Can't write to file: " + e.getMessage());
@@ -184,7 +165,7 @@ public class JavaSwiftProcessor extends AbstractProcessor {
             }
 
             try {
-                File file = delegateDescriptor.generateCode(sourcePath);
+                File file = delegateDescriptor.generateCode();
                 messager.printMessage(Diagnostic.Kind.NOTE, file.getName() + " generated");
             } catch (IOException e) {
                 error(null, "Can't write to file: " + e.getMessage());
@@ -193,7 +174,7 @@ public class JavaSwiftProcessor extends AbstractProcessor {
         }
 
         try {
-            generateJavaSwift(sourcePath);
+            generateJavaSwift(filer);
         } catch (IOException e) {
             error(null, "Can't write to file: " + e.getMessage());
             return true; // Exit processing
@@ -204,9 +185,9 @@ public class JavaSwiftProcessor extends AbstractProcessor {
 	    return false;
     }
 
-    void generateJavaSwift(File dirPath) throws IOException {
-        // TODO: check if already generated
-        File swiftExtensionFile = new File(dirPath, "JavaSwift.swift");
+    private void generateJavaSwift(Filer filer) throws IOException {
+        String swiftFilePath = filer.createResource(StandardLocation.SOURCE_OUTPUT, "SwiftGenerated", "SwiftJava.swift", (Element[]) null).toUri().getPath();
+        File swiftExtensionFile = new File(swiftFilePath);
         SwiftWriter swiftWriter = new SwiftWriter(swiftExtensionFile);
         swiftWriter.emitImports(new String[0]);
         swiftWriter.emitEmptyLine();

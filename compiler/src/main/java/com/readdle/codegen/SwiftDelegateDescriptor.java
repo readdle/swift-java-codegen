@@ -8,6 +8,7 @@ import java.io.IOException;
 import java.util.LinkedList;
 import java.util.List;
 
+import javax.annotation.processing.Filer;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
@@ -16,10 +17,12 @@ import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.MirroredTypeException;
+import javax.tools.StandardLocation;
 
 class SwiftDelegateDescriptor {
 
     private static final String SUFFIX = "Android.swift";
+    private String swiftFilePath;
 
     private TypeElement annotatedClassElement;
     private String javaFullName;
@@ -33,7 +36,7 @@ class SwiftDelegateDescriptor {
 
     private boolean isInterface;
 
-    SwiftDelegateDescriptor(TypeElement classElement) throws IllegalArgumentException {
+    SwiftDelegateDescriptor(TypeElement classElement, Filer filer) throws IllegalArgumentException {
         this.annotatedClassElement = classElement;
         this.isInterface = classElement.getKind() == ElementKind.INTERFACE;
 
@@ -50,6 +53,13 @@ class SwiftDelegateDescriptor {
             TypeElement classTypeElement = (TypeElement) classTypeMirror.asElement();
             simpleTypeName = classTypeElement.getSimpleName().toString();
             javaFullName = classElement.getQualifiedName().toString().replace(".", "/");
+        }
+
+        try {
+            swiftFilePath = filer.createResource(StandardLocation.SOURCE_OUTPUT, "SwiftGenerated", simpleTypeName + SUFFIX, classElement).toUri().getPath();
+        } catch (IOException e) {
+            e.printStackTrace();
+            throw new IllegalArgumentException("Can't create swift file");
         }
 
         Element enclosingElement = classElement.getEnclosingElement();
@@ -144,8 +154,8 @@ class SwiftDelegateDescriptor {
         }
     }
 
-    File generateCode(File dirPath) throws IOException {
-        File swiftExtensionFile = new File(dirPath, simpleTypeName + SUFFIX);
+    File generateCode() throws IOException {
+        File swiftExtensionFile = new File(swiftFilePath);
         SwiftWriter swiftWriter = new SwiftWriter(swiftExtensionFile);
 
         // Write imports
