@@ -26,10 +26,13 @@ import javax.lang.model.element.TypeElement;
 import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
 import javax.tools.Diagnostic;
-import javax.tools.FileObject;
 import javax.tools.StandardLocation;
 
 public class JavaSwiftProcessor extends AbstractProcessor {
+
+    interface WritableElement {
+        void generateCode(SwiftWriter swiftWriter, String javaFullName, String swiftType) throws IOException;
+    }
 
     public static final String FOLDER = "SwiftGenerated";
 
@@ -158,7 +161,7 @@ public class JavaSwiftProcessor extends AbstractProcessor {
 
         for (SwiftReferenceDescriptor referenceDescriptor: swiftReferences.values()) {
 
-            for (SwiftFuncDescriptor function : referenceDescriptor.functions) {
+            for (WritableElement function : referenceDescriptor.functions) {
                 messager.printMessage(Diagnostic.Kind.NOTE, function.toString());
             }
 

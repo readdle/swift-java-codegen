@@ -12,7 +12,7 @@ import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.VariableElement;
 
-class SwiftFuncDescriptor {
+class SwiftFuncDescriptor implements JavaSwiftProcessor.WritableElement {
 
     String name;
 
@@ -68,7 +68,8 @@ class SwiftFuncDescriptor {
         }
     }
 
-    void generateCode(SwiftWriter swiftWriter, String javaFullName, String swiftType) throws IOException {
+    @Override
+    public void generateCode(SwiftWriter swiftWriter, String javaFullName, String swiftType) throws IOException {
         String swiftFuncName = "Java_" + javaFullName.replace("/", "_").replace("$", "_00024") + "_" + name;
 
         swiftWriter.emitEmptyLine();

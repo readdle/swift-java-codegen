@@ -1,6 +1,8 @@
 package com.readdle.codegen;
 
+import com.readdle.codegen.anotation.SwiftGetter;
 import com.readdle.codegen.anotation.SwiftReference;
+import com.readdle.codegen.anotation.SwiftSetter;
 
 import java.io.File;
 import java.io.IOException;
@@ -29,9 +31,8 @@ class SwiftReferenceDescriptor {
     private String javaFullName;
     private String simpleTypeName;
     private String[] importPackages;
-    private String pointerBasicTypeSig;
 
-    List<SwiftFuncDescriptor> functions = new LinkedList<>();
+    List<JavaSwiftProcessor.WritableElement> functions = new LinkedList<>();
 
     SwiftReferenceDescriptor(TypeElement classElement, Filer filer) throws IllegalArgumentException {
         this.annotatedClassElement = classElement;
@@ -101,24 +102,6 @@ class SwiftReferenceDescriptor {
         }
 
         if (!hasNativePointer) {
-            TypeElement typeElement = classElement;
-            while (typeElement.getSuperclass() != null && !hasNativePointer) {
-                typeElement = (TypeElement) ((DeclaredType)typeElement.getSuperclass()).asElement();
-                for (Element element : typeElement.getEnclosedElements()) {
-                    if (element.getKind() == ElementKind.FIELD) {
-                        VariableElement variableElement = (VariableElement) element;
-                        if (variableElement.getSimpleName().toString().equals("nativePointer")
-                                && variableElement.asType().toString().equals("long")) {
-                            hasNativePointer = true;
-                            pointerBasicTypeSig = classElement.getQualifiedName().toString().replace(".", "/");
-                            break;
-                        }
-                    }
-                }
-            }
-        }
-
-        if (!hasNativePointer) {
             throw new IllegalArgumentException(String.format("%s doesn't contain nativePointer field", simpleTypeName));
         }
 
@@ -134,7 +117,15 @@ class SwiftReferenceDescriptor {
             if (element.getKind() == ElementKind.METHOD) {
                 ExecutableElement executableElement = (ExecutableElement) element;
                 if (executableElement.getModifiers().contains(Modifier.NATIVE)) {
-                    functions.add(new SwiftFuncDescriptor(executableElement));
+                    if (executableElement.getAnnotation(SwiftGetter.class) != null) {
+                        functions.add(new SwiftGetterDescriptor(executableElement));
+                    }
+                    else if (executableElement.getAnnotation(SwiftSetter.class) != null) {
+                        functions.add(new SwiftSetterDescriptor(executableElement));
+                    }
+                    else {
+                        functions.add(new SwiftFuncDescriptor(executableElement));
+                    }
                 }
             }
         }
@@ -149,13 +140,7 @@ class SwiftReferenceDescriptor {
         swiftWriter.emitEmptyLine();
 
         swiftWriter.emitStatement(String.format("fileprivate let javaClass = JNI.GlobalFindClass(\"%s\")!", javaFullName));
-        if (pointerBasicTypeSig != null) {
-            swiftWriter.emitStatement(String.format("fileprivate let javaPointerClass = JNI.GlobalFindClass(\"%s\")!", pointerBasicTypeSig));
-            swiftWriter.emitStatement("fileprivate let javaSwiftPointerFiled = JNI.api.GetFieldID(JNI.env, javaPointerClass, \"nativePointer\", \"J\")");
-        }
-        else {
-            swiftWriter.emitStatement("fileprivate let javaSwiftPointerFiled = JNI.api.GetFieldID(JNI.env, javaClass, \"nativePointer\", \"J\")");
-        }
+        swiftWriter.emitStatement("fileprivate let javaSwiftPointerFiled = JNI.api.GetFieldID(JNI.env, javaClass, \"nativePointer\", \"J\")");
 
         swiftWriter.emitStatement(String.format("fileprivate let javaConstructor = try! JNI.getJavaEmptyConstructor(forClass: \"%s\")", javaFullName));
 
@@ -192,7 +177,7 @@ class SwiftReferenceDescriptor {
 
         swiftWriter.endExtension();
 
-        for (SwiftFuncDescriptor function : functions) {
+        for (JavaSwiftProcessor.WritableElement function : functions) {
             function.generateCode(swiftWriter, javaFullName, simpleTypeName);
         }
 
