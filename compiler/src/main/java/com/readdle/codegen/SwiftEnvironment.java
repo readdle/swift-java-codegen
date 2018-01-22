@@ -5,9 +5,9 @@ import java.util.regex.Pattern;
 class SwiftEnvironment {
 
     static class Type {
-        final String swiftType;
-        final String javaPackage;
-        final String swiftConstructorType;
+        String swiftType;
+        String javaPackage;
+        String swiftConstructorType;
 
         Type(String swiftType, String javaPackage) {
             this.swiftType = swiftType;

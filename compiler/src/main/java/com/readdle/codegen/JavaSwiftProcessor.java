@@ -1,5 +1,6 @@
 package com.readdle.codegen;
 
+import com.readdle.codegen.anotation.SwiftBlock;
 import com.readdle.codegen.anotation.SwiftDelegate;
 import com.readdle.codegen.anotation.SwiftReference;
 import com.readdle.codegen.anotation.SwiftValue;
@@ -63,6 +64,7 @@ public class JavaSwiftProcessor extends AbstractProcessor {
         annotations.add(com.readdle.codegen.anotation.SwiftValue.class.getCanonicalName());
         annotations.add(com.readdle.codegen.anotation.SwiftReference.class.getCanonicalName());
         annotations.add(com.readdle.codegen.anotation.SwiftDelegate.class.getCanonicalName());
+        annotations.add(com.readdle.codegen.anotation.SwiftBlock.class.getCanonicalName());
         return annotations;
     }
 
@@ -79,6 +81,7 @@ public class JavaSwiftProcessor extends AbstractProcessor {
         Map<String, SwiftValueDescriptor> swiftValues = new HashMap<>();
         Map<String, SwiftReferenceDescriptor> swiftReferences = new HashMap<>();
         Map<String, SwiftDelegateDescriptor> swiftDelegates = new HashMap<>();
+        Map<String, SwiftBlockDescriptor> swiftBlocks = new HashMap<>();
 
         for (Element annotatedElement : roundEnv.getElementsAnnotatedWith(SwiftValue.class)) {
             // Check if a class has been annotated with @SwiftValue
@@ -143,6 +146,27 @@ public class JavaSwiftProcessor extends AbstractProcessor {
             }
         }
 
+        for (Element annotatedElement : roundEnv.getElementsAnnotatedWith(SwiftBlock.class)) {
+            // Check if a class has been annotated with @SwiftValue
+            if (annotatedElement.getKind() != ElementKind.INTERFACE) {
+                error(annotatedElement, "Only interface can be annotated with @%s", SwiftBlock.class.getSimpleName());
+                return true; // Exit processing
+            }
+
+            // We can cast it, because we know that it of ElementKind.CLASS
+            TypeElement typeElement = (TypeElement) annotatedElement;
+
+            try {
+                SwiftBlockDescriptor blockDescriptor = new SwiftBlockDescriptor(typeElement, filer);
+                swiftBlocks.put(blockDescriptor.simpleTypeName, blockDescriptor);
+            }
+            catch (IllegalArgumentException e) {
+                e.printStackTrace();
+                error(annotatedElement, e.getMessage());
+                return true; // Exit processing
+            }
+        }
+
         for (SwiftValueDescriptor valueDescriptor: swiftValues.values()) {
 
             for (SwiftFuncDescriptor function : valueDescriptor.functions) {
@@ -183,6 +207,17 @@ public class JavaSwiftProcessor extends AbstractProcessor {
 
             try {
                 File file = delegateDescriptor.generateCode();
+                messager.printMessage(Diagnostic.Kind.NOTE, file.getName() + " generated");
+            } catch (IOException e) {
+                e.printStackTrace();
+                error(null, "Can't write to file: " + e.getMessage());
+                return true; // Exit processing
+            }
+        }
+
+        for (SwiftBlockDescriptor blockDescriptor: swiftBlocks.values()) {
+            try {
+                File file = blockDescriptor.generateCode();
                 messager.printMessage(Diagnostic.Kind.NOTE, file.getName() + " generated");
             } catch (IOException e) {
                 e.printStackTrace();
