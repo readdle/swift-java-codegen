@@ -1,5 +1,7 @@
 package com.readdle.codegen;
 
+import com.readdle.codegen.anotation.SwiftGetter;
+import com.readdle.codegen.anotation.SwiftSetter;
 import com.readdle.codegen.anotation.SwiftValue;
 
 import java.io.File;
@@ -30,7 +32,7 @@ class SwiftValueDescriptor {
     private String simpleTypeName;
     private String[] importPackages;
 
-    List<SwiftFuncDescriptor> functions = new LinkedList<>();
+    List<JavaSwiftProcessor.WritableElement> functions = new LinkedList<>();
 
     SwiftValueDescriptor(TypeElement classElement, Filer filer, String[] importPackages) throws IllegalArgumentException {
         this.annotatedClassElement = classElement;
@@ -93,7 +95,15 @@ class SwiftValueDescriptor {
             if (element.getKind() == ElementKind.METHOD) {
                 ExecutableElement executableElement = (ExecutableElement) element;
                 if (executableElement.getModifiers().contains(Modifier.NATIVE)) {
-                    functions.add(new SwiftFuncDescriptor(executableElement));
+                    if (executableElement.getAnnotation(SwiftGetter.class) != null) {
+                        functions.add(new SwiftGetterDescriptor(executableElement));
+                    }
+                    else if (executableElement.getAnnotation(SwiftSetter.class) != null) {
+                        functions.add(new SwiftSetterDescriptor(executableElement));
+                    }
+                    else {
+                        functions.add(new SwiftFuncDescriptor(executableElement));
+                    }
                 }
             }
         }
@@ -124,7 +134,7 @@ class SwiftValueDescriptor {
 
         swiftWriter.endExtension();
 
-        for (SwiftFuncDescriptor function : functions) {
+        for (JavaSwiftProcessor.WritableElement function : functions) {
             function.generateCode(swiftWriter, javaFullName, simpleTypeName);
         }
 
