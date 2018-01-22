@@ -38,14 +38,14 @@ class SwiftDelegateDescriptor {
 
     private boolean isInterface;
 
-    SwiftDelegateDescriptor(TypeElement classElement, Filer filer) throws IllegalArgumentException {
+    SwiftDelegateDescriptor(TypeElement classElement, Filer filer, String[] importPackages) throws IllegalArgumentException {
         this.annotatedClassElement = classElement;
         this.isInterface = classElement.getKind() == ElementKind.INTERFACE;
+        this.importPackages = importPackages;
 
         // Get the full QualifiedTypeName
         try {
             SwiftDelegate annotation = classElement.getAnnotation(SwiftDelegate.class);
-            importPackages = annotation.importPackages();
             protocols = annotation.protocols();
             simpleTypeName = classElement.getSimpleName().toString();
             javaFullName = classElement.getQualifiedName().toString().replace(".", "/");

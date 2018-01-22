@@ -34,13 +34,12 @@ class SwiftReferenceDescriptor {
 
     List<JavaSwiftProcessor.WritableElement> functions = new LinkedList<>();
 
-    SwiftReferenceDescriptor(TypeElement classElement, Filer filer) throws IllegalArgumentException {
+    SwiftReferenceDescriptor(TypeElement classElement, Filer filer, String[] importPackages) throws IllegalArgumentException {
         this.annotatedClassElement = classElement;
+        this.importPackages = importPackages;
 
         // Get the full QualifiedTypeName
         try {
-            SwiftReference annotation = classElement.getAnnotation(SwiftReference.class);
-            importPackages = annotation.importPackages();
             simpleTypeName = classElement.getSimpleName().toString();
             javaFullName = classElement.getQualifiedName().toString().replace(".", "/");
         } catch (MirroredTypeException mte) {

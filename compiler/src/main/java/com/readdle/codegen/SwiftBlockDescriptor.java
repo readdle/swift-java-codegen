@@ -39,14 +39,14 @@ class SwiftBlockDescriptor {
     private String sig;
     private List<SwiftParamDescriptor> params = new LinkedList<>();
 
-    SwiftBlockDescriptor(TypeElement classElement, Filer filer) throws IllegalArgumentException {
+    SwiftBlockDescriptor(TypeElement classElement, Filer filer, String[] importPackages) throws IllegalArgumentException {
         this.annotatedClassElement = classElement;
+        this.importPackages = importPackages;
 
         // Get the full QualifiedTypeName
         try {
             SwiftBlock annotation = classElement.getAnnotation(SwiftBlock.class);
-            importPackages = annotation.importPackages();
-            blockSignature = annotation.signature();
+            blockSignature = annotation.value();
             simpleTypeName = classElement.getSimpleName().toString();
             javaFullName = classElement.getQualifiedName().toString().replace(".", "/");
 

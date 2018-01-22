@@ -32,13 +32,12 @@ class SwiftValueDescriptor {
 
     List<SwiftFuncDescriptor> functions = new LinkedList<>();
 
-    SwiftValueDescriptor(TypeElement classElement, Filer filer) throws IllegalArgumentException {
+    SwiftValueDescriptor(TypeElement classElement, Filer filer, String[] importPackages) throws IllegalArgumentException {
         this.annotatedClassElement = classElement;
+        this.importPackages = importPackages;
 
         // Get the full QualifiedTypeName
         try {
-            SwiftValue annotation = classElement.getAnnotation(SwiftValue.class);
-            importPackages = annotation.importPackages();
             simpleTypeName = classElement.getSimpleName().toString();
             javaPackage = classElement.getQualifiedName().toString().replace("." + simpleTypeName, "");
             javaFullName = classElement.getQualifiedName().toString().replace(".", "/");

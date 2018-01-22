@@ -2,6 +2,7 @@ package com.readdle.codegen;
 
 import com.readdle.codegen.anotation.SwiftBlock;
 import com.readdle.codegen.anotation.SwiftDelegate;
+import com.readdle.codegen.anotation.SwiftModule;
 import com.readdle.codegen.anotation.SwiftReference;
 import com.readdle.codegen.anotation.SwiftValue;
 
@@ -41,6 +42,9 @@ public class JavaSwiftProcessor extends AbstractProcessor {
     private Elements elementUtils;
     private Filer filer;
     private Messager messager;
+
+    private String moduleName;
+    private String[] importPackages;
 
     @Override
     public synchronized void init(ProcessingEnvironment processingEnv) {
@@ -83,6 +87,16 @@ public class JavaSwiftProcessor extends AbstractProcessor {
         Map<String, SwiftDelegateDescriptor> swiftDelegates = new HashMap<>();
         Map<String, SwiftBlockDescriptor> swiftBlocks = new HashMap<>();
 
+        for (Element annotatedElement : roundEnv.getElementsAnnotatedWith(SwiftModule.class)) {
+            SwiftModule swiftModule = annotatedElement.getAnnotation(SwiftModule.class);
+            moduleName = swiftModule.moduleName();
+            importPackages = swiftModule.importPackages();
+        }
+
+        if (moduleName == null || importPackages == null) {
+            messager.printMessage(Diagnostic.Kind.ERROR, "No package description with SwiftModule.class", null);
+        }
+
         for (Element annotatedElement : roundEnv.getElementsAnnotatedWith(SwiftValue.class)) {
             // Check if a class has been annotated with @SwiftValue
             if (annotatedElement.getKind() != ElementKind.CLASS) {
@@ -94,7 +108,7 @@ public class JavaSwiftProcessor extends AbstractProcessor {
             TypeElement typeElement = (TypeElement) annotatedElement;
 
             try {
-                SwiftValueDescriptor swiftValueDescriptor = new SwiftValueDescriptor(typeElement, filer);
+                SwiftValueDescriptor swiftValueDescriptor = new SwiftValueDescriptor(typeElement, filer, importPackages);
                 swiftValues.put(swiftValueDescriptor.getSwiftType(), swiftValueDescriptor);
             }
             catch (IllegalArgumentException e) {
@@ -115,7 +129,7 @@ public class JavaSwiftProcessor extends AbstractProcessor {
             TypeElement typeElement = (TypeElement) annotatedElement;
 
             try {
-                SwiftReferenceDescriptor swiftReferenceDescriptor = new SwiftReferenceDescriptor(typeElement, filer);
+                SwiftReferenceDescriptor swiftReferenceDescriptor = new SwiftReferenceDescriptor(typeElement, filer, importPackages);
                 swiftReferences.put(swiftReferenceDescriptor.getSwiftType(), swiftReferenceDescriptor);
             }
             catch (IllegalArgumentException e) {
@@ -136,7 +150,7 @@ public class JavaSwiftProcessor extends AbstractProcessor {
             TypeElement typeElement = (TypeElement) annotatedElement;
 
             try {
-                SwiftDelegateDescriptor delegateDescriptor = new SwiftDelegateDescriptor(typeElement, filer);
+                SwiftDelegateDescriptor delegateDescriptor = new SwiftDelegateDescriptor(typeElement, filer, importPackages);
                 swiftDelegates.put(delegateDescriptor.simpleTypeName, delegateDescriptor);
             }
             catch (IllegalArgumentException e) {
@@ -157,7 +171,7 @@ public class JavaSwiftProcessor extends AbstractProcessor {
             TypeElement typeElement = (TypeElement) annotatedElement;
 
             try {
-                SwiftBlockDescriptor blockDescriptor = new SwiftBlockDescriptor(typeElement, filer);
+                SwiftBlockDescriptor blockDescriptor = new SwiftBlockDescriptor(typeElement, filer, importPackages);
                 swiftBlocks.put(blockDescriptor.simpleTypeName, blockDescriptor);
             }
             catch (IllegalArgumentException e) {

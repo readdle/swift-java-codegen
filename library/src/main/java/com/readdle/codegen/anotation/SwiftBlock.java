@@ -8,8 +8,6 @@ import java.lang.annotation.Target;
 @Target(ElementType.TYPE) @Retention(RetentionPolicy.CLASS)
 public @interface SwiftBlock {
 
-    String[] importPackages() default {};
-
-    String signature() default "";
+    String value() default "";
 
 }
