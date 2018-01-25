@@ -6,4 +6,6 @@ public class JavaSwift {
 
     public static native void init();
 
+    public static native void dumpReferenceTables();
+
 }

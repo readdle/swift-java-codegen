@@ -6,4 +6,8 @@ public class SwiftError extends Exception {
 
     }
 
+    public SwiftError(String message) {
+        super(message);
+    }
+
 }

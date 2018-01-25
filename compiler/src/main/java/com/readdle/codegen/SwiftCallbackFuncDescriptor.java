@@ -1,7 +1,6 @@
 package com.readdle.codegen;
 
 import com.readdle.codegen.anotation.SwiftCallbackFunc;
-import com.readdle.codegen.anotation.SwiftFunc;
 
 import java.io.IOException;
 import java.util.Arrays;
@@ -111,16 +110,22 @@ public class SwiftCallbackFuncDescriptor {
         }
 
         for (SwiftParamDescriptor param : params) {
-            swiftWriter.emitStatement(String.format("let java%s: JNIArgumentProtocol", param.name));
+            swiftWriter.emitStatement(String.format("var java%s: JNIArgumentProtocol = jnull()", param.name));
         }
+
+        swiftWriter.emitStatement("defer {");
+        for (SwiftParamDescriptor param : params) {
+            swiftWriter.emitStatement(String.format("if let localRef = java%1$s as? jobject {", param.name));
+            swiftWriter.emitStatement("JNI.DeleteLocalRef(localRef)");
+            swiftWriter.emitStatement("}");
+        }
+        swiftWriter.emitStatement("}");
 
         swiftWriter.emitStatement("do {");
         for (SwiftParamDescriptor param : params) {
             if (param.isOptional) {
                 swiftWriter.emitStatement(String.format("if let %1$s = %1$s {", param.name));
                 swiftWriter.emitStatement(String.format("java%1$s = try %1$s.javaObject()", param.name));
-                swiftWriter.emitStatement("} else {");
-                swiftWriter.emitStatement(String.format("java%s = jnull()", param.name));
                 swiftWriter.emitStatement("}");
             }
             else {
@@ -135,7 +140,10 @@ public class SwiftCallbackFuncDescriptor {
             swiftWriter.emitStatement("assert(false, errorString)");
             swiftWriter.emitStatement("return");
         }
-        else {
+        else if (isReturnTypeOptional) {
+            swiftWriter.emitStatement("assert(false, errorString)");
+            swiftWriter.emitStatement("return nil");
+        } else {
             swiftWriter.emitStatement("fatalError(errorString)");
         }
         swiftWriter.emitStatement("}");
