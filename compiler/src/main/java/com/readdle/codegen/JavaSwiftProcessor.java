@@ -161,6 +161,11 @@ public class JavaSwiftProcessor extends AbstractProcessor {
         }
 
         for (Element annotatedElement : roundEnv.getElementsAnnotatedWith(SwiftBlock.class)) {
+            // Skip PARAMS
+            if (annotatedElement.getKind() == ElementKind.PARAMETER) {
+                continue;
+            }
+
             // Check if a class has been annotated with @SwiftValue
             if (annotatedElement.getKind() != ElementKind.INTERFACE) {
                 error(annotatedElement, "Only interface can be annotated with @%s", SwiftBlock.class.getSimpleName());

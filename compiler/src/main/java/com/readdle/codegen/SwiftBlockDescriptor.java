@@ -21,12 +21,13 @@ import static com.readdle.codegen.JavaSwiftProcessor.FOLDER;
 
 class SwiftBlockDescriptor {
 
-    private static final String SUFFIX = "Android.swift";
+    private static final String SUFFIX = ".swift";
     private String swiftFilePath;
 
     private TypeElement annotatedClassElement;
     private String javaFullName;
     String simpleTypeName;
+    private String swiftType;
     private String[] importPackages;
 
     private String blockSignature;
@@ -57,8 +58,10 @@ class SwiftBlockDescriptor {
             javaFullName = classElement.getQualifiedName().toString().replace(".", "/");
         }
 
+        swiftType = "SwiftBlock" + simpleTypeName;
+
         try {
-            swiftFilePath = filer.createResource(StandardLocation.SOURCE_OUTPUT, FOLDER, simpleTypeName + SUFFIX, classElement).toUri().getPath();
+            swiftFilePath = filer.createResource(StandardLocation.SOURCE_OUTPUT, FOLDER, swiftType + SUFFIX, classElement).toUri().getPath();
         } catch (IOException e) {
             e.printStackTrace();
             throw new IllegalArgumentException("Can't create swift file");
@@ -109,8 +112,10 @@ class SwiftBlockDescriptor {
 
         swiftWriter.emitStatement(String.format("fileprivate let javaClass = JNI.GlobalFindClass(\"%s\")!", javaFullName));
 
+        swiftWriter.emitStatement(String.format("public typealias %s = %s", simpleTypeName, blockSignature));
+
         swiftWriter.emitEmptyLine();
-        swiftWriter.emit(String.format("public class %s", simpleTypeName));
+        swiftWriter.emit(String.format("public class %s", swiftType));
         swiftWriter.emit(" {\n");
 
         swiftWriter.emitEmptyLine();
@@ -129,8 +134,8 @@ class SwiftBlockDescriptor {
 
         swiftWriter.emitEmptyLine();
         swiftWriter.emitStatement("// Create swift object");
-        swiftWriter.emitStatement(String.format("public static func from(javaObject: jobject) throws -> %s {", blockSignature));
-        swiftWriter.emitStatement(String.format("return %s(jniObject: javaObject).block", simpleTypeName));
+        swiftWriter.emitStatement(String.format("public static func from(javaObject: jobject) throws -> %s {", simpleTypeName));
+        swiftWriter.emitStatement(String.format("return %s(jniObject: javaObject).block", swiftType));
         swiftWriter.emitStatement("}");
 
         swiftWriter.emitEmptyLine();
@@ -146,7 +151,7 @@ class SwiftBlockDescriptor {
                 sig));
 
         swiftWriter.emitEmptyLine();
-        swiftWriter.emitStatement(String.format("public lazy var block: %s = {", blockSignature));
+        swiftWriter.emitStatement(String.format("public lazy var block: %s = {", simpleTypeName));
 
         for (SwiftParamDescriptor param : params) {
             swiftWriter.emitStatement(String.format("let java_%s: JNIArgumentProtocol", param.name));
@@ -187,7 +192,7 @@ class SwiftBlockDescriptor {
             jniMethodTemplate = "JNI.CallVoidMethod(self.jniObject, %s.javaMethod%s";
         }
 
-        swiftWriter.emit(String.format(jniMethodTemplate, simpleTypeName, funcName));
+        swiftWriter.emit(String.format(jniMethodTemplate, swiftType, funcName));
 
         for (SwiftParamDescriptor param : params) {
             swiftWriter.emitStatement(String.format(", java_%s", param.name));
