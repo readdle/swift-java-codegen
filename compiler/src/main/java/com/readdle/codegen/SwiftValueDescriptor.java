@@ -32,6 +32,8 @@ class SwiftValueDescriptor {
     private String simpleTypeName;
     private String[] importPackages;
 
+    private boolean hasSubclasses = false;
+
     List<JavaSwiftProcessor.WritableElement> functions = new LinkedList<>();
 
     SwiftValueDescriptor(TypeElement classElement, Filer filer, String[] importPackages) throws IllegalArgumentException {
@@ -40,6 +42,8 @@ class SwiftValueDescriptor {
 
         // Get the full QualifiedTypeName
         try {
+            SwiftValue swiftValue = classElement.getAnnotation(SwiftValue.class);
+            hasSubclasses = swiftValue.hasSubclasses();
             simpleTypeName = classElement.getSimpleName().toString();
             javaPackage = classElement.getQualifiedName().toString().replace("." + simpleTypeName, "");
             javaFullName = classElement.getQualifiedName().toString().replace(".", "/");
@@ -120,11 +124,21 @@ class SwiftValueDescriptor {
         swiftWriter.emitEmptyLine();
         swiftWriter.beginExtension(simpleTypeName);
 
-        swiftWriter.emitEmptyLine();
-        swiftWriter.emitStatement("// Decoding SwiftValue type with JavaCoder");
-        swiftWriter.emitStatement(String.format("public static func from(javaObject: jobject) throws -> %s {", simpleTypeName));
-        swiftWriter.emitStatement(String.format("return try JavaDecoder(forPackage: \"%s\", missingFieldsStrategy: .ignore).decode(%s.self, from: javaObject)", javaPackage.replace(".", "/"), simpleTypeName));
-        swiftWriter.emitStatement("}");
+        if (hasSubclasses) {
+            swiftWriter.emitEmptyLine();
+            swiftWriter.emitStatement("// Decoding SwiftValue type with JavaCoder");
+            swiftWriter.emitStatement(String.format("public static func from<T: %s>(javaObject: jobject) throws -> T {", simpleTypeName));
+            swiftWriter.emitStatement(String.format("let any = try JavaDecoder(forPackage: \"%s\", missingFieldsStrategy: .ignore).decode(AnyCodable.self, from: javaObject)", javaPackage.replace(".", "/")));
+            swiftWriter.emitStatement("return any.value as! T");
+            swiftWriter.emitStatement("}");
+        }
+        else {
+            swiftWriter.emitEmptyLine();
+            swiftWriter.emitStatement("// Decoding SwiftValue type with JavaCoder");
+            swiftWriter.emitStatement(String.format("public static func from(javaObject: jobject) throws -> %s {", simpleTypeName));
+            swiftWriter.emitStatement(String.format("return try JavaDecoder(forPackage: \"%s\", missingFieldsStrategy: .ignore).decode(%s.self, from: javaObject)", javaPackage.replace(".", "/"), simpleTypeName));
+            swiftWriter.emitStatement("}");
+        }
 
         swiftWriter.emitEmptyLine();
         swiftWriter.emitStatement("// Encoding SwiftValue type with JavaCoder");
