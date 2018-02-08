@@ -4,7 +4,7 @@ import com.readdle.codegen.anotation.SwiftFunc;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -14,25 +14,31 @@ import javax.lang.model.element.VariableElement;
 
 class SwiftFuncDescriptor implements JavaSwiftProcessor.WritableElement {
 
-    String name;
+    private String javaMethodName;
+    private String swiftMethodName;
 
-    boolean isStatic;
-    boolean isThrown;
+    private boolean isStatic;
+    private boolean isThrown;
 
     private SwiftEnvironment.Type returnSwiftType;
     private boolean isReturnTypeOptional;
 
-    private String description;
-
-    private List<SwiftParamDescriptor> params = new LinkedList<>();
-    private List<String> paramNames = new LinkedList<>();
+    private List<SwiftParamDescriptor> params;
+    private List<String> paramNames;
 
     SwiftFuncDescriptor(ExecutableElement executableElement) {
-        this.name = executableElement.getSimpleName().toString();
+        String elementName = executableElement.getSimpleName().toString();
+        this.javaMethodName = elementName;
+        this.swiftMethodName = elementName;
+
         this.isStatic = executableElement.getModifiers().contains(Modifier.STATIC);
         this.isThrown = executableElement.getThrownTypes() != null && executableElement.getThrownTypes().size() > 0;
         this.returnSwiftType = SwiftEnvironment.parseJavaType(executableElement.getReturnType().toString());
         this.isReturnTypeOptional = JavaSwiftProcessor.isNullable(executableElement);
+
+        int paramsSize = executableElement.getParameters().size();
+        this.params = new ArrayList<>(paramsSize);
+        this.paramNames = new ArrayList<>(paramsSize);
 
         for (VariableElement variableElement : executableElement.getParameters()) {
             params.add(new SwiftParamDescriptor(variableElement));
@@ -44,33 +50,32 @@ class SwiftFuncDescriptor implements JavaSwiftProcessor.WritableElement {
             String funcFullName = swiftFunc.value();
             int paramStart = funcFullName.indexOf("(");
             int paramEnd = funcFullName.indexOf(")");
-            if (paramStart > 0 && paramEnd > 0 && paramEnd > paramStart) {
-                this.name = funcFullName.substring(0, paramStart);
-                String arguments = funcFullName.substring(paramStart + 1, paramEnd);
-                String[] paramNames = arguments.split(":");
-                if (paramNames.length == params.size()) {
-                    for (String paramName : paramNames) {
-                        this.paramNames.add(paramName + ": ");
-                    }
-                }
-                else {
-                    throw new IllegalArgumentException("Wrong count of arguments in func name");
-                }
-            }
-            else {
+
+            if (paramStart <= 0 || paramEnd <= 0 || paramEnd <= paramStart) {
                 throw new IllegalArgumentException("Wrong func name");
+            }
+
+            this.swiftMethodName = funcFullName.substring(0, paramStart);
+
+            String arguments = funcFullName.substring(paramStart + 1, paramEnd);
+            String[] paramNames = arguments.split(":");
+
+            if (paramNames.length != params.size()) {
+                throw new IllegalArgumentException("Wrong count of arguments in func name");
+            }
+
+            for (String paramName : paramNames) {
+                this.paramNames.add(paramName + ": ");
             }
         }
         else {
-            for (int i = 0; i < params.size(); i++) {
-                paramNames.add("");
-            }
+            paramNames = Collections.nCopies(params.size(), "");
         }
     }
 
     @Override
     public void generateCode(SwiftWriter swiftWriter, String javaFullName, String swiftType) throws IOException {
-        String swiftFuncName = "Java_" + javaFullName.replace("/", "_").replace("$", "_00024") + "_" + name;
+        String swiftFuncName = "Java_" + javaFullName.replace("/", "_").replace("$", "_00024") + "_" + javaMethodName;
 
         swiftWriter.emitEmptyLine();
         swiftWriter.emitStatement(String.format("@_silgen_name(\"%s\")", swiftFuncName));
@@ -124,7 +129,7 @@ class SwiftFuncDescriptor implements JavaSwiftProcessor.WritableElement {
                 returnSwiftType != null ? "let result = " : "",
                 isThrown ? "try " : "",
                 isStatic ? swiftType : "swiftSelf",
-                name));
+                swiftFuncName));
 
         for (int i = 0; i < params.size(); i++) {
             SwiftParamDescriptor param = params.get(i);
@@ -170,12 +175,12 @@ class SwiftFuncDescriptor implements JavaSwiftProcessor.WritableElement {
     @Override
     public String toString() {
         return "SwiftFuncDescriptor{" +
-                "name='" + name + '\'' +
+                "javaMethodName='" + javaMethodName + '\'' +
+                ", swiftMethodName='" + swiftMethodName + '\'' +
                 ", isStatic=" + isStatic +
                 ", isThrown=" + isThrown +
                 ", returnSwiftType='" + returnSwiftType + '\'' +
                 ", isReturnTypeOptional=" + isReturnTypeOptional +
-                ", description='" + description + '\'' +
                 ", params=" + params +
                 '}';
     }
