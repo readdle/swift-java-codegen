@@ -129,7 +129,7 @@ class SwiftFuncDescriptor implements JavaSwiftProcessor.WritableElement {
                 returnSwiftType != null ? "let result = " : "",
                 isThrown ? "try " : "",
                 isStatic ? swiftType : "swiftSelf",
-                swiftFuncName));
+                swiftMethodName));
 
         for (int i = 0; i < params.size(); i++) {
             SwiftParamDescriptor param = params.get(i);
