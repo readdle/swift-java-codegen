@@ -142,15 +142,6 @@ class SwiftFuncDescriptor implements JavaSwiftProcessor.WritableElement {
         }
         swiftWriter.emit(")\n");
 
-        if (isThrown) {
-            swiftWriter.emitStatement("}");
-            swiftWriter.emitStatement("catch {");
-            swiftWriter.emitStatement("let errorString = String(reflecting: type(of: error)) + String(describing: error)");
-            swiftWriter.emitStatement("JNI.api.ThrowNew(JNI.env, SwiftErrorClass, errorString)");
-            swiftWriter.emitStatement(String.format("return%s", returnSwiftType != null ? " nil" : ""));
-            swiftWriter.emitStatement("}");
-        }
-
         if (returnSwiftType != null) {
             swiftWriter.emitStatement("do {");
             if (isReturnTypeOptional) {
@@ -164,6 +155,15 @@ class SwiftFuncDescriptor implements JavaSwiftProcessor.WritableElement {
             swiftWriter.emitStatement("let errorString = String(reflecting: type(of: error)) + String(describing: error)");
             swiftWriter.emitStatement("JNI.api.ThrowNew(JNI.env, SwiftRuntimeErrorClass, errorString)");
             swiftWriter.emitStatement("return nil");
+            swiftWriter.emitStatement("}");
+        }
+
+        if (isThrown) {
+            swiftWriter.emitStatement("}");
+            swiftWriter.emitStatement("catch {");
+            swiftWriter.emitStatement("let errorString = String(reflecting: type(of: error)) + String(describing: error)");
+            swiftWriter.emitStatement("JNI.api.ThrowNew(JNI.env, SwiftErrorClass, errorString)");
+            swiftWriter.emitStatement(String.format("return%s", returnSwiftType != null ? " nil" : ""));
             swiftWriter.emitStatement("}");
         }
 

@@ -102,11 +102,11 @@ public class SwiftCallbackFuncDescriptor {
         }
 
         if (returnSwiftType == null) {
-            swiftWriter.emit(") {\n");
+            swiftWriter.emit(String.format(")%s {\n", isThrown ? " throws" : ""));
         }
         else {
             String returnParamType = isReturnTypeOptional ? returnSwiftType.swiftType + "?" : returnSwiftType.swiftType;
-            swiftWriter.emit(String.format(") -> %s {\n", returnParamType));
+            swiftWriter.emit(String.format(")%s -> %s {\n", isThrown ? " throws" : "", returnParamType));
         }
 
         for (SwiftParamDescriptor param : params) {
@@ -173,20 +173,36 @@ public class SwiftCallbackFuncDescriptor {
         }
 
         if (returnSwiftType != null) {
-            swiftWriter.emit(String.format(") else { %s }\n", isReturnTypeOptional ? "return nil" : "fatalError(\"Don't support nil here!\")"));
+            swiftWriter.emit(") else {");
+            swiftWriter.emitStatement("if let throwable = JNI.ExceptionCheck() {");
+            if (isThrown) {
+                swiftWriter.emitStatement("throw NSError(domain: \"JavaException\", code: 1)");
+            }
+            else {
+                swiftWriter.emitStatement("fatalError(\"Don't support exception here!\")");
+            }
+            swiftWriter.emitStatement("} else {");
+            if (isReturnTypeOptional) {
+                swiftWriter.emitStatement("return nil");
+            }
+            else {
+                swiftWriter.emitStatement("fatalError(\"Don't support nil here!\")");
+            }
+            swiftWriter.emitStatement("}");
+            swiftWriter.emitStatement("}");
         }
         else {
             swiftWriter.emit(")\n");
-        }
 
-        swiftWriter.emitStatement("if let throwable = JNI.ExceptionCheck() {");
-        if (isThrown) {
-            swiftWriter.emitStatement("throw NSError(domain: \"JavaException\", code: 1)");
+            swiftWriter.emitStatement("if let throwable = JNI.ExceptionCheck() {");
+            if (isThrown) {
+                swiftWriter.emitStatement("throw NSError(domain: \"JavaException\", code: 1)");
+            }
+            else {
+                swiftWriter.emitStatement("fatalError(\"JavaException\")");
+            }
+            swiftWriter.emitStatement("}");
         }
-        else {
-            swiftWriter.emitStatement("fatalError(\"JavaException\")");
-        }
-        swiftWriter.emitStatement("}");
 
         if (returnSwiftType != null) {
             swiftWriter.emitStatement("do {");
