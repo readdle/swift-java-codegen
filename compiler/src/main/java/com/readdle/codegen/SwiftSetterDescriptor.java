@@ -1,6 +1,6 @@
 package com.readdle.codegen;
 
-import com.readdle.codegen.anotation.SwiftFunc;
+import com.readdle.codegen.anotation.SwiftSetter;
 
 import java.io.IOException;
 
@@ -12,13 +12,11 @@ class SwiftSetterDescriptor implements JavaSwiftProcessor.WritableElement {
     private String javaName;
     private String swiftName;
 
-    boolean isStatic;
-
-    private String description;
+    private boolean isStatic;
 
     private SwiftParamDescriptor param;
 
-    SwiftSetterDescriptor(ExecutableElement executableElement) {
+    SwiftSetterDescriptor(ExecutableElement executableElement, SwiftSetter setterAnnotation) {
         this.javaName = executableElement.getSimpleName().toString();
         this.isStatic = executableElement.getModifiers().contains(Modifier.STATIC);
 
@@ -27,14 +25,13 @@ class SwiftSetterDescriptor implements JavaSwiftProcessor.WritableElement {
         }
 
         if (executableElement.getParameters().size() != 1) {
-            throw new IllegalArgumentException("Setter should have at least 1 parameter");
+            throw new IllegalArgumentException("Setter should have exactly 1 parameter");
         }
 
         param = new SwiftParamDescriptor(executableElement.getParameters().get(0));
 
-        SwiftFunc swiftFunc = executableElement.getAnnotation(SwiftFunc.class);
-        if (swiftFunc != null && !swiftFunc.value().isEmpty()) {
-            this.swiftName = swiftFunc.value();
+        if (setterAnnotation != null && !setterAnnotation.value().isEmpty()) {
+            this.swiftName = setterAnnotation.value();
         }
         else {
             this.swiftName = javaName;
@@ -98,7 +95,6 @@ class SwiftSetterDescriptor implements JavaSwiftProcessor.WritableElement {
                 "javaName='" + javaName + '\'' +
                 ", swiftName='" + swiftName + '\'' +
                 ", isStatic=" + isStatic +
-                ", description='" + description + '\'' +
                 ", param=" + param +
                 '}';
     }

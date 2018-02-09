@@ -26,7 +26,6 @@ class SwiftValueDescriptor {
     private static final String SUFFIX = "Android.swift";
     private String swiftFilePath;
 
-    private TypeElement annotatedClassElement;
     private String javaPackage;
     private String javaFullName;
     private String simpleTypeName;
@@ -34,10 +33,9 @@ class SwiftValueDescriptor {
 
     private boolean hasSubclasses = false;
 
-    List<JavaSwiftProcessor.WritableElement> functions = new LinkedList<>();
+    private List<JavaSwiftProcessor.WritableElement> functions = new LinkedList<>();
 
     SwiftValueDescriptor(TypeElement classElement, Filer filer, String[] importPackages) throws IllegalArgumentException {
-        this.annotatedClassElement = classElement;
         this.importPackages = importPackages;
 
         // Get the full QualifiedTypeName
@@ -99,13 +97,15 @@ class SwiftValueDescriptor {
             if (element.getKind() == ElementKind.METHOD) {
                 ExecutableElement executableElement = (ExecutableElement) element;
                 if (executableElement.getModifiers().contains(Modifier.NATIVE)) {
-                    if (executableElement.getAnnotation(SwiftGetter.class) != null) {
-                        functions.add(new SwiftGetterDescriptor(executableElement));
+                    SwiftGetter getterAnnotation = executableElement.getAnnotation(SwiftGetter.class);
+                    SwiftSetter setterAnnotation = executableElement.getAnnotation(SwiftSetter.class);
+
+                    if (getterAnnotation != null) {
+                        functions.add(new SwiftGetterDescriptor(executableElement, getterAnnotation));
                     }
-                    else if (executableElement.getAnnotation(SwiftSetter.class) != null) {
-                        functions.add(new SwiftSetterDescriptor(executableElement));
-                    }
-                    else {
+                    else if (setterAnnotation != null) {
+                        functions.add(new SwiftSetterDescriptor(executableElement, setterAnnotation));
+                    } else {
                         functions.add(new SwiftFuncDescriptor(executableElement));
                     }
                 }
@@ -163,7 +163,5 @@ class SwiftValueDescriptor {
     public String getSwiftType() {
         return simpleTypeName;
     }
-
-
 
 }
