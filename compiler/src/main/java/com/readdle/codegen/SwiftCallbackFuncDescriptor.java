@@ -13,7 +13,8 @@ import javax.lang.model.element.VariableElement;
 
 public class SwiftCallbackFuncDescriptor {
 
-    private String name;
+    private String javaMethodName;
+    private String swiftMethodName;
 
     private boolean isStatic;
     private boolean isThrown;
@@ -21,35 +22,40 @@ public class SwiftCallbackFuncDescriptor {
     private SwiftEnvironment.Type returnSwiftType;
     private boolean isReturnTypeOptional;
 
-    private String description;
-
     private String sig;
 
     private List<SwiftParamDescriptor> params = new LinkedList<>();
     private List<String> paramNames = new LinkedList<>();
 
     SwiftCallbackFuncDescriptor(ExecutableElement executableElement) {
-        this.name = executableElement.getSimpleName().toString();
+        String elementName = executableElement.getSimpleName().toString();
+        this.javaMethodName = elementName;
+        this.swiftMethodName = elementName;
+
         this.isStatic = executableElement.getModifiers().contains(Modifier.STATIC);
         this.isThrown = executableElement.getThrownTypes() != null && executableElement.getThrownTypes().size() > 0;
         this.returnSwiftType = SwiftEnvironment.parseJavaType(executableElement.getReturnType().toString());
         this.isReturnTypeOptional = JavaSwiftProcessor.isNullable(executableElement);
 
-        this.sig = "(";
+        StringBuilder signatureBuilder = new StringBuilder("(");
 
         for (VariableElement variableElement : executableElement.getParameters()) {
             params.add(new SwiftParamDescriptor(variableElement));
-            sig += javaClassToSig(variableElement.asType().toString());
+            String javaClass = variableElement.asType().toString();
+            signatureBuilder.append(javaClassToSig(javaClass));
         }
 
-        sig += ")";
+        signatureBuilder.append(")");
 
         if (returnSwiftType != null) {
-            sig += javaClassToSig(executableElement.getReturnType().toString());
+            String javaClass = executableElement.getReturnType().toString();
+            signatureBuilder.append(javaClassToSig(javaClass));
         }
         else {
-            sig += "V";
+            signatureBuilder.append("V");
         }
+
+        this.sig = signatureBuilder.toString();
 
         SwiftCallbackFunc swiftFunc = executableElement.getAnnotation(SwiftCallbackFunc.class);
 
@@ -57,20 +63,20 @@ public class SwiftCallbackFuncDescriptor {
             String funcFullName = swiftFunc.value();
             int paramStart = funcFullName.indexOf("(");
             int paramEnd = funcFullName.indexOf(")");
-            if (paramStart > 0 && paramEnd > 0 && paramEnd > paramStart) {
-                this.name = funcFullName.substring(0, paramStart);
-                String arguments = funcFullName.substring(paramStart + 1, paramEnd);
-                String[] paramNames = arguments.split(":");
-                if (paramNames.length == params.size()) {
-                    this.paramNames = Arrays.asList(paramNames);
-                }
-                else {
-                    throw new IllegalArgumentException("Wrong count of arguments in func name");
-                }
-            }
-            else {
+
+            if (paramStart <= 0 || paramEnd <= 0 || paramEnd <= paramStart) {
                 throw new IllegalArgumentException("Wrong func name");
             }
+
+            this.swiftMethodName = funcFullName.substring(0, paramStart);
+            String arguments = funcFullName.substring(paramStart + 1, paramEnd);
+            String[] paramNames = arguments.split(":");
+
+            if (paramNames.length != params.size()) {
+                throw new IllegalArgumentException("Wrong count of arguments in func name");
+            }
+
+            this.paramNames = Arrays.asList(paramNames);
         }
         else {
             for (int i = 0; i < params.size(); i++) {
@@ -80,16 +86,15 @@ public class SwiftCallbackFuncDescriptor {
     }
 
     void generateCode(SwiftWriter swiftWriter, String javaFullName, String swiftType) throws IOException {
-
         swiftWriter.emitEmptyLine();
         swiftWriter.emitStatement(String.format("static let javaMethod%1$s = try! JNI.%4$s(forClass:\"%2$s\", method: \"%1$s\", sig: \"%3$s\")",
-                name,
+                javaMethodName,
                 javaFullName,
                 sig,
                 isStatic ? "getStaticJavaMethod" : "getJavaMethod"));
 
         swiftWriter.emitEmptyLine();
-        swiftWriter.emit(String.format("public %s func %s(", isStatic ? "static" : "", name));
+        swiftWriter.emit(String.format("public %s func %s(", isStatic ? "static" : "", swiftMethodName));
         for (int i = 0; i < params.size(); i++) {
             SwiftParamDescriptor param = params.get(i);
             String paramType = param.swiftType.swiftType + (param.isOptional ? "?" : "");
@@ -166,7 +171,7 @@ public class SwiftCallbackFuncDescriptor {
             }
         }
 
-        swiftWriter.emit(String.format(jniMethodTemplate, swiftType, name));
+        swiftWriter.emit(String.format(jniMethodTemplate, swiftType, javaMethodName));
 
         for (SwiftParamDescriptor param : params) {
             swiftWriter.emitStatement(String.format(", java%s", param.name));
@@ -238,12 +243,12 @@ public class SwiftCallbackFuncDescriptor {
     @Override
     public String toString() {
         return "SwiftFuncDescriptor{" +
-                "name='" + name + '\'' +
+                "javaMethodName='" + javaMethodName + '\'' +
+                ", swiftMethodName='" + swiftMethodName + '\'' +
                 ", isStatic=" + isStatic +
                 ", isThrown=" + isThrown +
                 ", returnSwiftType='" + returnSwiftType + '\'' +
                 ", isReturnTypeOptional=" + isReturnTypeOptional +
-                ", description='" + description + '\'' +
                 ", params=" + params +
                 '}';
     }
