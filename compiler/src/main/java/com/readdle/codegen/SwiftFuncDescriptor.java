@@ -5,7 +5,6 @@ import com.readdle.codegen.anotation.SwiftFunc;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.LinkedList;
 import java.util.List;
 
 import javax.lang.model.element.ExecutableElement;
@@ -117,7 +116,7 @@ class SwiftFuncDescriptor implements JavaSwiftProcessor.WritableElement {
         swiftWriter.emitStatement("}");
         swiftWriter.emitStatement("catch {");
         swiftWriter.emitStatement("let errorString = String(reflecting: type(of: error)) + String(describing: error)");
-        swiftWriter.emitStatement("JNI.api.ThrowNew(JNI.env, SwiftRuntimeErrorClass, errorString)");
+        swiftWriter.emitStatement("_ = JNI.api.ThrowNew(JNI.env, SwiftRuntimeErrorClass, errorString)");
         swiftWriter.emitStatement(String.format("return%s", returnSwiftType != null ? " nil" : ""));
         swiftWriter.emitStatement("}");
 
@@ -153,7 +152,7 @@ class SwiftFuncDescriptor implements JavaSwiftProcessor.WritableElement {
             swiftWriter.emitStatement("}");
             swiftWriter.emitStatement("catch {");
             swiftWriter.emitStatement("let errorString = String(reflecting: type(of: error)) + String(describing: error)");
-            swiftWriter.emitStatement("JNI.api.ThrowNew(JNI.env, SwiftRuntimeErrorClass, errorString)");
+            swiftWriter.emitStatement("_ = JNI.api.ThrowNew(JNI.env, SwiftRuntimeErrorClass, errorString)");
             swiftWriter.emitStatement("return nil");
             swiftWriter.emitStatement("}");
         }
@@ -162,7 +161,7 @@ class SwiftFuncDescriptor implements JavaSwiftProcessor.WritableElement {
             swiftWriter.emitStatement("}");
             swiftWriter.emitStatement("catch {");
             swiftWriter.emitStatement("let errorString = String(reflecting: type(of: error)) + String(describing: error)");
-            swiftWriter.emitStatement("JNI.api.ThrowNew(JNI.env, SwiftErrorClass, errorString)");
+            swiftWriter.emitStatement("_ = JNI.api.ThrowNew(JNI.env, SwiftErrorClass, errorString)");
             swiftWriter.emitStatement(String.format("return%s", returnSwiftType != null ? " nil" : ""));
             swiftWriter.emitStatement("}");
         }
