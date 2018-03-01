@@ -1,1 +1,5 @@
+apply plugin: 'java'
 
+archivesBaseName = "annotations"
+
+apply from: rootProject.file('bintray-publish.gradle')
