@@ -44,7 +44,6 @@ func addGenerated(_ targets: [Target]) -> [Target] {
                 .byNameItem(name: packageName),
                 "java_swift",
                 "Java",
-                "JavaCoder",
             ],
             path: generatedPath
         )
@@ -58,8 +57,7 @@ let package = Package(
     ]),
     dependencies: [
         .package(url: "https://github.com/andriydruk/java_swift.git", .branch("master")),
-        .package(url: "https://github.com/andriydruk/swift-java.git", .branch("master")),
-        .package(url: "https://github.com/andriydruk/swift-java-coder.git", .branch("master")),
+        .package(url: "https://github.com/andriydruk/swift-java.git", .branch("feature/coder2")),
         .package(url: "https://github.com/andriydruk/swift-anycodable.git", .branch("master")),
     ],
     targets: addGenerated([

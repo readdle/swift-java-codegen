@@ -46,6 +46,8 @@ public class JavaSwiftProcessor extends AbstractProcessor {
     private String moduleName;
     private String[] importPackages;
 
+    private File swiftExtensionFile;
+
     @Override
     public synchronized void init(ProcessingEnvironment processingEnv) {
         super.init(processingEnv);
@@ -55,10 +57,12 @@ public class JavaSwiftProcessor extends AbstractProcessor {
         messager = processingEnv.getMessager();
 
         try {
-            generateJavaSwift(filer);
-        } catch (IOException e) {
+            String swiftFilePath = filer.createResource(StandardLocation.SOURCE_OUTPUT, FOLDER, "SwiftJava.swift", (Element) null).toUri().getPath();
+            swiftExtensionFile = new File(swiftFilePath);
+            swiftExtensionFile.getParentFile().mkdir();
+        }
+        catch (IOException e) {
             e.printStackTrace();
-            error(null, "Can't write to file: " + e.getMessage());
         }
     }
 
@@ -240,15 +244,19 @@ public class JavaSwiftProcessor extends AbstractProcessor {
             }
         }
 
+        try {
+            generateJavaSwift();
+        } catch (IOException e) {
+            e.printStackTrace();
+            error(null, "Can't write to file: " + e.getMessage());
+        }
+
         messager.printMessage(Diagnostic.Kind.NOTE, "SwiftJava finished successfully!");
 
         return false;
     }
 
-    private void generateJavaSwift(Filer filer) throws IOException {
-        String swiftFilePath = filer.createResource(StandardLocation.SOURCE_OUTPUT, FOLDER, "SwiftJava.swift", (Element) null).toUri().getPath();
-        File swiftExtensionFile = new File(swiftFilePath);
-        swiftExtensionFile.getParentFile().mkdir();
+    private void generateJavaSwift() throws IOException {
         messager.printMessage(Diagnostic.Kind.NOTE, "SwiftJava will generate sources int0: " + swiftExtensionFile.getParent());
         SwiftWriter swiftWriter = new SwiftWriter(swiftExtensionFile);
         swiftWriter.emitImports(new String[0]);
