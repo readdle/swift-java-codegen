@@ -99,8 +99,8 @@ public class JavaSwiftProcessor extends AbstractProcessor {
 
         for (Element annotatedElement : roundEnv.getElementsAnnotatedWith(SwiftValue.class)) {
             // Check if a class has been annotated with @SwiftValue
-            if (annotatedElement.getKind() != ElementKind.CLASS) {
-                error(annotatedElement, "Only classes can be annotated with @%s", SwiftValue.class.getSimpleName());
+            if (annotatedElement.getKind() != ElementKind.CLASS && annotatedElement.getKind() != ElementKind.ENUM) {
+                error(annotatedElement, "Only classes or enums can be annotated with @%s", SwiftValue.class.getSimpleName());
                 return true; // Exit processing
             }
 
