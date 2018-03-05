@@ -10,6 +10,8 @@ public class AbstractType {
     // Swift JNI constructor
     protected AbstractType() {}
 
+    public String str;
+
     @NonNull
     public native String basicMethod();
 

@@ -9,6 +9,7 @@ import com.readdle.codegen.anotation.SwiftValue;
 import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -47,6 +48,7 @@ public class JavaSwiftProcessor extends AbstractProcessor {
     private String[] importPackages;
 
     private File swiftExtensionFile;
+    private Set<String> allSwiftValues = new HashSet<>();
 
     @Override
     public synchronized void init(ProcessingEnvironment processingEnv) {
@@ -193,6 +195,7 @@ public class JavaSwiftProcessor extends AbstractProcessor {
         for (SwiftValueDescriptor valueDescriptor: swiftValues.values()) {
             try {
                 File file = valueDescriptor.generateCode();
+                allSwiftValues.add(valueDescriptor.getSwiftType());
                 messager.printMessage(Diagnostic.Kind.NOTE, file.getName() + " generated");
             } catch (IOException e) {
                 e.printStackTrace();
@@ -259,7 +262,7 @@ public class JavaSwiftProcessor extends AbstractProcessor {
     private void generateJavaSwift() throws IOException {
         messager.printMessage(Diagnostic.Kind.NOTE, "SwiftJava will generate sources int0: " + swiftExtensionFile.getParent());
         SwiftWriter swiftWriter = new SwiftWriter(swiftExtensionFile);
-        swiftWriter.emitImports(new String[0]);
+        swiftWriter.emitImports(importPackages);
         swiftWriter.emitEmptyLine();
         swiftWriter.emitStatement("public let SwiftErrorClass = JNI.GlobalFindClass(\"com/readdle/codegen/anotation/SwiftError\")");
         swiftWriter.emitStatement("public let SwiftRuntimeErrorClass = JNI.GlobalFindClass(\"com/readdle/codegen/anotation/SwiftRuntimeError\")");
@@ -268,6 +271,9 @@ public class JavaSwiftProcessor extends AbstractProcessor {
         swiftWriter.emitStatement("@_silgen_name(\"Java_com_readdle_codegen_anotation_JavaSwift_init\")");
         swiftWriter.emitStatement("public func Java_com_readdle_codegen_anotation_JavaBridgeable_init(env: UnsafeMutablePointer<JNIEnv?>, clazz: jclass) {");
         swiftWriter.emitStatement("JavaCoderConfig.RegisterBasicJavaTypes()");
+        for (String swiftValue : allSwiftValues) {
+            swiftWriter.emitStatement(String.format("%1$s.Register%1$s()", swiftValue));
+        }
         swiftWriter.emitStatement("}");
 
         // TODO: move to sample project
