@@ -23,11 +23,11 @@ class SwiftSetterDescriptor implements JavaSwiftProcessor.WritableElement {
         this.isStatic = executableElement.getModifiers().contains(Modifier.STATIC);
 
         if (executableElement.getThrownTypes().size() != 0) {
-            throw new IllegalArgumentException("Setter can't throw");
+            throw new SwiftMappingException("Setter can't throw", executableElement);
         }
 
         if (executableElement.getParameters().size() != 1) {
-            throw new IllegalArgumentException("Setter should have at least 1 parameter");
+            throw new SwiftMappingException("Setter should have at least 1 parameter", executableElement);
         }
 
         param = new SwiftParamDescriptor(executableElement.getParameters().get(0));

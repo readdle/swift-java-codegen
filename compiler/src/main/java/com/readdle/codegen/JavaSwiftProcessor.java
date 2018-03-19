@@ -79,6 +79,17 @@ public class JavaSwiftProcessor extends AbstractProcessor {
 
     @Override
     public boolean process(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv) {
+        try {
+            return processImpl(annotations, roundEnv);
+        }
+        catch(SwiftMappingException exc) {
+            exc.printStackTrace();
+            error(exc.getElement(), exc.getMessage());
+            return true;
+        }
+    }
+
+    private boolean processImpl(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv) {
         Filer filer = processingEnv.getFiler();
         messager.printMessage(Diagnostic.Kind.NOTE, "Start SwiftJava code generation:");
 

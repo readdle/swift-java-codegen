@@ -26,11 +26,11 @@ class SwiftGetterDescriptor implements JavaSwiftProcessor.WritableElement {
         this.isReturnTypeOptional = JavaSwiftProcessor.isNullable(executableElement);
 
         if (executableElement.getThrownTypes().size() != 0) {
-            throw new IllegalArgumentException("Getter can't throw");
+            throw new SwiftMappingException("Getter can't throw", executableElement);
         }
 
         if (executableElement.getParameters().size() != 0) {
-            throw new IllegalArgumentException("Getter can't has parameters");
+            throw new SwiftMappingException("Getter can't has parameters", executableElement);
         }
 
         SwiftFunc swiftFunc = executableElement.getAnnotation(SwiftFunc.class);
