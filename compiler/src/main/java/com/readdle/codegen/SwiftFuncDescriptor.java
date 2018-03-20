@@ -95,7 +95,10 @@ class SwiftFuncDescriptor implements JavaSwiftProcessor.WritableElement {
             swiftWriter.emitStatement(String.format("let %s: %s%s", param.name, param.swiftType.swiftType, param.isOptional ? "?" : ""));
         }
 
-        swiftWriter.emitStatement("do {");
+        boolean shouldCatchPreamble = params.size() > 0 || !isStatic;
+        if (shouldCatchPreamble) {
+            swiftWriter.emitStatement("do {");
+        }
 
         if (!isStatic) {
             swiftWriter.emitStatement(String.format("swiftSelf = try %s.from(javaObject: this)", swiftType));
@@ -113,12 +116,15 @@ class SwiftFuncDescriptor implements JavaSwiftProcessor.WritableElement {
                 swiftWriter.emitStatement(String.format("%1$s = try %2$s.from(javaObject: j%1$s)", param.name, param.swiftType.swiftConstructorType));
             }
         }
-        swiftWriter.emitStatement("}");
-        swiftWriter.emitStatement("catch {");
-        swiftWriter.emitStatement("let errorString = String(reflecting: type(of: error)) + String(describing: error)");
-        swiftWriter.emitStatement("_ = JNI.api.ThrowNew(JNI.env, SwiftRuntimeErrorClass, errorString)");
-        swiftWriter.emitStatement(String.format("return%s", returnSwiftType != null ? " nil" : ""));
-        swiftWriter.emitStatement("}");
+
+        if (shouldCatchPreamble) {
+            swiftWriter.emitStatement("}");
+            swiftWriter.emitStatement("catch {");
+            swiftWriter.emitStatement("let errorString = String(reflecting: type(of: error)) + String(describing: error)");
+            swiftWriter.emitStatement("_ = JNI.api.ThrowNew(JNI.env, SwiftRuntimeErrorClass, errorString)");
+            swiftWriter.emitStatement(String.format("return%s", returnSwiftType != null ? " nil" : ""));
+            swiftWriter.emitStatement("}");
+        }
 
         if (isThrown) {
             swiftWriter.emitStatement("do {");

@@ -165,7 +165,7 @@ class SwiftReferenceDescriptor {
         swiftWriter.emitEmptyLine();
         swiftWriter.emitStatement("// Unbalanced retain");
         swiftWriter.emitStatement("public func retain() {");
-        swiftWriter.emitStatement("Unmanaged.passUnretained(self).retain()");
+        swiftWriter.emitStatement("_ = Unmanaged.passUnretained(self).retain()");
         swiftWriter.emitStatement("}");
 
         swiftWriter.endExtension();
