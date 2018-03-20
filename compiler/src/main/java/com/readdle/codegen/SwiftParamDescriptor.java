@@ -4,22 +4,23 @@ import com.readdle.codegen.anotation.SwiftBlock;
 
 import javax.lang.model.element.VariableElement;
 
+import static java.util.Objects.requireNonNull;
+
 public class SwiftParamDescriptor {
 
     final String name;
-    SwiftEnvironment.Type swiftType;
+    final SwiftEnvironment.Type swiftType;
     final boolean isOptional;
-    final String description;
 
     SwiftParamDescriptor(VariableElement variableElement) {
         this.name = variableElement.getSimpleName().toString();
-        this.swiftType = SwiftEnvironment.parseJavaType(variableElement.asType().toString());
+        this.swiftType = requireNonNull(SwiftEnvironment.parseJavaType(variableElement.asType().toString()));
+
         SwiftBlock swiftParam = variableElement.getAnnotation(SwiftBlock.class);
         if (swiftParam != null) {
             this.swiftType.swiftConstructorType = "SwiftBlock" + this.swiftType.swiftConstructorType;
         }
         this.isOptional = JavaSwiftProcessor.isNullable(variableElement);
-        this.description = null;
     }
 
     @Override
@@ -28,7 +29,6 @@ public class SwiftParamDescriptor {
                 "name='" + name + '\'' +
                 ", swiftType='" + swiftType + '\'' +
                 ", isOptional=" + isOptional +
-                ", description='" + description + '\'' +
                 '}';
     }
 }
