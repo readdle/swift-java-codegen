@@ -207,10 +207,18 @@ class SwiftBlockDescriptor {
 
         swiftWriter.emitStatement("if let throwable = JNI.ExceptionCheck() {");
         if (isThrown) {
-            swiftWriter.emitStatement("throw Error.from(javaObject: throwable)");
+            swiftWriter.emitStatement("if let error = try? NSError.from(javaObject: throwable) {");
+            swiftWriter.emitStatement("throw error");
+            swiftWriter.emitStatement("} else {");
+            swiftWriter.emitStatement("fatalError(\"JavaException\")");
+            swiftWriter.emitStatement("}");
         }
         else {
+            swiftWriter.emitStatement("if let error = try? NSError.from(javaObject: throwable) {");
+            swiftWriter.emitStatement("fatalError(\"JavaException: \\(error) \")");
+            swiftWriter.emitStatement("} else {");
             swiftWriter.emitStatement("fatalError(\"JavaException\")");
+            swiftWriter.emitStatement("}");
         }
         swiftWriter.emitStatement("}");
 
