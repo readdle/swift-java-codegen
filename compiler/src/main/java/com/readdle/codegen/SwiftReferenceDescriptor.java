@@ -4,21 +4,15 @@ import com.readdle.codegen.anotation.SwiftGetter;
 import com.readdle.codegen.anotation.SwiftReference;
 import com.readdle.codegen.anotation.SwiftSetter;
 
+import javax.annotation.processing.Filer;
+import javax.lang.model.element.*;
+import javax.lang.model.type.DeclaredType;
+import javax.lang.model.type.MirroredTypeException;
+import javax.tools.StandardLocation;
 import java.io.File;
 import java.io.IOException;
 import java.util.LinkedList;
 import java.util.List;
-
-import javax.annotation.processing.Filer;
-import javax.lang.model.element.Element;
-import javax.lang.model.element.ElementKind;
-import javax.lang.model.element.ExecutableElement;
-import javax.lang.model.element.Modifier;
-import javax.lang.model.element.TypeElement;
-import javax.lang.model.element.VariableElement;
-import javax.lang.model.type.DeclaredType;
-import javax.lang.model.type.MirroredTypeException;
-import javax.tools.StandardLocation;
 
 import static com.readdle.codegen.JavaSwiftProcessor.FOLDER;
 
@@ -27,7 +21,6 @@ class SwiftReferenceDescriptor {
     private static final String SUFFIX = "Android.swift";
     private String swiftFilePath;
 
-    private TypeElement annotatedClassElement;
     private String javaFullName;
     private String simpleTypeName;
     private String[] importPackages;
@@ -35,7 +28,6 @@ class SwiftReferenceDescriptor {
     List<JavaSwiftProcessor.WritableElement> functions = new LinkedList<>();
 
     SwiftReferenceDescriptor(TypeElement classElement, Filer filer, String[] importPackages) throws IllegalArgumentException {
-        this.annotatedClassElement = classElement;
         this.importPackages = importPackages;
 
         // Get the full QualifiedTypeName
@@ -117,13 +109,15 @@ class SwiftReferenceDescriptor {
             if (element.getKind() == ElementKind.METHOD) {
                 ExecutableElement executableElement = (ExecutableElement) element;
                 if (executableElement.getModifiers().contains(Modifier.NATIVE)) {
-                    if (executableElement.getAnnotation(SwiftGetter.class) != null) {
-                        functions.add(new SwiftGetterDescriptor(executableElement));
+                    SwiftGetter getterAnnotation = executableElement.getAnnotation(SwiftGetter.class);
+                    SwiftSetter setterAnnotation = executableElement.getAnnotation(SwiftSetter.class);
+
+                    if (getterAnnotation != null) {
+                        functions.add(new SwiftGetterDescriptor(executableElement, getterAnnotation));
                     }
-                    else if (executableElement.getAnnotation(SwiftSetter.class) != null) {
-                        functions.add(new SwiftSetterDescriptor(executableElement));
-                    }
-                    else {
+                    else if (setterAnnotation != null) {
+                        functions.add(new SwiftSetterDescriptor(executableElement, setterAnnotation));
+                    } else {
                         functions.add(new SwiftFuncDescriptor(executableElement));
                     }
                 }
@@ -172,7 +166,7 @@ class SwiftReferenceDescriptor {
         swiftWriter.emitEmptyLine();
         swiftWriter.emitStatement("// Unbalanced retain");
         swiftWriter.emitStatement("public func retain() {");
-        swiftWriter.emitStatement("Unmanaged.passUnretained(self).retain()");
+        swiftWriter.emitStatement("_ = Unmanaged.passUnretained(self).retain()");
         swiftWriter.emitStatement("}");
 
         swiftWriter.endExtension();
