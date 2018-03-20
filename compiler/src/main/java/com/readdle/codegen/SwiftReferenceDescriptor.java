@@ -69,8 +69,9 @@ class SwiftReferenceDescriptor {
                 ExecutableElement executableElement = (ExecutableElement) element;
                 if (executableElement.getSimpleName().toString().equals("release")) {
                     if (!executableElement.getModifiers().contains(Modifier.NATIVE)) {
-                        throw new IllegalArgumentException(String.format("%s is not native method",
-                                executableElement.getSimpleName()));
+                        String message = String.format("%s is not native method",
+                                executableElement.getSimpleName());
+                        throw new SwiftMappingException(message, executableElement);
                     }
                     releaseExecutableElement = executableElement;
                 }

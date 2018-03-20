@@ -51,7 +51,7 @@ class SwiftFuncDescriptor implements JavaSwiftProcessor.WritableElement {
             int paramEnd = funcFullName.indexOf(")");
 
             if (paramStart <= 0 || paramEnd <= 0 || paramEnd <= paramStart) {
-                throw new IllegalArgumentException("Wrong func name");
+                throw new SwiftMappingException("Wrong func name", executableElement);
             }
 
             this.swiftMethodName = funcFullName.substring(0, paramStart);
@@ -60,7 +60,7 @@ class SwiftFuncDescriptor implements JavaSwiftProcessor.WritableElement {
             String[] paramNames = arguments.split(":");
 
             if (paramNames.length != params.size()) {
-                throw new IllegalArgumentException("Wrong count of arguments in func name");
+                throw new SwiftMappingException("Wrong count of arguments in func name", executableElement);
             }
 
             for (String paramName : paramNames) {

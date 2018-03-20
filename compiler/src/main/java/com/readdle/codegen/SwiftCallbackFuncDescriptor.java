@@ -65,7 +65,7 @@ public class SwiftCallbackFuncDescriptor {
             int paramEnd = funcFullName.indexOf(")");
 
             if (paramStart <= 0 || paramEnd <= 0 || paramEnd <= paramStart) {
-                throw new IllegalArgumentException("Wrong func name");
+                throw new SwiftMappingException("Wrong func name", executableElement);
             }
 
             this.swiftMethodName = funcFullName.substring(0, paramStart);
@@ -73,7 +73,7 @@ public class SwiftCallbackFuncDescriptor {
             String[] paramNames = arguments.split(":");
 
             if (paramNames.length != params.size()) {
-                throw new IllegalArgumentException("Wrong count of arguments in func name");
+                throw new SwiftMappingException("Wrong count of arguments in func name", executableElement);
             }
 
             this.paramNames = Arrays.asList(paramNames);
