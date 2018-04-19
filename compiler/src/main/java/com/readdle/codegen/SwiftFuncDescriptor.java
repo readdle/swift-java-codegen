@@ -57,10 +57,17 @@ class SwiftFuncDescriptor implements JavaSwiftProcessor.WritableElement {
             this.swiftMethodName = funcFullName.substring(0, paramStart);
 
             String arguments = funcFullName.substring(paramStart + 1, paramEnd);
-            String[] paramNames = arguments.split(":");
+
+            String[] paramNames;
+            if (!arguments.isEmpty()) {
+                paramNames = arguments.split(":");
+            }
+            else {
+                paramNames = new String[0];
+            }
 
             if (paramNames.length != params.size()) {
-                throw new SwiftMappingException("Wrong count of arguments in func name", executableElement);
+                throw new SwiftMappingException("Wrong count of arguments in func name " + paramNames.length + " !=  "  + params.size(), executableElement);
             }
 
             for (String paramName : paramNames) {
