@@ -37,6 +37,10 @@ if (project.hasProperty("bintray_user") && project.hasProperty("bintray_api_key"
         publish = true
         publications = ['mavenJava']
 
+        if (project.hasProperty("dryRun")) {
+            dryRun = true
+        }
+
         pkg {
             repo = 'maven'
             userOrg = 'readdle'
