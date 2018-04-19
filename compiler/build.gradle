@@ -1,3 +1,9 @@
+apply plugin: 'java'
+
+archivesBaseName = "compiler"
+
 dependencies {
     compile project(':library')
 }
+
+apply from: rootProject.file('bintray-publish.gradle')

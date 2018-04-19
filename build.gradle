@@ -1,28 +1,28 @@
-// Top-level build file where you can add configuration options common to all sub-projects/modules.
+buildscript {
+    repositories {
+        google()
+        jcenter()
+        maven { url "https://dl.bintray.com/readdle/maven" }
+    }
 
-allprojects {
-    version = "0.1"
+    dependencies {
+        classpath 'com.android.tools.build:gradle:3.0.1'
+        classpath 'com.readdle.android.swift:swift-android-gradle:1.1.2'
+        classpath 'com.jfrog.bintray.gradle:gradle-bintray-plugin:1.8.0'
+    }
 }
 
-subprojects {
-    apply plugin: 'java'
-    apply plugin: 'maven'
+subprojects { project ->
+    group = GROUP
+    version = VERSION_NAME
 
-    sourceCompatibility = 1.7 // java 7
-    targetCompatibility = 1.7
-
-    task sourcesJar(type: Jar, dependsOn: classes) {
-        classifier = 'sources'
-        from sourceSets.main.allSource
+    repositories {
+        google()
+        jcenter()
+        maven { url "https://dl.bintray.com/readdle/maven" }
     }
+}
 
-    task javadocJar(type: Jar, dependsOn: javadoc) {
-        classifier = 'javadoc'
-        from javadoc.destinationDir
-    }
-
-    artifacts {
-        archives sourcesJar
-        archives javadocJar
-    }
+task clean(type: Delete) {
+    delete rootProject.buildDir
 }
