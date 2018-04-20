@@ -81,15 +81,15 @@ class SwiftDelegateDescriptor {
                     ExecutableElement executableElement = (ExecutableElement) element;
                     if (executableElement.getSimpleName().toString().equals("release")) {
                         if (!executableElement.getModifiers().contains(Modifier.NATIVE)) {
-                            throw new IllegalArgumentException(String.format("%s is not native method",
-                                    executableElement.getSimpleName()));
+                            throw new SwiftMappingException(String.format("%s is not native method",
+                                    executableElement.getSimpleName()), executableElement);
                         }
                         releaseExecutableElement = executableElement;
                     }
                     if (executableElement.getSimpleName().toString().equals("init")) {
                         if (!executableElement.getModifiers().contains(Modifier.NATIVE)) {
-                            throw new IllegalArgumentException(String.format("%s is not native method",
-                                    executableElement.getSimpleName()));
+                            throw new SwiftMappingException(String.format("%s is not native method",
+                                    executableElement.getSimpleName()), executableElement);
                         }
                         initExecutableElement = executableElement;
                     }
@@ -147,8 +147,9 @@ class SwiftDelegateDescriptor {
             if (element.getKind() == ElementKind.METHOD && element.getAnnotation(SwiftCallbackFunc.class) != null) {
                 ExecutableElement executableElement = (ExecutableElement) element;
                 if (executableElement.getModifiers().contains(Modifier.NATIVE)) {
-                    throw new IllegalArgumentException(String.format("%s is native method. Only java methods can be annotated with @%s",
-                            executableElement.getSimpleName(), SwiftCallbackFunc.class.getSimpleName()));
+                    String message = String.format("%s is native method. Only java methods can be annotated with @%s",
+                            executableElement.getSimpleName(), SwiftCallbackFunc.class.getSimpleName());
+                    throw new SwiftMappingException(message, executableElement);
                 }
 
                 callbackFunctions.add(new SwiftCallbackFuncDescriptor(executableElement));

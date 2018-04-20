@@ -1,6 +1,6 @@
 package com.readdle.codegen;
 
-import com.readdle.codegen.anotation.SwiftFunc;
+import com.readdle.codegen.anotation.SwiftGetter;
 
 import java.io.IOException;
 
@@ -17,25 +17,22 @@ class SwiftGetterDescriptor implements JavaSwiftProcessor.WritableElement {
     private SwiftEnvironment.Type returnSwiftType;
     private boolean isReturnTypeOptional;
 
-    private String description;
-
-    SwiftGetterDescriptor(ExecutableElement executableElement) {
+    SwiftGetterDescriptor(ExecutableElement executableElement, SwiftGetter getterAnnotation) {
         this.javaName = executableElement.getSimpleName().toString();
         this.isStatic = executableElement.getModifiers().contains(Modifier.STATIC);
         this.returnSwiftType = SwiftEnvironment.parseJavaType(executableElement.getReturnType().toString());
         this.isReturnTypeOptional = JavaSwiftProcessor.isNullable(executableElement);
 
         if (executableElement.getThrownTypes().size() != 0) {
-            throw new IllegalArgumentException("Getter can't throw");
+            throw new SwiftMappingException("Getter can't throw", executableElement);
         }
 
         if (executableElement.getParameters().size() != 0) {
-            throw new IllegalArgumentException("Getter can't has parameters");
+            throw new SwiftMappingException("Getter can't has parameters", executableElement);
         }
 
-        SwiftFunc swiftFunc = executableElement.getAnnotation(SwiftFunc.class);
-        if (swiftFunc != null && !swiftFunc.value().isEmpty()) {
-            this.swiftName = swiftFunc.value();
+        if (getterAnnotation != null && !getterAnnotation.value().isEmpty()) {
+            this.swiftName = getterAnnotation.value();
         }
         else {
             this.swiftName = javaName;
@@ -100,7 +97,6 @@ class SwiftGetterDescriptor implements JavaSwiftProcessor.WritableElement {
                 ", isStatic=" + isStatic +
                 ", returnSwiftType=" + returnSwiftType +
                 ", isReturnTypeOptional=" + isReturnTypeOptional +
-                ", description='" + description + '\'' +
                 '}';
     }
 }

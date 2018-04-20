@@ -122,7 +122,7 @@ public class SampleReference {
     @NonNull
     public native List<AbstractType> getAbstractTypeList();
 
-    @NonNull
+    @SwiftFunc("getAbstractType()") @NonNull
     public native AbstractType getAbstractType();
 
     @NonNull

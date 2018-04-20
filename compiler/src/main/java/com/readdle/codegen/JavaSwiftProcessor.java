@@ -85,6 +85,17 @@ public class JavaSwiftProcessor extends AbstractProcessor {
 
     @Override
     public boolean process(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv) {
+        try {
+            return processImpl(annotations, roundEnv);
+        }
+        catch(SwiftMappingException exc) {
+            exc.printStackTrace();
+            error(exc.getElement(), exc.getMessage());
+            return true;
+        }
+    }
+
+    private boolean processImpl(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv) {
         Filer filer = processingEnv.getFiler();
         messager.printMessage(Diagnostic.Kind.NOTE, "Start SwiftJava code generation:");
 
@@ -105,8 +116,8 @@ public class JavaSwiftProcessor extends AbstractProcessor {
 
         for (Element annotatedElement : roundEnv.getElementsAnnotatedWith(SwiftValue.class)) {
             // Check if a class has been annotated with @SwiftValue
-            if (annotatedElement.getKind() != ElementKind.CLASS) {
-                error(annotatedElement, "Only classes can be annotated with @%s", SwiftValue.class.getSimpleName());
+            if (annotatedElement.getKind() != ElementKind.CLASS && annotatedElement.getKind() != ElementKind.ENUM) {
+                error(annotatedElement, "Only classes or enums can be annotated with @%s", SwiftValue.class.getSimpleName());
                 return true; // Exit processing
             }
 
