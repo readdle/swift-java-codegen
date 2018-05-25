@@ -57,10 +57,10 @@ let package = Package(
     products: addGenerated([
     ]),
     dependencies: [
-        .package(url: "https://github.com/andriydruk/java_swift.git", .branch("master")),
-        .package(url: "https://github.com/andriydruk/swift-java.git", .branch("master")),
-        .package(url: "https://github.com/andriydruk/swift-java-coder.git", .branch("master")),
-        .package(url: "https://github.com/andriydruk/swift-anycodable.git", .branch("master")),
+        .package(url: "https://github.com/andriydruk/java_swift.git", .exact("2.1.2")),
+        .package(url: "https://github.com/andriydruk/swift-java.git", .exact("0.1.2")),
+        .package(url: "https://github.com/andriydruk/swift-java-coder.git", .exact("1.0.2")),
+        .package(url: "https://github.com/andriydruk/swift-anycodable.git", .exact("1.0.0")),
     ],
     targets: addGenerated([
         .target(name: packageName, dependencies: ["AnyCodable"])

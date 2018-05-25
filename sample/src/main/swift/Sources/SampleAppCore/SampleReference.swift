@@ -51,11 +51,11 @@ public class SampleReference {
 	}
 
     public func getRandomValue() -> SampleValue {
-    	return SampleValue(str1: "1", str2: "2", str3: "3")
+    	return SampleValue(string: UUID().uuidString)
     }
 
     public func saveValue(_ value: SampleValue)  {
-    	NSLog("SampleValue: \(value.str1), \(value.str2), \(value.str3)")
+    	NSLog("save SampleValue: \(value.string)")
     }
 
     public func funcThrows() throws {
