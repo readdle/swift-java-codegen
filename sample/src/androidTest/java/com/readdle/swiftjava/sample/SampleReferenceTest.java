@@ -15,6 +15,8 @@ import android.support.annotation.Nullable;
 import android.support.test.runner.AndroidJUnit4;
 import android.test.suitebuilder.annotation.LargeTest;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 @RunWith(AndroidJUnit4.class)
@@ -89,12 +91,26 @@ public class SampleReferenceTest {
 
             @Override
             public void onCall(@NonNull Integer pr1, @NonNull Integer pr2, @NonNull Double pr3, @NonNull Double pr4) {
-                JavaSwift.dumpReferenceTables();
                 isFlag[0] = pr1;
             }
         });
         JavaSwift.dumpReferenceTables();
         Assert.assertTrue(isFlag[0] == 128);
+    }
+
+    @Test
+    public void testLocalTableOverflow2() {
+        List<SampleValue> sampleValueList = new ArrayList<>();
+        JavaSwift.dumpReferenceTables();
+        for (int i = 0; i < 1024; i++) {
+            sampleValueList.add(sampleReference.getRandomValue());
+        }
+        Assert.assertTrue(sampleValueList.size() == 1024);
+        for (int i = 0; i < 1024; i++) {
+            sampleReference.saveValue(sampleValueList.get(i));
+        }
+        JavaSwift.dumpReferenceTables();
+        Assert.assertTrue(sampleValueList.size() == 1024);
     }
 
     @Test
