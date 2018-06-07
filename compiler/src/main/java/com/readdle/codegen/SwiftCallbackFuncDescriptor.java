@@ -240,6 +240,9 @@ public class SwiftCallbackFuncDescriptor {
         }
 
         if (returnSwiftType != null) {
+            swiftWriter.emitStatement("defer {");
+            swiftWriter.emitStatement("JNI.DeleteLocalRef(result)");
+            swiftWriter.emitStatement("}");
             swiftWriter.emitStatement("do {");
             swiftWriter.emitStatement(String.format("return try %s.from(javaObject: result)", returnSwiftType.swiftConstructorType));
             swiftWriter.emitStatement("}");
