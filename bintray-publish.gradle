@@ -47,8 +47,8 @@ if (project.hasProperty("bintray_user") && project.hasProperty("bintray_api_key"
             name = 'swift-java-codegen'
 
             desc = 'Annotation processor which can generate swift bridging code by Java annotation based mappings'
-            vcsUrl = 'https://github.com/andriydruk/swift-java-codegen'
-            githubRepo = 'andriydruk/swift-java-codegen'
+            vcsUrl = 'https://github.com/readdle/swift-java-codegen'
+            githubRepo = 'readdle/swift-java-codegen'
 
             licenses = ['Apache-2.0']
 
