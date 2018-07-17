@@ -186,4 +186,8 @@ class SwiftReferenceDescriptor {
     public String getSwiftType() {
         return simpleTypeName;
     }
+
+    public String getJavaFullName() {
+        return javaFullName;
+    }
 }

@@ -42,14 +42,14 @@ public class SwiftCallbackFuncDescriptor {
         for (VariableElement variableElement : executableElement.getParameters()) {
             params.add(new SwiftParamDescriptor(variableElement));
             String javaClass = variableElement.asType().toString();
-            signatureBuilder.append(javaClassToSig(javaClass));
+            signatureBuilder.append(Utils.javaClassToSig(javaClass));
         }
 
         signatureBuilder.append(")");
 
         if (returnSwiftType != null) {
             String javaClass = executableElement.getReturnType().toString();
-            signatureBuilder.append(javaClassToSig(javaClass));
+            signatureBuilder.append(Utils.javaClassToSig(javaClass));
         }
         else {
             signatureBuilder.append("V");
@@ -261,16 +261,6 @@ public class SwiftCallbackFuncDescriptor {
         swiftWriter.emitStatement("}");
 
         swiftWriter.emitEmptyLine();
-    }
-
-    private String javaClassToSig(String javaClass) {
-        // First, remove all templates
-        int templateStart = javaClass.indexOf("<");
-        if (templateStart > 0) {
-            javaClass = javaClass.substring(0, templateStart);
-        }
-        // Replace all dots with / in package name
-        return "L" + javaClass.replace(".", "/") + ";";
     }
 
     @Override

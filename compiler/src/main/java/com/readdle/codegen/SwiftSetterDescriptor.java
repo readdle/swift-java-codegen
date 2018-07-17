@@ -3,6 +3,7 @@ package com.readdle.codegen;
 import com.readdle.codegen.anotation.SwiftSetter;
 
 import java.io.IOException;
+import java.util.Collections;
 
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
@@ -45,7 +46,7 @@ class SwiftSetterDescriptor implements JavaSwiftProcessor.WritableElement {
 
     @Override
     public void generateCode(SwiftWriter swiftWriter, String javaFullName, String swiftType) throws IOException {
-        String swiftFuncName = "Java_" + javaFullName.replace("/", "_").replace("$", "_00024") + "_" + javaName;
+        String swiftFuncName = Utils.mangleFunctionName(javaFullName, javaName, Collections.singletonList(param));
 
         swiftWriter.emitEmptyLine();
         swiftWriter.emitStatement(String.format("@_silgen_name(\"%s\")", swiftFuncName));
@@ -87,6 +88,11 @@ class SwiftSetterDescriptor implements JavaSwiftProcessor.WritableElement {
         swiftWriter.emitStatement("}");
 
         swiftWriter.emitEmptyLine();
+    }
+
+    @Override
+    public String toString(String javaClassname) {
+        return Utils.mangleFunctionName(javaClassname, javaName, Collections.singletonList(param));
     }
 
     @Override

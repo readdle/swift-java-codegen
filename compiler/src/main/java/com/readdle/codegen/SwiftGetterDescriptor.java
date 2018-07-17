@@ -3,6 +3,9 @@ package com.readdle.codegen;
 import com.readdle.codegen.anotation.SwiftGetter;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
@@ -46,7 +49,7 @@ class SwiftGetterDescriptor implements JavaSwiftProcessor.WritableElement {
 
     @Override
     public void generateCode(SwiftWriter swiftWriter, String javaFullName, String swiftType) throws IOException {
-        String swiftFuncName = "Java_" + javaFullName.replace("/", "_").replace("$", "_00024") + "_" + javaName;
+        String swiftFuncName = Utils.mangleFunctionName(javaFullName, javaName, new ArrayList<>());
 
         swiftWriter.emitEmptyLine();
         swiftWriter.emitStatement(String.format("@_silgen_name(\"%s\")", swiftFuncName));
@@ -87,6 +90,11 @@ class SwiftGetterDescriptor implements JavaSwiftProcessor.WritableElement {
         swiftWriter.emitStatement("}");
 
         swiftWriter.emitEmptyLine();
+    }
+
+    @Override
+    public String toString(String javaClassname) {
+        return Utils.mangleFunctionName(javaClassname, javaName, new ArrayList<>());
     }
 
     @Override

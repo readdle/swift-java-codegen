@@ -164,4 +164,11 @@ class SwiftValueDescriptor {
         return simpleTypeName;
     }
 
+    public String getJavaFullName() {
+        return javaFullName;
+    }
+
+    public List<JavaSwiftProcessor.WritableElement> getFunctions() {
+        return functions;
+    }
 }
