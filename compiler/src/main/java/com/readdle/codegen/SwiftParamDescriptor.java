@@ -14,7 +14,7 @@ public class SwiftParamDescriptor {
 
     SwiftParamDescriptor(VariableElement variableElement) {
         this.name = variableElement.getSimpleName().toString();
-        this.swiftType = requireNonNull(SwiftEnvironment.parseJavaType(variableElement.asType().toString()));
+        this.swiftType = requireNonNull(SwiftEnvironment.parseJavaType(Utils.typeToString(variableElement.asType())));
 
         SwiftBlock swiftParam = variableElement.getAnnotation(SwiftBlock.class);
         if (swiftParam != null) {

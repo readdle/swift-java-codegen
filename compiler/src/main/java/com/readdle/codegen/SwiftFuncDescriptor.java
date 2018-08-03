@@ -81,7 +81,7 @@ class SwiftFuncDescriptor implements JavaSwiftProcessor.WritableElement {
 
     @Override
     public void generateCode(SwiftWriter swiftWriter, String javaFullName, String swiftType) throws IOException {
-        String swiftFuncName = "Java_" + javaFullName.replace("/", "_").replace("$", "_00024") + "_" + javaMethodName;
+        String swiftFuncName = Utils.mangleFunctionName(javaFullName, javaMethodName, params);
 
         swiftWriter.emitEmptyLine();
         swiftWriter.emitStatement(String.format("@_silgen_name(\"%s\")", swiftFuncName));
@@ -182,6 +182,11 @@ class SwiftFuncDescriptor implements JavaSwiftProcessor.WritableElement {
         swiftWriter.emitStatement("}");
 
         swiftWriter.emitEmptyLine();
+    }
+
+    @Override
+    public String toString(String javaClassname) {
+        return Utils.mangleFunctionName(javaClassname, javaMethodName, params);
     }
 
     @Override

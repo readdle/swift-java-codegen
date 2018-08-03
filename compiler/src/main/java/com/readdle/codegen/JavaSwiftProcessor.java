@@ -35,6 +35,7 @@ public class JavaSwiftProcessor extends AbstractProcessor {
 
     interface WritableElement {
         void generateCode(SwiftWriter swiftWriter, String javaFullName, String swiftType) throws IOException;
+        String toString(String javaClassname);
     }
 
     public static final String FOLDER = "SwiftGenerated";
@@ -207,7 +208,12 @@ public class JavaSwiftProcessor extends AbstractProcessor {
             try {
                 File file = valueDescriptor.generateCode();
                 allSwiftValues.add(valueDescriptor.getSwiftType());
-                messager.printMessage(Diagnostic.Kind.NOTE, file.getName() + " generated");
+                /* Logging */
+                messager.printMessage(Diagnostic.Kind.NOTE, "Generate SwiftValue " + file.getName() + ":");
+                for (WritableElement function : valueDescriptor.getFunctions()) {
+                    messager.printMessage(Diagnostic.Kind.NOTE, function.toString(valueDescriptor.getJavaFullName()));
+                }
+                /* Logging */
             } catch (IOException e) {
                 e.printStackTrace();
                 error(null, "Can't write to file: " + e.getMessage());
@@ -216,14 +222,14 @@ public class JavaSwiftProcessor extends AbstractProcessor {
         }
 
         for (SwiftReferenceDescriptor referenceDescriptor: swiftReferences.values()) {
-
-            for (WritableElement function : referenceDescriptor.functions) {
-                messager.printMessage(Diagnostic.Kind.NOTE, function.toString());
-            }
-
             try {
                 File file = referenceDescriptor.generateCode();
-                messager.printMessage(Diagnostic.Kind.NOTE, file.getName() + " generated");
+                /* Logging */
+                messager.printMessage(Diagnostic.Kind.NOTE, "Generate SwiftReference " + file.getName() + ":");
+                for (WritableElement function : referenceDescriptor.functions) {
+                    messager.printMessage(Diagnostic.Kind.NOTE, function.toString(referenceDescriptor.getJavaFullName()));
+                }
+                /* Logging */
             } catch (IOException e) {
                 e.printStackTrace();
                 error(null, "Can't write to file: " + e.getMessage());
@@ -232,14 +238,14 @@ public class JavaSwiftProcessor extends AbstractProcessor {
         }
 
         for (SwiftDelegateDescriptor delegateDescriptor: swiftDelegates.values()) {
-
-            for (SwiftFuncDescriptor function : delegateDescriptor.functions) {
-                messager.printMessage(Diagnostic.Kind.NOTE, function.toString());
-            }
-
             try {
                 File file = delegateDescriptor.generateCode();
-                messager.printMessage(Diagnostic.Kind.NOTE, file.getName() + " generated");
+                /* Logging */
+                messager.printMessage(Diagnostic.Kind.NOTE, "Generate SwiftDelegate" + file.getName() + ":");
+                for (WritableElement function : delegateDescriptor.functions) {
+                    messager.printMessage(Diagnostic.Kind.NOTE, function.toString(delegateDescriptor.getJavaFullName()));
+                }
+                /* Logging */
             } catch (IOException e) {
                 e.printStackTrace();
                 error(null, "Can't write to file: " + e.getMessage());
@@ -250,7 +256,9 @@ public class JavaSwiftProcessor extends AbstractProcessor {
         for (SwiftBlockDescriptor blockDescriptor: swiftBlocks.values()) {
             try {
                 File file = blockDescriptor.generateCode();
-                messager.printMessage(Diagnostic.Kind.NOTE, file.getName() + " generated");
+                /* Logging */
+                messager.printMessage(Diagnostic.Kind.NOTE, "Generate SwiftBlock" + file.getName());
+                /* Logging */
             } catch (IOException e) {
                 e.printStackTrace();
                 error(null, "Can't write to file: " + e.getMessage());

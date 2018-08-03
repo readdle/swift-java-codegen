@@ -5,6 +5,7 @@ import com.readdle.codegen.anotation.SwiftDelegate;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -237,7 +238,7 @@ class SwiftDelegateDescriptor {
         swiftWriter.endExtension();
 
         if (!isInterface) {
-            String swiftFuncName = "Java_" + javaFullName.replace("/", "_").replace("$", "_00024") + "_init";
+            String swiftFuncName = Utils.mangleFunctionName(javaFullName, "init", new ArrayList<>());
             swiftWriter.emitEmptyLine();
             swiftWriter.emitStatement(String.format("@_silgen_name(\"%s\")", swiftFuncName));
             swiftWriter.emitStatement(String.format("public func %s(env: UnsafeMutablePointer<JNIEnv?>, this: jobject) {", swiftFuncName));
@@ -253,5 +254,9 @@ class SwiftDelegateDescriptor {
 
         swiftWriter.close();
         return swiftExtensionFile;
+    }
+
+    public String getJavaFullName() {
+        return javaFullName;
     }
 }

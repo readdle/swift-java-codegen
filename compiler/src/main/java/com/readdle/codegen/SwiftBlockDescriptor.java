@@ -86,13 +86,13 @@ class SwiftBlockDescriptor {
 
                 for (VariableElement variableElement : executableElement.getParameters()) {
                     params.add(new SwiftParamDescriptor(variableElement));
-                    sig += javaClassToSig(variableElement.asType().toString());
+                    sig += Utils.javaClassToSig(variableElement.asType().toString());
                 }
 
                 sig += ")";
 
                 if (returnSwiftType != null) {
-                    sig += javaClassToSig(executableElement.getReturnType().toString());
+                    sig += Utils.javaClassToSig(executableElement.getReturnType().toString());
                 }
                 else {
                     sig += "V";
@@ -246,15 +246,5 @@ class SwiftBlockDescriptor {
 
         swiftWriter.close();
         return swiftExtensionFile;
-    }
-
-    private String javaClassToSig(String javaClass) {
-        // First, remove all templates
-        int templateStart = javaClass.indexOf("<");
-        if (templateStart > 0) {
-            javaClass = javaClass.substring(0, templateStart);
-        }
-        // Replace all dots with / in package name
-        return "L" + javaClass.replace(".", "/") + ";";
     }
 }
