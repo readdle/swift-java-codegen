@@ -283,20 +283,23 @@ public class JavaSwiftProcessor extends AbstractProcessor {
         SwiftWriter swiftWriter = new SwiftWriter(swiftExtensionFile);
         swiftWriter.emitImports(importPackages);
         swiftWriter.emitEmptyLine();
-        swiftWriter.emitStatement("public let SwiftErrorClass = JNI.GlobalFindClass(\"com/readdle/codegen/anotation/SwiftError\")");
-        swiftWriter.emitStatement("public let SwiftRuntimeErrorClass = JNI.GlobalFindClass(\"com/readdle/codegen/anotation/SwiftRuntimeError\")");
-        swiftWriter.emitEmptyLine();
-        // TODO: remove when JavaCoder become deprecated
-        swiftWriter.emitStatement("@_silgen_name(\"Java_com_readdle_codegen_anotation_JavaSwift_init\")");
-        swiftWriter.emitStatement("public func Java_com_readdle_codegen_anotation_JavaBridgeable_init(env: UnsafeMutablePointer<JNIEnv?>, clazz: jclass) {");
+        swiftWriter.emitStatement("@_silgen_name(\"JNI_OnLoad\")");
+        swiftWriter.emitStatement("public func JNI_OnLoad(jvm: UnsafeMutablePointer<JavaVM?>, ptr: UnsafeRawPointer) -> jint {");
+        swiftWriter.emitStatement("_ = JNICore(withJVM: jvm)");
         swiftWriter.emitStatement("JavaCoderConfig.RegisterBasicJavaTypes()");
         for (String swiftValue : allSwiftValues) {
             swiftWriter.emitStatement(String.format("%1$s.Register%1$s()", swiftValue));
         }
+        swiftWriter.emitStatement("return jint(JNI_VERSION_1_6)");
         swiftWriter.emitStatement("}");
 
+        swiftWriter.emitEmptyLine();
+        swiftWriter.emitStatement("public let SwiftErrorClass = JNI.GlobalFindClass(\"com/readdle/codegen/anotation/SwiftError\")");
+        swiftWriter.emitStatement("public let SwiftRuntimeErrorClass = JNI.GlobalFindClass(\"com/readdle/codegen/anotation/SwiftRuntimeError\")");
+        swiftWriter.emitEmptyLine();
+
         // TODO: move to sample project
-        swiftWriter.emitStatement("@_silgen_name(\"Java_com_readdle_codegen_anotation_JavaSwift_dumpReferenceTables\")");
+        swiftWriter.emitStatement("@_silgen_name(\"Java_com_readdle_codegen_anotation_JavaUtils_dumpReferenceTables\")");
         swiftWriter.emitStatement("public func Java_com_readdle_codegen_anotation_JavaBridgeable_dumpReferenceTables(env: UnsafeMutablePointer<JNIEnv?>, clazz: jclass) {");
         swiftWriter.emitStatement("JNI.dumpReferenceTables()");
         swiftWriter.emitStatement("}");

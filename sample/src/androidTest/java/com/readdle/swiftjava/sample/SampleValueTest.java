@@ -1,15 +1,14 @@
 package com.readdle.swiftjava.sample;
 
-import com.readdle.codegen.anotation.JavaSwift;
+import android.support.test.runner.AndroidJUnit4;
+import android.test.suitebuilder.annotation.LargeTest;
+
 import com.readdle.codegen.anotation.SwiftError;
 
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
-import android.support.test.runner.AndroidJUnit4;
-import android.test.suitebuilder.annotation.LargeTest;
 
 import java.math.BigInteger;
 import java.util.UUID;
@@ -21,7 +20,6 @@ public class SampleValueTest {
     @Before
     public void setUp() {
         System.loadLibrary("SampleAppCore");
-        JavaSwift.init();
     }
 
     @Test

@@ -10,13 +10,13 @@ import android.util.Log;
 @SwiftDelegate(protocols = {"SampleDelegate"})
 public abstract class SampleDelegateAndroid {
 
-    // Swift JNI private native pointer
+    // Swift SwiftEnvironment private native pointer
     private long nativePointer = 0L;
 
-    // Swift JNI init method
+    // Swift SwiftEnvironment init method
     public native void init();
 
-    // Swift JNI release method
+    // Swift SwiftEnvironment release method
     public native void release();
 
 

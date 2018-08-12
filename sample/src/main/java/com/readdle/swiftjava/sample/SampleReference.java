@@ -27,15 +27,15 @@ public class SampleReference {
     public static class SampleReferenceEnclose {
 
 
-        // Swift JNI private native pointer
+        // Swift SwiftEnvironment private native pointer
         private long nativePointer = 0L;
 
-        // Swift JNI private constructor
+        // Swift SwiftEnvironment private constructor
         // Should be private. Don't call this constructor from Java!
         private SampleReferenceEnclose() {
         }
 
-        // Swift JNI release method
+        // Swift SwiftEnvironment release method
         public native void release();
 
         @NonNull
@@ -50,15 +50,15 @@ public class SampleReference {
 
     }
 
-    // Swift JNI private native pointer
+    // Swift SwiftEnvironment private native pointer
     private long nativePointer = 0L;
 
-    // Swift JNI private constructor
+    // Swift SwiftEnvironment private constructor
     // Should be private. Don't call this constructor from Java!
     private SampleReference() {
     }
 
-    // Swift JNI release method
+    // Swift SwiftEnvironment release method
     public native void release();
 
     @NonNull
@@ -74,7 +74,7 @@ public class SampleReference {
     @NonNull
     public static native SampleReference init();
 
-    // TODO: Impossible to generate for now. Add extra check for JavaSwift protocol before casting to .javaObject()
+    // TODO: Impossible to generate for now. Add extra check for JavaUtils protocol before casting to .javaObject()
     //@Nullable @SwiftFunc
     //public native SampleDelegateAndroid getDelegate();
 

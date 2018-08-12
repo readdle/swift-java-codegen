@@ -2,8 +2,8 @@
 // Created by Andrew on 2/4/18.
 //
 
-import Foundation
 import AnyCodable
+import Foundation
 
 public class SwiftEnvironment {
 

@@ -1,6 +1,5 @@
 package com.readdle.swiftjava.sample;
 
-import com.readdle.codegen.anotation.JavaSwift;
 import com.readdle.codegen.anotation.SwiftError;
 import com.readdle.swiftjava.sample.asbtracthierarhy.AbstractType;
 
@@ -28,7 +27,6 @@ public class SampleReferenceTest {
     @Before
     public void setUp() {
         System.loadLibrary("SampleAppCore");
-        JavaSwift.init();
         SwiftEnvironment.initEnvironment();
         this.sampleReference = SampleReference.init();
     }
@@ -86,7 +84,7 @@ public class SampleReferenceTest {
     @Test
     public void testLocalTableOverflow() {
         final int[] isFlag = new int[1];
-        JavaSwift.dumpReferenceTables();
+        JNICore.getJNI().dumpReferenceTables();
         sampleReference.tickWithBlock(new SampleReference.SampleInterfaceDelegateAndroid() {
 
             @Override
@@ -94,14 +92,14 @@ public class SampleReferenceTest {
                 isFlag[0] = pr1;
             }
         });
-        JavaSwift.dumpReferenceTables();
+        JNICore.getJNI().dumpReferenceTables();
         Assert.assertTrue(isFlag[0] == 128);
     }
 
     @Test
     public void testLocalTableOverflow2() {
         List<SampleValue> sampleValueList = new ArrayList<>();
-        JavaSwift.dumpReferenceTables();
+        JNICore.getJNI().dumpReferenceTables();
         for (int i = 0; i < 1024; i++) {
             sampleValueList.add(sampleReference.getRandomValue());
         }
@@ -109,7 +107,7 @@ public class SampleReferenceTest {
         for (int i = 0; i < 1024; i++) {
             sampleReference.saveValue(sampleValueList.get(i));
         }
-        JavaSwift.dumpReferenceTables();
+        JNICore.getJNI().dumpReferenceTables();
         Assert.assertTrue(sampleValueList.size() == 1024);
     }
 

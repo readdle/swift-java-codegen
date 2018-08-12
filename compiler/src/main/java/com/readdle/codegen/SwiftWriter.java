@@ -24,7 +24,6 @@ public class SwiftWriter {
 
         this.writer.append("import Foundation\n");
         this.writer.append("import Java\n");
-        this.writer.append("import java_swift\n");
         this.writer.append("import AnyCodable\n");
 
         for (String importPackage : importPackages) {

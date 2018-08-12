@@ -7,7 +7,7 @@ import android.support.annotation.NonNull;
 @SwiftValue(hasSubclasses = true)
 public class AbstractType {
 
-    // Swift JNI constructor
+    // Swift SwiftEnvironment constructor
     protected AbstractType() {}
 
     public String str;

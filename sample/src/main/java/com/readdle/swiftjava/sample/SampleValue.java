@@ -69,7 +69,7 @@ public class SampleValue {
     @NonNull
     HashSet<SampleValue> setValues;
 
-    // Swift JNI constructor
+    // Swift SwiftEnvironment constructor
     private SampleValue() {
 
     }
