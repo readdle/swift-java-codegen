@@ -146,7 +146,7 @@ class SwiftReferenceDescriptor {
         swiftWriter.emitStatement(String.format("public static func from(javaObject: jobject) throws -> %s {", simpleTypeName));
         swiftWriter.emitStatement("guard let pointer = UnsafeRawPointer(bitPattern: Int(JNI.api.GetLongField(JNI.env, javaObject, javaSwiftPointerFiled))) else {\nthrow NSError(domain: \"NullPointerException\", code: 1)\n}");
         swiftWriter.emitStatement(String.format("return Unmanaged<%s>.fromOpaque(pointer).takeUnretainedValue()", simpleTypeName));
-        swiftWriter.emitStatement("}");
+        swiftWriter.emitEndOfBlock();
 
         swiftWriter.emitEmptyLine();
         swiftWriter.emitStatement("// Create java object with native pointer");
@@ -155,19 +155,19 @@ class SwiftReferenceDescriptor {
         swiftWriter.emitStatement("guard let result = JNI.NewObject(javaClass, methodID: javaConstructor) else {\nthrow NSError(domain: \"CantCreateObject\", code: 1)\n}");
         swiftWriter.emitStatement("JNI.api.SetLongField(JNI.env, result, javaSwiftPointerFiled, nativePointer)");
         swiftWriter.emitStatement("return result");
-        swiftWriter.emitStatement("}");
+        swiftWriter.emitEndOfBlock();
 
         swiftWriter.emitEmptyLine();
         swiftWriter.emitStatement("// Unbalance release");
         swiftWriter.emitStatement("public func release() {");
         swiftWriter.emitStatement("Unmanaged.passUnretained(self).release()");
-        swiftWriter.emitStatement("}");
+        swiftWriter.emitEndOfBlock();
 
         swiftWriter.emitEmptyLine();
         swiftWriter.emitStatement("// Unbalanced retain");
         swiftWriter.emitStatement("public func retain() {");
         swiftWriter.emitStatement("_ = Unmanaged.passUnretained(self).retain()");
-        swiftWriter.emitStatement("}");
+        swiftWriter.emitEndOfBlock();
 
         swiftWriter.endExtension();
 
