@@ -117,7 +117,7 @@ class SwiftFuncDescriptor implements JavaSwiftProcessor.WritableElement {
                 swiftWriter.emitStatement(String.format("%1$s = try %2$s.from(javaObject: j%1$s)", param.name, param.swiftType.swiftConstructorType));
                 swiftWriter.emitStatement("} else {");
                 swiftWriter.emitStatement(String.format("%s = nil", param.name));
-                swiftWriter.emitStatement("}");
+                swiftWriter.emitEndOfBlock();
             }
             else {
                 swiftWriter.emitStatement(String.format("%1$s = try %2$s.from(javaObject: j%1$s)", param.name, param.swiftType.swiftConstructorType));
@@ -125,12 +125,12 @@ class SwiftFuncDescriptor implements JavaSwiftProcessor.WritableElement {
         }
 
         if (shouldCatchPreamble) {
-            swiftWriter.emitStatement("}");
+            swiftWriter.emitEndOfBlock();
             swiftWriter.emitStatement("catch {");
             swiftWriter.emitStatement("let errorString = String(reflecting: type(of: error)) + String(describing: error)");
             swiftWriter.emitStatement("_ = JNI.api.ThrowNew(JNI.env, SwiftRuntimeErrorClass, errorString)");
             swiftWriter.emitStatement(String.format("return%s", returnSwiftType != null ? " nil" : ""));
-            swiftWriter.emitStatement("}");
+            swiftWriter.emitEndOfBlock();
         }
 
         if (isThrown) {
@@ -162,24 +162,24 @@ class SwiftFuncDescriptor implements JavaSwiftProcessor.WritableElement {
             else {
                 swiftWriter.emitStatement("return try result.javaObject()");
             }
-            swiftWriter.emitStatement("}");
+            swiftWriter.emitEndOfBlock();
             swiftWriter.emitStatement("catch {");
             swiftWriter.emitStatement("let errorString = String(reflecting: type(of: error)) + String(describing: error)");
             swiftWriter.emitStatement("_ = JNI.api.ThrowNew(JNI.env, SwiftRuntimeErrorClass, errorString)");
             swiftWriter.emitStatement("return nil");
-            swiftWriter.emitStatement("}");
+            swiftWriter.emitEndOfBlock();
         }
 
         if (isThrown) {
-            swiftWriter.emitStatement("}");
+            swiftWriter.emitEndOfBlock();
             swiftWriter.emitStatement("catch {");
             swiftWriter.emitStatement("let errorString = String(reflecting: type(of: error)) + String(describing: error)");
             swiftWriter.emitStatement("_ = JNI.api.ThrowNew(JNI.env, SwiftErrorClass, errorString)");
             swiftWriter.emitStatement(String.format("return%s", returnSwiftType != null ? " nil" : ""));
-            swiftWriter.emitStatement("}");
+            swiftWriter.emitEndOfBlock();
         }
 
-        swiftWriter.emitStatement("}");
+        swiftWriter.emitEndOfBlock();
 
         swiftWriter.emitEmptyLine();
     }

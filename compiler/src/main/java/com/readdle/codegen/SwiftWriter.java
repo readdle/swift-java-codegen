@@ -6,11 +6,55 @@ import java.io.IOException;
 import java.io.Writer;
 
 public class SwiftWriter {
+    private static class AlignedFileWriter extends FileWriter {
+        private static final char MARGIN = '\t';
+        private int currentLevel = 0;
+        private boolean printMargin = false;
+
+        private AlignedFileWriter(File file) throws IOException {
+            super(file);
+        }
+
+        private void appendCharacter(Character character) throws IOException {
+            if (printMargin) {
+                for (int i = 0; i < currentLevel; i++) {
+                    super.append(MARGIN);
+                }
+
+                printMargin = false;
+            }
+
+            super.append(character);
+        }
+
+        public Writer append(CharSequence charSequence) throws IOException {
+            for (int i = 0; i < charSequence.length(); i++) {
+                char c = charSequence.charAt(i);
+
+
+                if (c == '}') {
+                    printMargin = true;
+                    currentLevel--;
+                }
+
+                appendCharacter(c);
+
+                if (c == '\n') {
+                    printMargin = true;
+                }
+
+                if (c == '{') {
+                    currentLevel++;
+                }
+            }
+            return this;
+        }
+    }
 
     private final Writer writer;
 
     public SwiftWriter(File file) throws IOException {
-        this.writer = new FileWriter(file);
+        this.writer = new AlignedFileWriter(file);
     }
 
     public void close() throws IOException {
@@ -56,4 +100,7 @@ public class SwiftWriter {
         this.writer.append("\n");
     }
 
+    public void emitEndOfBlock() throws IOException {
+        this.writer.append("}\n");
+    }
 }

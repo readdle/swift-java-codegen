@@ -196,19 +196,19 @@ class SwiftDelegateDescriptor {
         swiftWriter.emitStatement("public init(jniObject: jobject) {");
         // TODO: throw exception
         swiftWriter.emitStatement("self.jniObject = JNI.api.NewGlobalRef(JNI.env, jniObject)!");
-        swiftWriter.emitStatement("}");
+        swiftWriter.emitEndOfBlock();
 
         swiftWriter.emitEmptyLine();
         swiftWriter.emitStatement("deinit {");
         swiftWriter.emitStatement("JNI.api.DeleteGlobalRef(JNI.env, jniObject)");
-        swiftWriter.emitStatement("}");
+        swiftWriter.emitEndOfBlock();
 
         if (isInterface) {
             swiftWriter.emitEmptyLine();
             swiftWriter.emitStatement("// Create swift object");
             swiftWriter.emitStatement(String.format("public static func from(javaObject: jobject) throws -> %s {", simpleTypeName));
             swiftWriter.emitStatement(String.format("return %s(jniObject: javaObject)", simpleTypeName));
-            swiftWriter.emitStatement("}");
+            swiftWriter.emitEndOfBlock();
         }
         else {
             swiftWriter.emitEmptyLine();
@@ -216,20 +216,20 @@ class SwiftDelegateDescriptor {
             swiftWriter.emitStatement(String.format("public static func from(javaObject: jobject) throws -> %s {", simpleTypeName));
             swiftWriter.emitStatement("guard let pointer = UnsafeRawPointer(bitPattern: Int(JNI.api.GetLongField(JNI.env, javaObject, javaSwiftPointerFiled))) else {\nthrow NSError(domain: \"NullPointerException\", code: 1)\n}");
             swiftWriter.emitStatement(String.format("return Unmanaged<%s>.fromOpaque(pointer).takeUnretainedValue()", simpleTypeName));
-            swiftWriter.emitStatement("}");
+            swiftWriter.emitEndOfBlock();
 
             swiftWriter.emitEmptyLine();
             swiftWriter.emitStatement("// Unbalance release");
             swiftWriter.emitStatement("public func release() {");
             swiftWriter.emitStatement("Unmanaged.passUnretained(self).release()");
-            swiftWriter.emitStatement("}");
+            swiftWriter.emitEndOfBlock();
         }
 
         swiftWriter.emitEmptyLine();
         swiftWriter.emitStatement("// Create java object with native pointer");
         swiftWriter.emitStatement("public func javaObject() throws -> jobject {");
         swiftWriter.emitStatement("return jniObject");
-        swiftWriter.emitStatement("}");
+        swiftWriter.emitEndOfBlock();
 
         for (SwiftCallbackFuncDescriptor function : callbackFunctions) {
             function.generateCode(swiftWriter, javaFullName, simpleTypeName);
@@ -245,7 +245,7 @@ class SwiftDelegateDescriptor {
             swiftWriter.emitStatement(String.format("let swiftSelf = %s(jniObject: this)", simpleTypeName));
             swiftWriter.emitStatement("let nativePointer = jlong(Int(bitPattern: Unmanaged.passRetained(swiftSelf).toOpaque()))");
             swiftWriter.emitStatement("JNI.api.SetLongField(JNI.env, this, javaSwiftPointerFiled, nativePointer)");
-            swiftWriter.emitStatement("}");
+            swiftWriter.emitEndOfBlock();
         }
 
         for (SwiftFuncDescriptor function : functions) {

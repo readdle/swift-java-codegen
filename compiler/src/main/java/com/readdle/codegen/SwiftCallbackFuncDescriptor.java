@@ -136,9 +136,9 @@ public class SwiftCallbackFuncDescriptor {
         for (SwiftParamDescriptor param : params) {
             swiftWriter.emitStatement(String.format("if let localRef = java%1$s as? jobject {", param.name));
             swiftWriter.emitStatement("JNI.DeleteLocalRef(localRef)");
-            swiftWriter.emitStatement("}");
+            swiftWriter.emitEndOfBlock();
         }
-        swiftWriter.emitStatement("}");
+        swiftWriter.emitEndOfBlock();
 
         if (params.size() > 0) {
             swiftWriter.emitStatement("do {");
@@ -146,13 +146,13 @@ public class SwiftCallbackFuncDescriptor {
                 if (param.isOptional) {
                     swiftWriter.emitStatement(String.format("if let %1$s = %1$s {", param.name));
                     swiftWriter.emitStatement(String.format("java%1$s = try %1$s.javaObject()", param.name));
-                    swiftWriter.emitStatement("}");
+                    swiftWriter.emitEndOfBlock();
                 } else {
                     swiftWriter.emitStatement(String.format("java%s = try %s.javaObject()", param.name, param.name));
                 }
             }
 
-            swiftWriter.emitStatement("}");
+            swiftWriter.emitEndOfBlock();
             swiftWriter.emitStatement("catch {");
             swiftWriter.emitStatement("let errorString = String(reflecting: type(of: error)) + String(describing: error)");
             if (returnSwiftType == null) {
@@ -164,7 +164,7 @@ public class SwiftCallbackFuncDescriptor {
             } else {
                 swiftWriter.emitStatement("fatalError(errorString)");
             }
-            swiftWriter.emitStatement("}");
+            swiftWriter.emitEndOfBlock();
         }
 
         String jniMethodTemplate;
@@ -199,14 +199,14 @@ public class SwiftCallbackFuncDescriptor {
                 swiftWriter.emitStatement("throw error");
                 swiftWriter.emitStatement("} else {");
                 swiftWriter.emitStatement("fatalError(\"JavaException\")");
-                swiftWriter.emitStatement("}");
+                swiftWriter.emitEndOfBlock();
             }
             else {
                 swiftWriter.emitStatement("if let error = try? NSError.from(javaObject: throwable) {");
                 swiftWriter.emitStatement("fatalError(\"JavaException: \\(error) \")");
                 swiftWriter.emitStatement("} else {");
                 swiftWriter.emitStatement("fatalError(\"JavaException\")");
-                swiftWriter.emitStatement("}");
+                swiftWriter.emitEndOfBlock();
             }
             swiftWriter.emitStatement("} else {");
             if (isReturnTypeOptional) {
@@ -215,8 +215,8 @@ public class SwiftCallbackFuncDescriptor {
             else {
                 swiftWriter.emitStatement("fatalError(\"Don't support nil here!\")");
             }
-            swiftWriter.emitStatement("}");
-            swiftWriter.emitStatement("}");
+            swiftWriter.emitEndOfBlock();
+            swiftWriter.emitEndOfBlock();
         }
         else {
             swiftWriter.emit(")\n");
@@ -227,16 +227,16 @@ public class SwiftCallbackFuncDescriptor {
                 swiftWriter.emitStatement("throw error");
                 swiftWriter.emitStatement("} else {");
                 swiftWriter.emitStatement("fatalError(\"JavaException\")");
-                swiftWriter.emitStatement("}");
+                swiftWriter.emitEndOfBlock();
             }
             else {
                 swiftWriter.emitStatement("if let error = try? NSError.from(javaObject: throwable) {");
                 swiftWriter.emitStatement("fatalError(\"JavaException: \\(error) \")");
                 swiftWriter.emitStatement("} else {");
                 swiftWriter.emitStatement("fatalError(\"JavaException\")");
-                swiftWriter.emitStatement("}");
+                swiftWriter.emitEndOfBlock();
             }
-            swiftWriter.emitStatement("}");
+            swiftWriter.emitEndOfBlock();
         }
 
         if (returnSwiftType != null) {
@@ -245,7 +245,7 @@ public class SwiftCallbackFuncDescriptor {
             swiftWriter.emitStatement("}");
             swiftWriter.emitStatement("do {");
             swiftWriter.emitStatement(String.format("return try %s.from(javaObject: result)", returnSwiftType.swiftConstructorType));
-            swiftWriter.emitStatement("}");
+            swiftWriter.emitEndOfBlock();
             swiftWriter.emitStatement("catch {");
             swiftWriter.emitStatement("let errorString = String(reflecting: type(of: error)) + String(describing: error)");
             if (returnSwiftType == null) {
@@ -255,10 +255,10 @@ public class SwiftCallbackFuncDescriptor {
             else {
                 swiftWriter.emitStatement("fatalError(errorString)");
             }
-            swiftWriter.emitStatement("}");
+            swiftWriter.emitEndOfBlock();
         }
 
-        swiftWriter.emitStatement("}");
+        swiftWriter.emitEndOfBlock();
 
         swiftWriter.emitEmptyLine();
     }
