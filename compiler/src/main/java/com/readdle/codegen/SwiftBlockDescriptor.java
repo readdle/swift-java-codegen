@@ -110,8 +110,8 @@ class SwiftBlockDescriptor {
         swiftWriter.emitImports(importPackages);
         swiftWriter.emitEmptyLine();
 
-        swiftWriter.emitStatement(String.format("fileprivate let javaClass = JNI.GlobalFindClass(\"%s\")!", javaFullName));
-
+        swiftWriter.emitStatement(String.format("private let javaClass = JNI.GlobalFindClass(\"%s\")!", javaFullName));
+        swiftWriter.emitEmptyLine();
         swiftWriter.emitStatement(String.format("public typealias %s = %s", simpleTypeName, blockSignature));
 
         swiftWriter.emitEmptyLine();
@@ -145,7 +145,7 @@ class SwiftBlockDescriptor {
         swiftWriter.emitStatement("}");
 
         swiftWriter.emitEmptyLine();
-        swiftWriter.emitStatement(String.format("static let javaMethod%1$s = try! JNI.getJavaMethod(forClass:\"%2$s\", method: \"%1$s\", sig: \"%3$s\")",
+        swiftWriter.emitStatement(String.format("static let javaMethod%1$s = try! JNI.getJavaMethod(forClass: \"%2$s\", method: \"%1$s\", sig: \"%3$s\")",
                 funcName,
                 javaFullName,
                 sig));
@@ -164,7 +164,8 @@ class SwiftBlockDescriptor {
                 if (param.isOptional) {
                     swiftWriter.emitStatement(String.format("if let %s = $%s {", param.name, i + ""));
                     swiftWriter.emitStatement(String.format("java_%s = try %s.javaObject()", param.name, param.name));
-                    swiftWriter.emitStatement("} else {");
+                    swiftWriter.emitStatement("}");
+                    swiftWriter.emitStatement("else {");
                     swiftWriter.emitStatement(String.format("java_%s = jnull()", param.name));
                     swiftWriter.emitStatement("}");
                 } else {
@@ -195,11 +196,13 @@ class SwiftBlockDescriptor {
         swiftWriter.emit(String.format(jniMethodTemplate, swiftType, funcName));
 
         for (SwiftParamDescriptor param : params) {
-            swiftWriter.emitStatement(String.format(", java_%s", param.name));
+            swiftWriter.emit(String.format(", java_%s", param.name));
         }
 
         if (returnSwiftType != null) {
-            swiftWriter.emit(String.format(") else { %s }\n", isReturnTypeOptional ? "return nil" : "fatalError(\"Don't support nil here!\")"));
+            swiftWriter.emitStatement(") else {");
+            swiftWriter.emitStatement(isReturnTypeOptional ? "return nil" : "fatalError(\"Don't support nil here!\")");
+            swiftWriter.emitStatement("}");
         }
         else {
             swiftWriter.emit(")\n");
@@ -209,14 +212,16 @@ class SwiftBlockDescriptor {
         if (isThrown) {
             swiftWriter.emitStatement("if let error = try? NSError.from(javaObject: throwable) {");
             swiftWriter.emitStatement("throw error");
-            swiftWriter.emitStatement("} else {");
+            swiftWriter.emitStatement("}");
+            swiftWriter.emitStatement("else {");
             swiftWriter.emitStatement("fatalError(\"JavaException\")");
             swiftWriter.emitStatement("}");
         }
         else {
             swiftWriter.emitStatement("if let error = try? NSError.from(javaObject: throwable) {");
             swiftWriter.emitStatement("fatalError(\"JavaException: \\(error) \")");
-            swiftWriter.emitStatement("} else {");
+            swiftWriter.emitStatement("}");
+            swiftWriter.emitStatement("else {");
             swiftWriter.emitStatement("fatalError(\"JavaException\")");
             swiftWriter.emitStatement("}");
         }

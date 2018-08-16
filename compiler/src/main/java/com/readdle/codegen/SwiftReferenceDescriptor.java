@@ -133,10 +133,10 @@ class SwiftReferenceDescriptor {
         swiftWriter.emitImports(importPackages);
         swiftWriter.emitEmptyLine();
 
-        swiftWriter.emitStatement(String.format("fileprivate let javaClass = JNI.GlobalFindClass(\"%s\")!", javaFullName));
-        swiftWriter.emitStatement("fileprivate let javaSwiftPointerFiled = JNI.api.GetFieldID(JNI.env, javaClass, \"nativePointer\", \"J\")");
+        swiftWriter.emitStatement(String.format("private let javaClass = JNI.GlobalFindClass(\"%s\")!", javaFullName));
+        swiftWriter.emitStatement("private let javaSwiftPointerFiled = JNI.api.GetFieldID(JNI.env, javaClass, \"nativePointer\", \"J\")");
 
-        swiftWriter.emitStatement(String.format("fileprivate let javaConstructor = try! JNI.getJavaEmptyConstructor(forClass: \"%s\")", javaFullName));
+        swiftWriter.emitStatement(String.format("private let javaConstructor = try! JNI.getJavaEmptyConstructor(forClass: \"%s\")", javaFullName));
 
         swiftWriter.emitEmptyLine();
         swiftWriter.beginExtension(simpleTypeName);
