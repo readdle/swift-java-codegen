@@ -4,8 +4,15 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.Writer;
+import java.text.Collator;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.Locale;
 
 public class SwiftWriter {
+
     private static class AlignedFileWriter extends FileWriter {
         private static final char MARGIN = '\t';
         private int currentLevel = 0;
@@ -62,17 +69,18 @@ public class SwiftWriter {
         this.writer.close();
     }
 
+    private static final String[] defaultImports = {"Foundation", "Java", "java_swift", "JavaCoder", "AnyCodable"};
+
     public void emitImports(String[] importPackages) throws IOException {
         this.writer.append("/* This file was generated with Readdle SwiftJava Codegen */\n");
         this.writer.append("/* Don't change it manually! */\n");
 
-        this.writer.append("import Foundation\n");
-        this.writer.append("import Java\n");
-        this.writer.append("import java_swift\n");
-        this.writer.append("import JavaCoder\n");
-        this.writer.append("import AnyCodable\n");
+        List<String> allPackages = new ArrayList<>();
+        allPackages.addAll(Arrays.asList(defaultImports));
+        allPackages.addAll(Arrays.asList(importPackages));
+        Collections.sort(allPackages, Collator.getInstance(Locale.US));
 
-        for (String importPackage : importPackages) {
+        for (String importPackage : allPackages) {
             this.writer.append(String.format("import %s\n", importPackage));
         }
     }

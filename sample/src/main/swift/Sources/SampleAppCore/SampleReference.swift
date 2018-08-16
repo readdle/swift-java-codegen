@@ -54,7 +54,7 @@ public class SampleReference {
     	return SampleValue(string: UUID().uuidString)
     }
 
-    public func saveValue(_ value: SampleValue)  {
+    public func saveValue(_ value: SampleValue) {
     	NSLog("save SampleValue: \(value.string)")
     }
 
@@ -74,7 +74,7 @@ public class SampleReference {
     public func tickWithBlock(_ block: SampleBlockDelegate) {
         // For table overflow test
         for i in 0 ..< 129 {
-            block.onCall(i, i * 100, Double(i) * 10000.0, Double(i) * 1000000.0)
+            block.onCall(i, i * 100, Double(i) * 10_000.0, Double(i) * 1_000_000.0)
         }
     }
 

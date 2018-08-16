@@ -166,14 +166,14 @@ class SwiftDelegateDescriptor {
         swiftWriter.emitImports(importPackages);
         swiftWriter.emitEmptyLine();
 
-        swiftWriter.emitStatement(String.format("fileprivate let javaClass = JNI.GlobalFindClass(\"%s\")!", javaFullName));
+        swiftWriter.emitStatement(String.format("private let javaClass = JNI.GlobalFindClass(\"%s\")!", javaFullName));
 
         if (!isInterface) {
             if (pointerBasicTypeSig != null) {
-                swiftWriter.emitStatement(String.format("fileprivate let javaPointerClass = JNI.GlobalFindClass(\"%s\")!", pointerBasicTypeSig));
-                swiftWriter.emitStatement("fileprivate let javaSwiftPointerFiled = JNI.api.GetFieldID(JNI.env, javaPointerClass, \"nativePointer\", \"J\")");
+                swiftWriter.emitStatement(String.format("private let javaPointerClass = JNI.GlobalFindClass(\"%s\")!", pointerBasicTypeSig));
+                swiftWriter.emitStatement("private let javaSwiftPointerFiled = JNI.api.GetFieldID(JNI.env, javaPointerClass, \"nativePointer\", \"J\")");
             } else {
-                swiftWriter.emitStatement("fileprivate let javaSwiftPointerFiled = JNI.api.GetFieldID(JNI.env, javaClass, \"nativePointer\", \"J\")");
+                swiftWriter.emitStatement("private let javaSwiftPointerFiled = JNI.api.GetFieldID(JNI.env, javaClass, \"nativePointer\", \"J\")");
             }
         }
 

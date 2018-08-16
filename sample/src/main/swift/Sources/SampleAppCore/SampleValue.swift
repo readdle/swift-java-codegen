@@ -20,7 +20,7 @@ public struct SampleValue: Codable, Hashable {
     public var stringArray: [String] = ["one", "two", "free"]
     public var numberArray: [Int] = [1, 2, 3]
     public var arrayInArray: [[Int]] = [[1, 2, 3]]
-    public var dictInArray: [[Int:Int]] = [[1: 1, 2: 2, 3: 3]]
+    public var dictInArray: [[Int: Int]] = [[1: 1, 2: 2, 3: 3]]
 
     public var dictSampleClass: [String: SampleValue] = [:]
     public var dictStrings: [String: String] = ["oneKey": "oneValue"]
@@ -30,7 +30,7 @@ public struct SampleValue: Codable, Hashable {
     public var arrayInDict: [UInt64: [UInt64]] = [123: [1, 2, 3]]
 
     public var set = Set<Int>(arrayLiteral: 1, 2, 3)
-    public var setValues = Set<SampleValue>();
+    public var setValues = Set<SampleValue>()
 
     public init(string: String) {
         self.string = string
@@ -40,7 +40,7 @@ public struct SampleValue: Codable, Hashable {
     	return SampleValue(string: UUID().uuidString)
     }
 
-    public func saveValue()  {
+    public func saveValue() {
     	NSLog("save SampleValue: \(string)")
     }
 
@@ -52,12 +52,12 @@ public struct SampleValue: Codable, Hashable {
     	throw NSError(domain: "Error", code: 1)
     }
 
-    //MARK: - dump hashable impl
+    // MARK: - dump hashable impl
     public var hashValue: Int {
         return string.hashValue
     }
 
-    public static func ==(lhs: SampleValue, rhs: SampleValue) -> Bool {
+    public static func == (lhs: SampleValue, rhs: SampleValue) -> Bool {
         return lhs.string == rhs.string
     }
 

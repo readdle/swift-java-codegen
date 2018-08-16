@@ -115,7 +115,8 @@ class SwiftFuncDescriptor implements JavaSwiftProcessor.WritableElement {
             if (param.isOptional) {
                 swiftWriter.emitStatement(String.format("if let j%1$s = j%1$s {", param.name));
                 swiftWriter.emitStatement(String.format("%1$s = try %2$s.from(javaObject: j%1$s)", param.name, param.swiftType.swiftConstructorType));
-                swiftWriter.emitStatement("} else {");
+                swiftWriter.emitStatement("}");
+                swiftWriter.emitStatement("else {");
                 swiftWriter.emitStatement(String.format("%s = nil", param.name));
                 swiftWriter.emitStatement("}");
             }
@@ -137,11 +138,16 @@ class SwiftFuncDescriptor implements JavaSwiftProcessor.WritableElement {
             swiftWriter.emitStatement("do {");
         }
 
-        swiftWriter.emit(String.format("%s%s%s.%s(",
+        String swiftMethodName = this.swiftMethodName;
+        if (isStatic && swiftMethodName.equals("init")) {
+            swiftMethodName = "";
+        }
+
+        swiftWriter.emit(String.format("%s%s%s%s(",
                 returnSwiftType != null ? "let result = " : "",
                 isThrown ? "try " : "",
                 isStatic ? swiftType : "swiftSelf",
-                swiftMethodName));
+                swiftMethodName.length() > 0 ? "." + swiftMethodName : ""));
 
         for (int i = 0; i < params.size(); i++) {
             SwiftParamDescriptor param = params.get(i);
@@ -180,8 +186,6 @@ class SwiftFuncDescriptor implements JavaSwiftProcessor.WritableElement {
         }
 
         swiftWriter.emitStatement("}");
-
-        swiftWriter.emitEmptyLine();
     }
 
     @Override

@@ -4,8 +4,6 @@ import com.readdle.codegen.anotation.SwiftGetter;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
 
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
@@ -88,8 +86,6 @@ class SwiftGetterDescriptor implements JavaSwiftProcessor.WritableElement {
         }
 
         swiftWriter.emitStatement("}");
-
-        swiftWriter.emitEmptyLine();
     }
 
     @Override

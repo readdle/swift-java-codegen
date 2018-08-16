@@ -1,6 +1,6 @@
 // swift-tools-version:4.0
-import PackageDescription
 import Foundation
+import PackageDescription
 
 let packageName = "SampleAppCore"
 
