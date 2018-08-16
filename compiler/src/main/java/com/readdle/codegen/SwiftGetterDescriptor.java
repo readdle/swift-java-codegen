@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 
+import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
 
@@ -25,6 +26,10 @@ class SwiftGetterDescriptor implements JavaSwiftProcessor.WritableElement {
         this.isStatic = executableElement.getModifiers().contains(Modifier.STATIC);
         this.returnSwiftType = SwiftEnvironment.parseJavaType(executableElement.getReturnType().toString());
         this.isReturnTypeOptional = JavaSwiftProcessor.isNullable(executableElement);
+
+        for (AnnotationMirror annotationMirror : executableElement.getAnnotationMirrors()) {
+            Utils.log(annotationMirror.toString());
+        }
 
         if (executableElement.getThrownTypes().size() != 0) {
             throw new SwiftMappingException("Getter can't throw", executableElement);

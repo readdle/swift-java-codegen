@@ -27,7 +27,7 @@ public class SampleReferenceTest {
     @Before
     public void setUp() {
         System.loadLibrary("SampleAppCore");
-        SwiftEnvironment.initEnvironment();
+        SwiftEnvironment.Companion.initEnvironment();
         this.sampleReference = SampleReference.init();
     }
 
@@ -84,7 +84,7 @@ public class SampleReferenceTest {
     @Test
     public void testLocalTableOverflow() {
         final int[] isFlag = new int[1];
-        JNICore.getJNI().dumpReferenceTables();
+        JNICore.Companion.getJNI().dumpReferenceTables();
         sampleReference.tickWithBlock(new SampleReference.SampleInterfaceDelegateAndroid() {
 
             @Override
@@ -92,14 +92,14 @@ public class SampleReferenceTest {
                 isFlag[0] = pr1;
             }
         });
-        JNICore.getJNI().dumpReferenceTables();
+        JNICore.Companion.getJNI().dumpReferenceTables();
         Assert.assertTrue(isFlag[0] == 128);
     }
 
     @Test
     public void testLocalTableOverflow2() {
         List<SampleValue> sampleValueList = new ArrayList<>();
-        JNICore.getJNI().dumpReferenceTables();
+        JNICore.Companion.getJNI().dumpReferenceTables();
         for (int i = 0; i < 1024; i++) {
             sampleValueList.add(sampleReference.getRandomValue());
         }
@@ -107,7 +107,7 @@ public class SampleReferenceTest {
         for (int i = 0; i < 1024; i++) {
             sampleReference.saveValue(sampleValueList.get(i));
         }
-        JNICore.getJNI().dumpReferenceTables();
+        JNICore.Companion.getJNI().dumpReferenceTables();
         Assert.assertTrue(sampleValueList.size() == 1024);
     }
 

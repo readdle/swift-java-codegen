@@ -2,6 +2,7 @@ package com.readdle.codegen;
 
 import java.util.List;
 
+import javax.annotation.processing.Messager;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.PackageElement;
@@ -18,6 +19,16 @@ import javax.tools.Diagnostic;
 public class Utils {
 
     private Utils() {
+    }
+
+    private static Messager messager;
+
+    public static void setMessager(Messager messager) {
+        Utils.messager = messager;
+    }
+
+    public static void log(String message) {
+        messager.printMessage(Diagnostic.Kind.NOTE, message);
     }
 
     /**

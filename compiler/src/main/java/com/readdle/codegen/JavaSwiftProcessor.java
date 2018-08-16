@@ -59,6 +59,8 @@ public class JavaSwiftProcessor extends AbstractProcessor {
         filer = processingEnv.getFiler();
         messager = processingEnv.getMessager();
 
+        Utils.setMessager(messager);
+
         try {
             String swiftFilePath = filer.createResource(StandardLocation.SOURCE_OUTPUT, FOLDER, "SwiftJava.swift", (Element) null).toUri().getPath();
             swiftExtensionFile = new File(swiftFilePath);
