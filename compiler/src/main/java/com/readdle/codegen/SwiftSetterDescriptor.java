@@ -71,21 +71,21 @@ class SwiftSetterDescriptor implements JavaSwiftProcessor.WritableElement {
             swiftWriter.emitStatement(String.format("%1$s = try %2$s.from(javaObject: j%1$s)", param.name, param.swiftType.swiftConstructorType));
             swiftWriter.emitStatement("} else {");
             swiftWriter.emitStatement(String.format("%s = nil", param.name));
-            swiftWriter.emitEndOfBlock();
+            swiftWriter.emitStatement("}");
         }
         else {
             swiftWriter.emitStatement(String.format("%1$s = try %2$s.from(javaObject: j%1$s)", param.name, param.swiftType.swiftConstructorType));
         }
 
-        swiftWriter.emitEndOfBlock();
+        swiftWriter.emitStatement("}");
         swiftWriter.emitStatement("catch {");
         swiftWriter.emitStatement("let errorString = String(reflecting: type(of: error)) + String(describing: error)");
         swiftWriter.emitStatement("_ = JNI.api.ThrowNew(JNI.env, SwiftRuntimeErrorClass, errorString)");
         swiftWriter.emitStatement("return");
-        swiftWriter.emitEndOfBlock();
+        swiftWriter.emitStatement("}");
 
         swiftWriter.emitStatement(String.format("%s.%s = %s", isStatic ? swiftType : "swiftSelf", swiftName, param.name));
-        swiftWriter.emitEndOfBlock();
+        swiftWriter.emitStatement("}");
 
         swiftWriter.emitEmptyLine();
     }

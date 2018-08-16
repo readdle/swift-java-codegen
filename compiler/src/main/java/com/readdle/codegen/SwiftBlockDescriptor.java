@@ -125,24 +125,24 @@ class SwiftBlockDescriptor {
         swiftWriter.emitStatement("public init(jniObject: jobject) {");
         // TODO: throw exception
         swiftWriter.emitStatement("self.jniObject = JNI.api.NewGlobalRef(JNI.env, jniObject)!");
-        swiftWriter.emitEndOfBlock();
+        swiftWriter.emitStatement("}");
 
         swiftWriter.emitEmptyLine();
         swiftWriter.emitStatement("deinit {");
         swiftWriter.emitStatement("JNI.api.DeleteGlobalRef(JNI.env, jniObject)");
-        swiftWriter.emitEndOfBlock();
+        swiftWriter.emitStatement("}");
 
         swiftWriter.emitEmptyLine();
         swiftWriter.emitStatement("// Create swift object");
         swiftWriter.emitStatement(String.format("public static func from(javaObject: jobject) throws -> %s {", simpleTypeName));
         swiftWriter.emitStatement(String.format("return %s(jniObject: javaObject).block", swiftType));
-        swiftWriter.emitEndOfBlock();
+        swiftWriter.emitStatement("}");
 
         swiftWriter.emitEmptyLine();
         swiftWriter.emitStatement("// Create java object with native pointer");
         swiftWriter.emitStatement("public func javaObject() throws -> jobject {");
         swiftWriter.emitStatement("return jniObject");
-        swiftWriter.emitEndOfBlock();
+        swiftWriter.emitStatement("}");
 
         swiftWriter.emitEmptyLine();
         swiftWriter.emitStatement(String.format("static let javaMethod%1$s = try! JNI.getJavaMethod(forClass:\"%2$s\", method: \"%1$s\", sig: \"%3$s\")",
@@ -166,13 +166,13 @@ class SwiftBlockDescriptor {
                     swiftWriter.emitStatement(String.format("java_%s = try %s.javaObject()", param.name, param.name));
                     swiftWriter.emitStatement("} else {");
                     swiftWriter.emitStatement(String.format("java_%s = jnull()", param.name));
-                    swiftWriter.emitEndOfBlock();
+                    swiftWriter.emitStatement("}");
                 } else {
                     swiftWriter.emitStatement(String.format("java_%s = try $%s.javaObject()", param.name, i + ""));
                 }
             }
 
-            swiftWriter.emitEndOfBlock();
+            swiftWriter.emitStatement("}");
             swiftWriter.emitStatement("catch {");
             swiftWriter.emitStatement("let errorString = String(reflecting: type(of: error)) + String(describing: error)");
             if (returnSwiftType == null) {
@@ -181,7 +181,7 @@ class SwiftBlockDescriptor {
             } else {
                 swiftWriter.emitStatement("fatalError(errorString)");
             }
-            swiftWriter.emitEndOfBlock();
+            swiftWriter.emitStatement("}");
         }
 
         String jniMethodTemplate;
@@ -211,21 +211,21 @@ class SwiftBlockDescriptor {
             swiftWriter.emitStatement("throw error");
             swiftWriter.emitStatement("} else {");
             swiftWriter.emitStatement("fatalError(\"JavaException\")");
-            swiftWriter.emitEndOfBlock();
+            swiftWriter.emitStatement("}");
         }
         else {
             swiftWriter.emitStatement("if let error = try? NSError.from(javaObject: throwable) {");
             swiftWriter.emitStatement("fatalError(\"JavaException: \\(error) \")");
             swiftWriter.emitStatement("} else {");
             swiftWriter.emitStatement("fatalError(\"JavaException\")");
-            swiftWriter.emitEndOfBlock();
+            swiftWriter.emitStatement("}");
         }
-        swiftWriter.emitEndOfBlock();
+        swiftWriter.emitStatement("}");
 
         if (returnSwiftType != null) {
             swiftWriter.emitStatement("do {");
             swiftWriter.emitStatement(String.format("return try %s.from(javaObject: result)", returnSwiftType.swiftConstructorType));
-            swiftWriter.emitEndOfBlock();
+            swiftWriter.emitStatement("}");
             swiftWriter.emitStatement("catch {");
             swiftWriter.emitStatement("let errorString = String(reflecting: type(of: error)) + String(describing: error)");
             if (returnSwiftType == null) {
@@ -235,10 +235,10 @@ class SwiftBlockDescriptor {
             else {
                 swiftWriter.emitStatement("fatalError(errorString)");
             }
-            swiftWriter.emitEndOfBlock();
+            swiftWriter.emitStatement("}");
         }
 
-        swiftWriter.emitEndOfBlock();
+        swiftWriter.emitStatement("}");
 
         swiftWriter.emitEmptyLine();
 

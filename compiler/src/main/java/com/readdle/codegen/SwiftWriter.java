@@ -100,7 +100,4 @@ public class SwiftWriter {
         this.writer.append("\n");
     }
 
-    public void emitEndOfBlock() throws IOException {
-        this.writer.append("}\n");
-    }
 }

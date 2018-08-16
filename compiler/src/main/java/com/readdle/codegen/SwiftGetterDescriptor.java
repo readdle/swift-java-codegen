@@ -61,12 +61,12 @@ class SwiftGetterDescriptor implements JavaSwiftProcessor.WritableElement {
             swiftWriter.emitStatement(String.format("let swiftSelf: %s", swiftType));
             swiftWriter.emitStatement("do {");
             swiftWriter.emitStatement(String.format("swiftSelf = try %s.from(javaObject: this)", swiftType));
-            swiftWriter.emitEndOfBlock();
+            swiftWriter.emitStatement("}");
             swiftWriter.emitStatement("catch {");
             swiftWriter.emitStatement("let errorString = String(reflecting: type(of: error)) + String(describing: error)");
             swiftWriter.emitStatement("_ = JNI.api.ThrowNew(JNI.env, SwiftRuntimeErrorClass, errorString)");
             swiftWriter.emitStatement(String.format("return%s", returnSwiftType != null ? " nil" : ""));
-            swiftWriter.emitEndOfBlock();
+            swiftWriter.emitStatement("}");
         }
 
         swiftWriter.emitStatement(String.format("let result = %s.%s", isStatic ? swiftType : "swiftSelf", swiftName));
@@ -79,15 +79,15 @@ class SwiftGetterDescriptor implements JavaSwiftProcessor.WritableElement {
             else {
                 swiftWriter.emitStatement("return try result.javaObject()");
             }
-            swiftWriter.emitEndOfBlock();
+            swiftWriter.emitStatement("}");
             swiftWriter.emitStatement("catch {");
             swiftWriter.emitStatement("let errorString = String(reflecting: type(of: error)) + String(describing: error)");
             swiftWriter.emitStatement("_ = JNI.api.ThrowNew(JNI.env, SwiftRuntimeErrorClass, errorString)");
             swiftWriter.emitStatement("return nil");
-            swiftWriter.emitEndOfBlock();
+            swiftWriter.emitStatement("}");
         }
 
-        swiftWriter.emitEndOfBlock();
+        swiftWriter.emitStatement("}");
 
         swiftWriter.emitEmptyLine();
     }
