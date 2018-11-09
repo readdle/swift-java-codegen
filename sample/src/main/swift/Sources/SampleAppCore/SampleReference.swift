@@ -80,7 +80,7 @@ public class SampleReference {
 
     public func funcWithNil() -> SampleValue? {
         delegate?.setSampleValue(value: nil)
-        return try! delegate?.funcWithNil()
+        return delegate?.funcWithNil()
     }
 
     public func floatCheck(_ float: Float) -> Float {
