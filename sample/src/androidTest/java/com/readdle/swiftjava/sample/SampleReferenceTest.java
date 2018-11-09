@@ -3,7 +3,6 @@ package com.readdle.swiftjava.sample;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.test.runner.AndroidJUnit4;
-import android.test.suitebuilder.annotation.LargeTest;
 
 import com.readdle.codegen.anotation.JavaSwift;
 import com.readdle.codegen.anotation.SwiftError;
@@ -20,7 +19,6 @@ import java.util.List;
 import java.util.UUID;
 
 @RunWith(AndroidJUnit4.class)
-@LargeTest
 public class SampleReferenceTest {
 
     private SampleReference sampleReference;

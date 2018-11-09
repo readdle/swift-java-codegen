@@ -9,13 +9,11 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import android.support.test.runner.AndroidJUnit4;
-import android.test.suitebuilder.annotation.LargeTest;
 
 import java.math.BigInteger;
 import java.util.UUID;
 
 @RunWith(AndroidJUnit4.class)
-@LargeTest
 public class SampleValueTest {
 
     @Before
