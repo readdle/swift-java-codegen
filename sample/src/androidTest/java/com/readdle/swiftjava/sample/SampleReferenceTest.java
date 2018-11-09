@@ -1,5 +1,10 @@
 package com.readdle.swiftjava.sample;
 
+import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
+import android.support.test.runner.AndroidJUnit4;
+import android.test.suitebuilder.annotation.LargeTest;
+
 import com.readdle.codegen.anotation.JavaSwift;
 import com.readdle.codegen.anotation.SwiftError;
 import com.readdle.swiftjava.sample.asbtracthierarhy.AbstractType;
@@ -9,11 +14,6 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
-import android.support.test.runner.AndroidJUnit4;
-import android.test.suitebuilder.annotation.LargeTest;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -161,6 +161,30 @@ public class SampleReferenceTest {
         });
         Assert.assertNotNull(result);
         Assert.assertTrue(result.equals("123"));
+    }
+
+    @Test
+    public void testBlockMemoryLeak() {
+        SampleReference.CompletionBlock block = new SampleReference.CompletionBlock() {
+            @Nullable
+            @Override
+            public String call(@Nullable Exception error, @Nullable String string) {
+                if (error == null) {
+                    return string;
+                }
+                else {
+                    return null;
+                }
+            }
+        };
+
+        MemoryLeakVerifier memoryLeakVerifier = new MemoryLeakVerifier(block);
+
+        String result = sampleReference.funcWithBlock(block);
+        Assert.assertNotNull(result);
+
+        block = null;
+        memoryLeakVerifier.assertGarbageCollected("SampleReference.CompletionBlock");
     }
 
     @Test

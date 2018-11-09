@@ -151,7 +151,8 @@ class SwiftBlockDescriptor {
                 sig));
 
         swiftWriter.emitEmptyLine();
-        swiftWriter.emitStatement(String.format("public lazy var block: %s = {", simpleTypeName));
+        swiftWriter.emitStatement(String.format("public var block: %s {", simpleTypeName));
+        swiftWriter.emitStatement("return {");
 
         for (SwiftParamDescriptor param : params) {
             swiftWriter.emitStatement(String.format("let java_%s: JNIArgumentProtocol", param.name));
@@ -243,6 +244,7 @@ class SwiftBlockDescriptor {
             swiftWriter.emitStatement("}");
         }
 
+        swiftWriter.emitStatement("}");
         swiftWriter.emitStatement("}");
 
         swiftWriter.emitEmptyLine();
