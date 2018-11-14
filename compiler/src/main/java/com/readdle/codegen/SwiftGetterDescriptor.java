@@ -18,10 +18,10 @@ class SwiftGetterDescriptor implements JavaSwiftProcessor.WritableElement {
     private SwiftEnvironment.Type returnSwiftType;
     private boolean isReturnTypeOptional;
 
-    SwiftGetterDescriptor(ExecutableElement executableElement, SwiftGetter getterAnnotation) {
+    SwiftGetterDescriptor(ExecutableElement executableElement, SwiftGetter getterAnnotation, JavaSwiftProcessor processor) {
         this.javaName = executableElement.getSimpleName().toString();
         this.isStatic = executableElement.getModifiers().contains(Modifier.STATIC);
-        this.returnSwiftType = SwiftEnvironment.parseJavaType(executableElement.getReturnType().toString());
+        this.returnSwiftType = processor.parseJavaType(executableElement.getReturnType().toString());
         this.isReturnTypeOptional = JavaSwiftProcessor.isNullable(executableElement);
 
         if (executableElement.getThrownTypes().size() != 0) {

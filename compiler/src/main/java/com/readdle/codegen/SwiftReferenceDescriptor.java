@@ -27,8 +27,8 @@ class SwiftReferenceDescriptor {
 
     List<JavaSwiftProcessor.WritableElement> functions = new LinkedList<>();
 
-    SwiftReferenceDescriptor(TypeElement classElement, Filer filer, String[] importPackages) throws IllegalArgumentException {
-        this.importPackages = importPackages;
+    SwiftReferenceDescriptor(TypeElement classElement, Filer filer, JavaSwiftProcessor processor) throws IllegalArgumentException {
+        this.importPackages = processor.importPackages;
 
         // Get the full QualifiedTypeName
         try {
@@ -113,12 +113,12 @@ class SwiftReferenceDescriptor {
                     SwiftSetter setterAnnotation = executableElement.getAnnotation(SwiftSetter.class);
 
                     if (getterAnnotation != null) {
-                        functions.add(new SwiftGetterDescriptor(executableElement, getterAnnotation));
+                        functions.add(new SwiftGetterDescriptor(executableElement, getterAnnotation, processor));
                     }
                     else if (setterAnnotation != null) {
-                        functions.add(new SwiftSetterDescriptor(executableElement, setterAnnotation));
+                        functions.add(new SwiftSetterDescriptor(executableElement, setterAnnotation, processor));
                     } else {
-                        functions.add(new SwiftFuncDescriptor(executableElement));
+                        functions.add(new SwiftFuncDescriptor(executableElement, processor));
                     }
                 }
             }

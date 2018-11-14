@@ -4,6 +4,7 @@ import com.readdle.codegen.anotation.SwiftBlock;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -40,9 +41,9 @@ class SwiftBlockDescriptor {
     private String sig;
     private List<SwiftParamDescriptor> params = new LinkedList<>();
 
-    SwiftBlockDescriptor(TypeElement classElement, Filer filer, String[] importPackages) throws IllegalArgumentException {
+    SwiftBlockDescriptor(TypeElement classElement, Filer filer, JavaSwiftProcessor processor) throws IllegalArgumentException {
         this.annotatedClassElement = classElement;
-        this.importPackages = importPackages;
+        this.importPackages = processor.importPackages;
 
         // Get the full QualifiedTypeName
         try {
@@ -79,13 +80,13 @@ class SwiftBlockDescriptor {
                 // Except init. We generate it's manually
                 this.funcName = executableElement.getSimpleName().toString();
                 this.isThrown = executableElement.getThrownTypes() != null && executableElement.getThrownTypes().size() > 0;
-                this.returnSwiftType = SwiftEnvironment.parseJavaType(executableElement.getReturnType().toString());
+                this.returnSwiftType = processor.parseJavaType(executableElement.getReturnType().toString());
                 this.isReturnTypeOptional = JavaSwiftProcessor.isNullable(executableElement);
 
                 this.sig = "(";
 
                 for (VariableElement variableElement : executableElement.getParameters()) {
-                    params.add(new SwiftParamDescriptor(variableElement));
+                    params.add(new SwiftParamDescriptor(variableElement, processor));
                     sig += Utils.javaClassToSig(variableElement.asType().toString());
                 }
 

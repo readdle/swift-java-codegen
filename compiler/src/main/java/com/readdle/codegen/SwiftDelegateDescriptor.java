@@ -39,10 +39,10 @@ class SwiftDelegateDescriptor {
 
     private boolean isInterface;
 
-    SwiftDelegateDescriptor(TypeElement classElement, Filer filer, String[] importPackages) throws IllegalArgumentException {
+    SwiftDelegateDescriptor(TypeElement classElement, Filer filer, JavaSwiftProcessor processor) throws IllegalArgumentException {
         this.annotatedClassElement = classElement;
         this.isInterface = classElement.getKind() == ElementKind.INTERFACE;
-        this.importPackages = importPackages;
+        this.importPackages = processor.importPackages;
 
         // Get the full QualifiedTypeName
         try {
@@ -141,7 +141,7 @@ class SwiftDelegateDescriptor {
                 ExecutableElement executableElement = (ExecutableElement) element;
                 // Except init. We generate it's manually
                 if (executableElement.getModifiers().contains(Modifier.NATIVE) && !executableElement.getSimpleName().contentEquals("init")) {
-                    functions.add(new SwiftFuncDescriptor(executableElement));
+                    functions.add(new SwiftFuncDescriptor(executableElement, processor));
                 }
             }
 
@@ -153,7 +153,7 @@ class SwiftDelegateDescriptor {
                     throw new SwiftMappingException(message, executableElement);
                 }
 
-                callbackFunctions.add(new SwiftCallbackFuncDescriptor(executableElement));
+                callbackFunctions.add(new SwiftCallbackFuncDescriptor(executableElement, processor));
             }
         }
     }

@@ -139,4 +139,12 @@ public class SampleReference {
         return try delegate.throwableFuncWithReturnType(flag)
     }
 
+    public func getRandomCustomSampleValue() -> SampleValue {
+        return SampleValue(string: UUID().uuidString)
+    }
+
+    public func saveCustomSampleValue(_ value: SampleValue) {
+        NSLog("save SampleValue: \(value.string)")
+    }
+
 }

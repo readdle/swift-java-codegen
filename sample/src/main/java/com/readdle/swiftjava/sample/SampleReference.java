@@ -142,4 +142,9 @@ public class SampleReference {
     @NonNull
     public native String throwableFuncWithReturnType(@NonNull SampleDelegateAndroid delegate, @NonNull Boolean flag) throws Exception;
 
+    @NonNull
+    public native CustomSampleValue getRandomCustomSampleValue();
+
+    public native void saveCustomSampleValue(@NonNull CustomSampleValue value);
+
 }

@@ -70,7 +70,7 @@ public class SampleValue {
     HashSet<SampleValue> setValues;
 
     // Swift JNI constructor
-    private SampleValue() {
+    protected SampleValue() {
 
     }
 

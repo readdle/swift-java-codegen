@@ -5,6 +5,7 @@ import com.readdle.codegen.anotation.SwiftDelegate;
 import com.readdle.codegen.anotation.SwiftModule;
 import com.readdle.codegen.anotation.SwiftReference;
 import com.readdle.codegen.anotation.SwiftValue;
+import com.readdle.codegen.anotation.TypeMapping;
 
 import java.io.File;
 import java.io.IOException;
@@ -13,6 +14,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.regex.Pattern;
 
 import javax.annotation.processing.AbstractProcessor;
 import javax.annotation.processing.Filer;
@@ -25,6 +27,7 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.Name;
 import javax.lang.model.element.TypeElement;
+import javax.lang.model.type.MirroredTypeException;
 import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
 import javax.tools.Diagnostic;
@@ -45,7 +48,8 @@ public class JavaSwiftProcessor extends AbstractProcessor {
     private Messager messager;
 
     private String moduleName;
-    private String[] importPackages;
+    String[] importPackages;
+    HashMap<String, String> customTypeMappings = new HashMap<>();
 
     @Override
     public synchronized void init(ProcessingEnvironment processingEnv) {
@@ -103,6 +107,22 @@ public class JavaSwiftProcessor extends AbstractProcessor {
             SwiftModule swiftModule = annotatedElement.getAnnotation(SwiftModule.class);
             moduleName = swiftModule.moduleName();
             importPackages = swiftModule.importPackages();
+            TypeMapping[] customTypeMappings = swiftModule.customTypeMappings();
+            for (TypeMapping customTypeMapping : customTypeMappings) {
+                try {
+                    Class clazz = customTypeMapping.javaClass();
+                    String canonicalName = clazz.getCanonicalName();
+                    String swiftType = customTypeMapping.swiftType();
+                    messager.printMessage(Diagnostic.Kind.NOTE, "Added custom mapping from " + canonicalName + " to " + swiftType);
+                    this.customTypeMappings.put(canonicalName, customTypeMapping.swiftType());
+                }
+                catch (MirroredTypeException mirroredTypeException) {
+                    String canonicalName = mirroredTypeException.getTypeMirror().toString();
+                    String swiftType = customTypeMapping.swiftType();
+                    messager.printMessage(Diagnostic.Kind.NOTE, "Added custom mapping from " + canonicalName + " to " + swiftType);
+                    this.customTypeMappings.put(canonicalName, customTypeMapping.swiftType());
+                }
+            }
         }
 
         if (moduleName == null || importPackages == null) {
@@ -120,7 +140,7 @@ public class JavaSwiftProcessor extends AbstractProcessor {
             TypeElement typeElement = (TypeElement) annotatedElement;
 
             try {
-                SwiftValueDescriptor swiftValueDescriptor = new SwiftValueDescriptor(typeElement, filer, importPackages);
+                SwiftValueDescriptor swiftValueDescriptor = new SwiftValueDescriptor(typeElement, filer, this);
                 swiftValues.put(swiftValueDescriptor.getSwiftType(), swiftValueDescriptor);
             }
             catch (IllegalArgumentException e) {
@@ -141,7 +161,7 @@ public class JavaSwiftProcessor extends AbstractProcessor {
             TypeElement typeElement = (TypeElement) annotatedElement;
 
             try {
-                SwiftReferenceDescriptor swiftReferenceDescriptor = new SwiftReferenceDescriptor(typeElement, filer, importPackages);
+                SwiftReferenceDescriptor swiftReferenceDescriptor = new SwiftReferenceDescriptor(typeElement, filer, this);
                 swiftReferences.put(swiftReferenceDescriptor.getSwiftType(), swiftReferenceDescriptor);
             }
             catch (IllegalArgumentException e) {
@@ -162,7 +182,7 @@ public class JavaSwiftProcessor extends AbstractProcessor {
             TypeElement typeElement = (TypeElement) annotatedElement;
 
             try {
-                SwiftDelegateDescriptor delegateDescriptor = new SwiftDelegateDescriptor(typeElement, filer, importPackages);
+                SwiftDelegateDescriptor delegateDescriptor = new SwiftDelegateDescriptor(typeElement, filer, this);
                 swiftDelegates.put(delegateDescriptor.simpleTypeName, delegateDescriptor);
             }
             catch (IllegalArgumentException e) {
@@ -188,7 +208,7 @@ public class JavaSwiftProcessor extends AbstractProcessor {
             TypeElement typeElement = (TypeElement) annotatedElement;
 
             try {
-                SwiftBlockDescriptor blockDescriptor = new SwiftBlockDescriptor(typeElement, filer, importPackages);
+                SwiftBlockDescriptor blockDescriptor = new SwiftBlockDescriptor(typeElement, filer, this);
                 swiftBlocks.put(blockDescriptor.simpleTypeName, blockDescriptor);
             }
             catch (IllegalArgumentException e) {
@@ -311,8 +331,71 @@ public class JavaSwiftProcessor extends AbstractProcessor {
     static String replaceLast(String text, char replace, char replacement) {
         int index = text.lastIndexOf(replace);
         if (index >= 0) {
-            return text.substring(0, index) + replacement + text.substring(index + 1, text.length());
+            return text.substring(0, index) + replacement + text.substring(index + 1);
         }
         return text;
+    }
+
+    public SwiftEnvironment.Type parseJavaType(String javaType) {
+        if (customTypeMappings.containsKey(javaType)) {
+            return new SwiftEnvironment.Type(customTypeMappings.get(javaType), javaType);
+        }
+        switch (javaType) {
+            case "void":
+                return null;
+            case "java.lang.Integer":
+                return new SwiftEnvironment.Type("Int", javaType);
+            case "java.lang.Byte":
+                return new SwiftEnvironment.Type("Int8", javaType);
+            case "java.lang.Short":
+                return new SwiftEnvironment.Type("Int16", javaType);
+            case "java.lang.Long":
+                return new SwiftEnvironment.Type("Int64", javaType);
+            case "java.math.BigInteger":
+                return new SwiftEnvironment.Type("UInt64", javaType);
+            case "java.lang.Boolean":
+                return new SwiftEnvironment.Type("Bool", javaType);
+            case "java.lang.String":
+                return new SwiftEnvironment.Type("String", javaType);
+            case "android.net.Uri":
+                return new SwiftEnvironment.Type("URL", javaType);
+            case "java.util.Date":
+                return new SwiftEnvironment.Type("Date", javaType);
+            case "java.nio.ByteBuffer":
+                return new SwiftEnvironment.Type("Data", javaType);
+            case "java.lang.Exception":
+                return new SwiftEnvironment.Type("Error", javaType, "NSError");
+            default:
+                try {
+                    if (javaType.startsWith("java.util.ArrayList<")) {
+                        SwiftEnvironment.Type subType = parseJavaType(javaType.substring("java.util.ArrayList<".length(), javaType.length() - 1));
+                        return new SwiftEnvironment.Type("[" + subType.swiftType + "]", javaType);
+                    }
+                    else if (javaType.startsWith("java.util.HashSet<")) {
+                        SwiftEnvironment.Type subType = parseJavaType(javaType.substring("java.util.HashSet<".length(), javaType.length() - 1));
+                        return new SwiftEnvironment.Type("Set<" + subType.swiftType + ">", javaType);
+                    }
+                    else if (javaType.startsWith("java.util.HashMap<")) {
+                        String substring = javaType.substring("java.util.HashMap<".length(), javaType.length() - 1);
+                        int commaIndex = substring.indexOf(",");
+                        SwiftEnvironment.Type keyType = parseJavaType(substring.substring(0, commaIndex));
+                        SwiftEnvironment.Type valueType = parseJavaType(substring.substring(commaIndex + 1));
+                        return new SwiftEnvironment.Type("[" + keyType.swiftType + ":" + valueType.swiftType + "]", javaType);
+                    }
+                    else {
+                        // Try found enclosing typename
+                        String[] parts = javaType.split(Pattern.quote("$"));
+                        if (parts.length == 1) {
+                            // If not found enclosing, find typename
+                            parts = javaType.split(Pattern.quote("."));
+                        }
+                        String swiftType = parts[parts.length - 1];
+                        return new SwiftEnvironment.Type(swiftType, javaType);
+                    }
+                }
+                catch (Exception e) {
+                    throw new IllegalArgumentException(javaType);
+                }
+        }
     }
 }

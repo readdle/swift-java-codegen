@@ -4,6 +4,7 @@ import com.readdle.codegen.anotation.SwiftSetter;
 
 import java.io.IOException;
 import java.util.Collections;
+import java.util.HashMap;
 
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
@@ -17,7 +18,7 @@ class SwiftSetterDescriptor implements JavaSwiftProcessor.WritableElement {
 
     private SwiftParamDescriptor param;
 
-    SwiftSetterDescriptor(ExecutableElement executableElement, SwiftSetter setterAnnotation) {
+    SwiftSetterDescriptor(ExecutableElement executableElement, SwiftSetter setterAnnotation, JavaSwiftProcessor processor) {
         this.javaName = executableElement.getSimpleName().toString();
         this.isStatic = executableElement.getModifiers().contains(Modifier.STATIC);
 
@@ -29,7 +30,7 @@ class SwiftSetterDescriptor implements JavaSwiftProcessor.WritableElement {
             throw new SwiftMappingException("Setter should have exactly 1 parameter", executableElement);
         }
 
-        param = new SwiftParamDescriptor(executableElement.getParameters().get(0));
+        param = new SwiftParamDescriptor(executableElement.getParameters().get(0), processor);
 
         if (setterAnnotation != null && !setterAnnotation.value().isEmpty()) {
             this.swiftName = setterAnnotation.value();

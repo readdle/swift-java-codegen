@@ -1,6 +1,9 @@
 package com.readdle.codegen;
 
 import com.readdle.codegen.anotation.SwiftBlock;
+import com.readdle.codegen.anotation.SwiftModule;
+
+import java.util.HashMap;
 
 import javax.lang.model.element.VariableElement;
 
@@ -12,9 +15,9 @@ public class SwiftParamDescriptor {
     final SwiftEnvironment.Type swiftType;
     final boolean isOptional;
 
-    SwiftParamDescriptor(VariableElement variableElement) {
+    SwiftParamDescriptor(VariableElement variableElement, JavaSwiftProcessor processor) {
         this.name = variableElement.getSimpleName().toString();
-        this.swiftType = requireNonNull(SwiftEnvironment.parseJavaType(Utils.typeToString(variableElement.asType())));
+        this.swiftType = requireNonNull(processor.parseJavaType(Utils.typeToString(variableElement.asType())));
 
         SwiftBlock swiftParam = variableElement.getAnnotation(SwiftBlock.class);
         if (swiftParam != null) {

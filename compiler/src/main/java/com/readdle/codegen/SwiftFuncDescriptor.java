@@ -5,6 +5,7 @@ import com.readdle.codegen.anotation.SwiftFunc;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 
 import javax.lang.model.element.ExecutableElement;
@@ -25,14 +26,14 @@ class SwiftFuncDescriptor implements JavaSwiftProcessor.WritableElement {
     private List<SwiftParamDescriptor> params;
     private List<String> paramNames;
 
-    SwiftFuncDescriptor(ExecutableElement executableElement) {
+    SwiftFuncDescriptor(ExecutableElement executableElement, JavaSwiftProcessor processor) {
         String elementName = executableElement.getSimpleName().toString();
         this.javaMethodName = elementName;
         this.swiftMethodName = elementName;
 
         this.isStatic = executableElement.getModifiers().contains(Modifier.STATIC);
         this.isThrown = executableElement.getThrownTypes() != null && executableElement.getThrownTypes().size() > 0;
-        this.returnSwiftType = SwiftEnvironment.parseJavaType(executableElement.getReturnType().toString());
+        this.returnSwiftType = processor.parseJavaType(executableElement.getReturnType().toString());
         this.isReturnTypeOptional = JavaSwiftProcessor.isNullable(executableElement);
 
         int paramsSize = executableElement.getParameters().size();
@@ -40,7 +41,7 @@ class SwiftFuncDescriptor implements JavaSwiftProcessor.WritableElement {
         this.paramNames = new ArrayList<>(paramsSize);
 
         for (VariableElement variableElement : executableElement.getParameters()) {
-            params.add(new SwiftParamDescriptor(variableElement));
+            params.add(new SwiftParamDescriptor(variableElement, processor));
         }
 
         SwiftFunc swiftFunc = executableElement.getAnnotation(SwiftFunc.class);
