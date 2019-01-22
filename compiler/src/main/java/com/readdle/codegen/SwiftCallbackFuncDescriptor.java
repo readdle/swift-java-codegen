@@ -171,10 +171,10 @@ public class SwiftCallbackFuncDescriptor {
         String jniMethodTemplate;
         if (returnSwiftType != null) {
             if (!isStatic) {
-                jniMethodTemplate = "guard let result = JNI.CallObjectMethod(jniObject, %s.javaMethod%s";
+                jniMethodTemplate = "let optionalResult = JNI.CallObjectMethod(jniObject, %s.javaMethod%s";
             }
             else {
-                jniMethodTemplate = "guard let result = JNI.CallStaticObjectMethod(javaClass, %s.javaMethod%s";
+                jniMethodTemplate = "let optionalResult = JNI.CallStaticObjectMethod(javaClass, %s.javaMethod%s";
             }
         }
         else {
@@ -185,34 +185,30 @@ public class SwiftCallbackFuncDescriptor {
                 jniMethodTemplate = "JNI.CallStaticVoidMethod(javaClass, %s.javaMethod%s";
             }
         }
-
         swiftWriter.emit(String.format(jniMethodTemplate, swiftType, javaMethodName));
-
         for (SwiftParamDescriptor param : params) {
             swiftWriter.emit(String.format(", java%s", param.name));
         }
+        swiftWriter.emitStatement(")");
 
-        if (returnSwiftType != null) {
-            swiftWriter.emit(") else {");
-            swiftWriter.emitStatement("if let throwable = JNI.ExceptionCheck() {");
-            if (isThrown) {
-                swiftWriter.emitStatement("if let error = try? NSError.from(javaObject: throwable) {");
-                swiftWriter.emitStatement("throw error");
-                swiftWriter.emitStatement("}");
-                swiftWriter.emitStatement("else {");
-                swiftWriter.emitStatement("fatalError(\"JavaException\")");
-                swiftWriter.emitStatement("}");
-            }
-            else {
-                swiftWriter.emitStatement("if let error = try? NSError.from(javaObject: throwable) {");
-                swiftWriter.emitStatement("fatalError(\"JavaException: \\(error) \")");
-                swiftWriter.emitStatement("}");
-                swiftWriter.emitStatement("else {");
-                swiftWriter.emitStatement("fatalError(\"JavaException\")");
-                swiftWriter.emitStatement("}");
-            }
+        swiftWriter.emitStatement("if let throwable = JNI.ExceptionCheck() {");
+        swiftWriter.emitStatement("let javaThrowable = Throwable(javaObject: throwable)");
+        swiftWriter.emitStatement("javaThrowable.printStackTrace()");
+        if (isThrown) {
+            swiftWriter.emitStatement("if let error = try? NSError.from(javaObject: throwable) {");
+            swiftWriter.emitStatement("throw error");
             swiftWriter.emitStatement("}");
             swiftWriter.emitStatement("else {");
+            swiftWriter.emitStatement("fatalError(\"UnknownJavaException\")");
+            swiftWriter.emitStatement("}");
+        }
+        else {
+            swiftWriter.emitStatement("fatalError(\"\\(javaThrowable.className()): \\(javaThrowable.getMessage())\\(javaThrowable.stackTraceString())\")");
+        }
+        swiftWriter.emitStatement("}");
+
+        if (returnSwiftType != null) {
+            swiftWriter.emitStatement("guard let result = optionalResult else {");
             if (isReturnTypeOptional) {
                 swiftWriter.emitStatement("return nil");
             }
@@ -220,32 +216,7 @@ public class SwiftCallbackFuncDescriptor {
                 swiftWriter.emitStatement("fatalError(\"Don't support nil here!\")");
             }
             swiftWriter.emitStatement("}");
-            swiftWriter.emitStatement("}");
-        }
-        else {
-            swiftWriter.emit(")\n");
 
-            swiftWriter.emitStatement("if let throwable = JNI.ExceptionCheck() {");
-            if (isThrown) {
-                swiftWriter.emitStatement("if let error = try? NSError.from(javaObject: throwable) {");
-                swiftWriter.emitStatement("throw error");
-                swiftWriter.emitStatement("}");
-                swiftWriter.emitStatement("else {");
-                swiftWriter.emitStatement("fatalError(\"JavaException\")");
-                swiftWriter.emitStatement("}");
-            }
-            else {
-                swiftWriter.emitStatement("if let error = try? NSError.from(javaObject: throwable) {");
-                swiftWriter.emitStatement("fatalError(\"JavaException: \\(error) \")");
-                swiftWriter.emitStatement("}");
-                swiftWriter.emitStatement("else {");
-                swiftWriter.emitStatement("fatalError(\"JavaException\")");
-                swiftWriter.emitStatement("}");
-            }
-            swiftWriter.emitStatement("}");
-        }
-
-        if (returnSwiftType != null) {
             swiftWriter.emitStatement("defer {");
             swiftWriter.emitStatement("JNI.DeleteLocalRef(result)");
             swiftWriter.emitStatement("}");
@@ -254,13 +225,7 @@ public class SwiftCallbackFuncDescriptor {
             swiftWriter.emitStatement("}");
             swiftWriter.emitStatement("catch {");
             swiftWriter.emitStatement("let errorString = String(reflecting: type(of: error)) + String(describing: error)");
-            if (returnSwiftType == null) {
-                swiftWriter.emitStatement("assert(false, errorString)");
-                swiftWriter.emitStatement("return");
-            }
-            else {
-                swiftWriter.emitStatement("fatalError(errorString)");
-            }
+            swiftWriter.emitStatement("fatalError(errorString)");
             swiftWriter.emitStatement("}");
         }
 

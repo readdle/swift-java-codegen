@@ -122,8 +122,8 @@ public class SampleReferenceTest {
         Exception exception1 = new Exception("");
         Exception exception2 = new Exception("QWERTY");
         Exception exception3 = new Exception("QWERTY:1");
-        Assert.assertTrue(sampleReference.exceptionCheck(exception1).getMessage().equals("JavaException:0"));
-        Assert.assertTrue(sampleReference.exceptionCheck(exception2).getMessage().equals(exception2.getMessage() + ":0"));
+        Assert.assertTrue(sampleReference.exceptionCheck(exception1).getMessage().equals("java.lang.Exception:0"));
+        Assert.assertTrue(sampleReference.exceptionCheck(exception2).getMessage().equals("java.lang.Exception:0"));
         Assert.assertTrue(sampleReference.exceptionCheck(exception3).getMessage().equals(exception3.getMessage()));
     }
 
