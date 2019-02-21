@@ -144,7 +144,8 @@ class SwiftReferenceDescriptor {
         swiftWriter.emitEmptyLine();
         swiftWriter.emitStatement("// Get swift object from pointer");
         swiftWriter.emitStatement(String.format("public static func from(javaObject: jobject) throws -> %s {", simpleTypeName));
-        swiftWriter.emitStatement("guard let pointer = UnsafeRawPointer(bitPattern: Int(JNI.api.GetLongField(JNI.env, javaObject, javaSwiftPointerFiled))) else {\nthrow NSError(domain: \"NullPointerException\", code: 1)\n}");
+        swiftWriter.emitStatement("let longPointer = JNI.api.GetLongField(JNI.env, javaObject, javaSwiftPointerFiled)");
+        swiftWriter.emitStatement("guard longPointer != 0, let pointer = UnsafeRawPointer(bitPattern: Int(longPointer)) else {\nthrow NSError(domain: \"java.lang.NullPointerException\", code: 1)\n}");
         swiftWriter.emitStatement(String.format("return Unmanaged<%s>.fromOpaque(pointer).takeUnretainedValue()", simpleTypeName));
         swiftWriter.emitStatement("}");
 

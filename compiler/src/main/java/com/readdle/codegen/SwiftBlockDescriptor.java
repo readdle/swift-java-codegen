@@ -212,7 +212,7 @@ class SwiftBlockDescriptor {
             swiftWriter.emitStatement("}");
         }
         else {
-            swiftWriter.emitStatement("fatalError(\"\\(javaThrowable.className()): \\(javaThrowable.getMessage())\\(javaThrowable.stackTraceString())\")");
+            swiftWriter.emitStatement("fatalError(\"\\(javaThrowable.className()): \\(javaThrowable.getMessage() ?? \"\")\\(javaThrowable.stackTraceString())\")");
         }
         swiftWriter.emitStatement("}");
 

@@ -61,7 +61,9 @@ class SwiftGetterDescriptor implements JavaSwiftProcessor.WritableElement {
             swiftWriter.emitStatement(String.format("swiftSelf = try %s.from(javaObject: this)", swiftType));
             swiftWriter.emitStatement("}");
             swiftWriter.emitStatement("catch {");
-            swiftWriter.emitStatement("let errorString = String(reflecting: type(of: error)) + String(describing: error)");
+            swiftWriter.emitStatement("let errorString: String");
+            swiftWriter.emitStatement("if let nsError = error as? NSError { errorString = \"\\(nsError.domain): \\(nsError.code)\" }");
+            swiftWriter.emitStatement("else { errorString = String(reflecting: type(of: error)) + \": \" + String(describing: error) }");
             swiftWriter.emitStatement("_ = JNI.api.ThrowNew(JNI.env, SwiftRuntimeErrorClass, errorString)");
             swiftWriter.emitStatement(String.format("return%s", returnSwiftType != null ? " nil" : ""));
             swiftWriter.emitStatement("}");
@@ -79,7 +81,9 @@ class SwiftGetterDescriptor implements JavaSwiftProcessor.WritableElement {
             }
             swiftWriter.emitStatement("}");
             swiftWriter.emitStatement("catch {");
-            swiftWriter.emitStatement("let errorString = String(reflecting: type(of: error)) + String(describing: error)");
+            swiftWriter.emitStatement("let errorString: String");
+            swiftWriter.emitStatement("if let nsError = error as? NSError { errorString = \"\\(nsError.domain): \\(nsError.code)\" }");
+            swiftWriter.emitStatement("else { errorString = String(reflecting: type(of: error)) + \": \" + String(describing: error) }");
             swiftWriter.emitStatement("_ = JNI.api.ThrowNew(JNI.env, SwiftRuntimeErrorClass, errorString)");
             swiftWriter.emitStatement("return nil");
             swiftWriter.emitStatement("}");

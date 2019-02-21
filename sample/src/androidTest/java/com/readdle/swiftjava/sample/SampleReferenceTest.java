@@ -3,9 +3,11 @@ package com.readdle.swiftjava.sample;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.test.runner.AndroidJUnit4;
+import android.util.Log;
 
 import com.readdle.codegen.anotation.JavaSwift;
 import com.readdle.codegen.anotation.SwiftError;
+import com.readdle.codegen.anotation.SwiftRuntimeError;
 import com.readdle.swiftjava.sample.asbtracthierarhy.AbstractType;
 
 import org.junit.After;
@@ -212,7 +214,7 @@ public class SampleReferenceTest {
             Assert.fail();
         }
         catch (Exception e) {
-            Assert.assertTrue(e.getMessage().equals("Foundation.NSErrorThe operation could not be completed"));
+            Assert.assertTrue(e.getMessage().equals("java.lang.IllegalArgumentException: 0"));
         }
         try {
             sampleReference.throwableFunc(sampleDelegateAndroid, false);
@@ -225,13 +227,26 @@ public class SampleReferenceTest {
             Assert.fail();
         }
         catch (Exception e) {
-            Assert.assertTrue(e.getMessage().equals("Foundation.NSErrorThe operation could not be completed"));
+            Assert.assertTrue(e.getMessage().equals("java.lang.IllegalArgumentException: 0"));
         }
         try {
             Assert.assertTrue(sampleReference.throwableFuncWithReturnType(sampleDelegateAndroid, false).equals("throwableFuncWithReturnType"));
         }
         catch (Exception e) {
             Assert.fail();
+        }
+    }
+
+    @Test
+    public void testNullPointerAfterRelease() {
+        SampleReference sampleReference = SampleReference.init();
+        sampleReference.release();
+        try {
+            sampleReference.funcWithNil();
+            Assert.fail();
+        }
+        catch (SwiftRuntimeError error) {
+            Assert.assertTrue(error.getMessage().equals("java.lang.NullPointerException: 1"));
         }
     }
 
