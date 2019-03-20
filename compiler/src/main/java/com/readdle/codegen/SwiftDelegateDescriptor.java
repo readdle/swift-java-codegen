@@ -181,7 +181,7 @@ class SwiftDelegateDescriptor {
         swiftWriter.emit(String.format("public class %s", simpleTypeName));
         for (int i = 0; i < protocols.length; i++) {
             if (i == 0) {
-                swiftWriter.emit(": " + protocols[0]);
+                swiftWriter.emit(": NSObject, " + protocols[0]);
             }
             else {
                 swiftWriter.emit(", " + protocols[i]);

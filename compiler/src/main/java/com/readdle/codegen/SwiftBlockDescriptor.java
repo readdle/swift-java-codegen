@@ -117,7 +117,7 @@ class SwiftBlockDescriptor {
 
         swiftWriter.emitEmptyLine();
         swiftWriter.emit(String.format("public class %s", swiftType));
-        swiftWriter.emit(" {\n");
+        swiftWriter.emit(": NSObject {\n");
 
         swiftWriter.emitEmptyLine();
         swiftWriter.emitStatement("let jniObject: jobject");
