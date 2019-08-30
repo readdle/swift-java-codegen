@@ -92,8 +92,8 @@ public class SampleReference {
     }
 
     public func exceptionCheck(_ var1: Error) -> Error {
-        let domain = (var1 as! NSError).domain
-        let code = (var1 as! NSError).code
+        let domain = (var1 as NSError).domain
+        let code = (var1 as NSError).code
         NSLog("Error: \(domain) \(code)")
 
         return var1
