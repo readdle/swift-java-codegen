@@ -5,7 +5,6 @@ import com.readdle.codegen.anotation.SwiftFunc;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
 
 import javax.lang.model.element.ExecutableElement;
@@ -129,9 +128,8 @@ class SwiftFuncDescriptor implements JavaSwiftProcessor.WritableElement {
         if (shouldCatchPreamble) {
             swiftWriter.emitStatement("}");
             swiftWriter.emitStatement("catch {");
-            swiftWriter.emitStatement("let errorString: String");
-            swiftWriter.emitStatement("if let nsError = error as? NSError { errorString = \"\\(nsError.domain): \\(nsError.code)\" }");
-            swiftWriter.emitStatement("else { errorString = String(reflecting: type(of: error)) + \": \" + String(describing: error) }");
+            swiftWriter.emitStatement("let nsError = error as NSError");
+            swiftWriter.emitStatement("let errorString = \"\\(nsError.domain): \\(nsError.code)\"");
             swiftWriter.emitStatement("_ = JNI.api.ThrowNew(JNI.env, SwiftRuntimeErrorClass, errorString)");
             swiftWriter.emitStatement(String.format("return%s", returnSwiftType != null ? " nil" : ""));
             swiftWriter.emitStatement("}");
@@ -177,9 +175,8 @@ class SwiftFuncDescriptor implements JavaSwiftProcessor.WritableElement {
             }
             swiftWriter.emitStatement("}");
             swiftWriter.emitStatement("catch {");
-            swiftWriter.emitStatement("let errorString: String");
-            swiftWriter.emitStatement("if let nsError = error as? NSError { errorString = \"\\(nsError.domain): \\(nsError.code)\" }");
-            swiftWriter.emitStatement("else { errorString = String(reflecting: type(of: error)) + \": \" + String(describing: error) }");
+            swiftWriter.emitStatement("let nsError = error as NSError");
+            swiftWriter.emitStatement("let errorString = \"\\(nsError.domain): \\(nsError.code)\"");
             swiftWriter.emitStatement("_ = JNI.api.ThrowNew(JNI.env, SwiftRuntimeErrorClass, errorString)");
             swiftWriter.emitStatement("return nil");
             swiftWriter.emitStatement("}");
@@ -188,9 +185,8 @@ class SwiftFuncDescriptor implements JavaSwiftProcessor.WritableElement {
         if (isThrown) {
             swiftWriter.emitStatement("}");
             swiftWriter.emitStatement("catch {");
-            swiftWriter.emitStatement("let errorString: String");
-            swiftWriter.emitStatement("if let nsError = error as? NSError { errorString = \"\\(nsError.domain): \\(nsError.code)\" }");
-            swiftWriter.emitStatement("else { errorString = String(reflecting: type(of: error)) + \": \" + String(describing: error) }");
+            swiftWriter.emitStatement("let nsError = error as NSError");
+            swiftWriter.emitStatement("let errorString = \"\\(nsError.domain): \\(nsError.code)\"");
             swiftWriter.emitStatement("_ = JNI.api.ThrowNew(JNI.env, SwiftErrorClass, errorString)");
             swiftWriter.emitStatement(String.format("return%s", returnSwiftType != null ? " nil" : ""));
             swiftWriter.emitStatement("}");
