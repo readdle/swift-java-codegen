@@ -1,4 +1,4 @@
-// swift-tools-version:4.0
+// swift-tools-version:5.0
 import Foundation
 import PackageDescription
 
@@ -9,15 +9,11 @@ let generatedName = "Generated"
 let generatedPath = ".build/\(generatedName.lowercased())"
 
 let isSourcesGenerated: Bool = {
-    let basePath = URL(fileURLWithPath: #file)
-            .deletingLastPathComponent()
-            .path
-
-    let fileManager = FileManager()
-    fileManager.changeCurrentDirectoryPath(basePath)
+    let baseURL = URL(fileURLWithPath: #file).deletingLastPathComponent()
+    let generatedURL = baseURL.appendingPathComponent(generatedPath)
 
     var isDirectory: ObjCBool = false
-    let exists = fileManager.fileExists(atPath: generatedPath, isDirectory: &isDirectory)
+    let exists = FileManager.default.fileExists(atPath: generatedURL.path, isDirectory: &isDirectory)
 
     return exists && isDirectory.boolValue
 }()
@@ -41,7 +37,7 @@ func addGenerated(_ targets: [Target]) -> [Target] {
         .target(
             name: generatedName,
             dependencies: [
-                .byNameItem(name: packageName),
+                .byName(name: packageName),
                 "java_swift",
                 "Java",
                 "JavaCoder",
@@ -57,13 +53,12 @@ let package = Package(
     products: addGenerated([
     ]),
     dependencies: [
-        .package(url: "https://github.com/readdle/java_swift.git", .exact("2.1.3")),
-        .package(url: "https://github.com/readdle/swift-java.git", .exact("0.1.5")),
-        .package(url: "https://github.com/readdle/swift-java-coder.git", .exact("1.0.5")),
-        .package(url: "https://github.com/readdle/swift-anycodable.git", .exact("1.0.0")),
+        .package(url: "https://github.com/readdle/java_swift.git", .exact("2.1.7")),
+        .package(url: "https://github.com/readdle/swift-java.git", .exact("0.2.0")),
+        .package(url: "https://github.com/readdle/swift-java-coder.git", .exact("1.0.13")),
+        .package(url: "https://github.com/readdle/swift-anycodable.git", .exact("1.0.2")),
     ],
     targets: addGenerated([
         .target(name: packageName, dependencies: ["AnyCodable"])
-    ]),
-    swiftLanguageVersions: [4]
+    ])
 )
