@@ -4,7 +4,6 @@ import com.readdle.codegen.anotation.SwiftSetter;
 
 import java.io.IOException;
 import java.util.Collections;
-import java.util.HashMap;
 
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
@@ -81,9 +80,8 @@ class SwiftSetterDescriptor implements JavaSwiftProcessor.WritableElement {
 
         swiftWriter.emitStatement("}");
         swiftWriter.emitStatement("catch {");
-        swiftWriter.emitStatement("let errorString: String");
-        swiftWriter.emitStatement("if let nsError = error as? NSError { errorString = \"\\(nsError.domain): \\(nsError.code)\" }");
-        swiftWriter.emitStatement("else { errorString = String(reflecting: type(of: error)) + \": \" + String(describing: error) }");
+        swiftWriter.emitStatement("let nsError = error as NSError");
+        swiftWriter.emitStatement("let errorString = \"\\(nsError.domain): \\(nsError.code)\"");
         swiftWriter.emitStatement("_ = JNI.api.ThrowNew(JNI.env, SwiftRuntimeErrorClass, errorString)");
         swiftWriter.emitStatement("return");
         swiftWriter.emitStatement("}");
