@@ -2,7 +2,7 @@ import Foundation
 
 public struct SampleValue: Codable, Hashable {
 
-	public var string: String
+    public var string: String
 
     public var integer: Int = 32
     public var int8: Int8 = 8
@@ -37,24 +37,24 @@ public struct SampleValue: Codable, Hashable {
     }
     
     public static func getRandomValue() -> SampleValue {
-    	return SampleValue(string: UUID().uuidString)
+        return SampleValue(string: UUID().uuidString)
     }
 
     public func saveValue() {
-    	NSLog("save SampleValue: \(string)")
+        NSLog("save SampleValue: \(string)")
     }
 
     public func isSame(other: SampleValue) -> Bool {
-    	return self == other
+        return self == other
     }
 
     public static func funcThrows() throws {
-    	throw NSError(domain: "Error", code: 1)
+        throw NSError(domain: "Error", code: 1)
     }
 
     // MARK: - dump hashable impl
-    public var hashValue: Int {
-        return string.hashValue
+    public func hash(into hasher: inout Hasher) {
+        hasher.combine(string)
     }
 
     public static func == (lhs: SampleValue, rhs: SampleValue) -> Bool {
