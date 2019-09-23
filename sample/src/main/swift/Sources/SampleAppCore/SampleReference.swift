@@ -151,7 +151,7 @@ public class SampleReference {
 
     public func oneMoreReferenceTableOverflow(_ delegate: SampleDelegate) {
         // For table overflow test
-        for i in 0 ..< 512 {
+        for _ in 0 ..< 512 {
             let data = delegate.funcWithData()
             if data.count != 10 {
                 fatalError("Wrong data count \(data.count) != 10")

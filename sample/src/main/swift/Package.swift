@@ -53,12 +53,12 @@ let package = Package(
     products: addGenerated([
     ]),
     dependencies: [
-        .package(url: "https://github.com/readdle/java_swift.git", .exact("2.1.7")),
-        .package(url: "https://github.com/readdle/swift-java.git", .exact("0.2.0")),
-        .package(url: "https://github.com/readdle/swift-java-coder.git", .exact("1.0.13")),
-        .package(url: "https://github.com/readdle/swift-anycodable.git", .exact("1.0.2")),
+        .package(url: "https://github.com/readdle/java_swift.git", .upToNextMinor(from: "2.1.8")),
+        .package(url: "https://github.com/readdle/swift-java.git", .upToNextMinor(from: "0.2.2")),
+        .package(url: "https://github.com/readdle/swift-java-coder.git", .upToNextMinor(from: "1.0.16")),
+        .package(url: "https://github.com/readdle/swift-anycodable.git", .upToNextMinor(from: "1.0.3")),
     ],
     targets: addGenerated([
-        .target(name: packageName, dependencies: ["AnyCodable"])
+        .target(name: packageName, dependencies: ["AnyCodable", "java_swift", "JavaCoder"])
     ])
 )

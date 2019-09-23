@@ -37,7 +37,6 @@ crashlytics-build.properties
 
 # XCode
 *.xcodeproj
-Package.resolved
 app/src/main/swift/.idea
 captures
 .idea
