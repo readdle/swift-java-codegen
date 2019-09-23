@@ -15,6 +15,8 @@ public protocol SampleDelegate: class {
     func throwableFunc(_ flag: Bool) throws
 
     func throwableFuncWithReturnType(_ flag: Bool) throws -> String
+
+    func funcWithData() -> Data
 }
 
 public protocol SampleBlockDelegate {
@@ -145,6 +147,16 @@ public class SampleReference {
 
     public func saveCustomSampleValue(_ value: SampleValue) {
         NSLog("save SampleValue: \(value.string)")
+    }
+
+    public func oneMoreReferenceTableOverflow(_ delegate: SampleDelegate) {
+        // For table overflow test
+        for i in 0 ..< 512 {
+            let data = delegate.funcWithData()
+            if data.count != 10 {
+                fatalError("Wrong data count \(data.count) != 10")
+            }
+        }
     }
 
 }

@@ -147,4 +147,6 @@ public class SampleReference {
 
     public native void saveCustomSampleValue(@NonNull CustomSampleValue value);
 
+    public native void oneMoreReferenceTableOverflow(@NonNull SampleDelegateAndroid delegate);
+
 }

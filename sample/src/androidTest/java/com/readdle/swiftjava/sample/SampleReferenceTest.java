@@ -249,5 +249,16 @@ public class SampleReferenceTest {
             Assert.assertTrue(error.getMessage().equals("java.lang.NullPointerException: 1"));
         }
     }
+    
+    // Run on Android 7.0 to fail
+    @Test
+    public void testLocalTableOverflow3() {
+        sampleReference.oneMoreReferenceTableOverflow(new SampleDelegateAndroid() {
+            @Override
+            void onSetSampleValue(SampleValue value) {
+                // empty
+            }
+        });
+    }
 
 }

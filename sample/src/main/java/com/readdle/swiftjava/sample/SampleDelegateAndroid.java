@@ -7,6 +7,8 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.util.Log;
 
+import java.nio.ByteBuffer;
+
 @SwiftDelegate(protocols = {"SampleDelegate"})
 public abstract class SampleDelegateAndroid {
 
@@ -72,7 +74,11 @@ public abstract class SampleDelegateAndroid {
         }
     }
 
-
+    @SwiftCallbackFunc @NonNull
+    public ByteBuffer funcWithData() {
+        byte[] tenBytes = new byte[10];
+        return ByteBuffer.wrap(tenBytes);
+    }
 
     abstract void onSetSampleValue(SampleValue value);
 
