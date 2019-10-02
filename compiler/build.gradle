@@ -3,7 +3,8 @@ apply plugin: 'java'
 archivesBaseName = "compiler"
 
 dependencies {
-    compile project(':library')
+    implementation project(':library')
+    implementation 'com.google.code.gson:gson:2.8.5'
 }
 
 apply from: rootProject.file('bintray-publish.gradle')

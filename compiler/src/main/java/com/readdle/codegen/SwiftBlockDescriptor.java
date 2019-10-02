@@ -43,7 +43,7 @@ class SwiftBlockDescriptor {
 
     SwiftBlockDescriptor(TypeElement classElement, Filer filer, JavaSwiftProcessor processor) throws IllegalArgumentException {
         this.annotatedClassElement = classElement;
-        this.importPackages = processor.importPackages;
+        this.importPackages = processor.moduleDescriptor.importPackages;
 
         // Get the full QualifiedTypeName
         try {

@@ -21,6 +21,19 @@ android {
         versionCode 1
         versionName "1.0"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+       javaCompileOptions {
+           annotationProcessorOptions {
+               arguments = ["com.readdle.codegen.package": """{
+                   "moduleName": "SampleProject",
+                   "importPackages": ["SampleAppCore"],
+                   "customTypeMappings": {
+                           "com.readdle.swiftjava.sample.CustomSampleValue": "SampleValue"
+                   }
+               }
+               """
+               ]
+           }
+       }
     }
     buildTypes {
         release {

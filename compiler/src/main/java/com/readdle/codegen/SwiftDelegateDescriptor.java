@@ -42,7 +42,7 @@ class SwiftDelegateDescriptor {
     SwiftDelegateDescriptor(TypeElement classElement, Filer filer, JavaSwiftProcessor processor) throws IllegalArgumentException {
         this.annotatedClassElement = classElement;
         this.isInterface = classElement.getKind() == ElementKind.INTERFACE;
-        this.importPackages = processor.importPackages;
+        this.importPackages = processor.moduleDescriptor.importPackages;
 
         // Get the full QualifiedTypeName
         try {

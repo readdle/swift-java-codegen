@@ -1,15 +1,15 @@
 package com.readdle.codegen;
 
+import com.google.gson.Gson;
 import com.readdle.codegen.anotation.SwiftBlock;
 import com.readdle.codegen.anotation.SwiftDelegate;
-import com.readdle.codegen.anotation.SwiftModule;
 import com.readdle.codegen.anotation.SwiftReference;
 import com.readdle.codegen.anotation.SwiftValue;
-import com.readdle.codegen.anotation.TypeMapping;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -27,7 +27,6 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.Name;
 import javax.lang.model.element.TypeElement;
-import javax.lang.model.type.MirroredTypeException;
 import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
 import javax.tools.Diagnostic;
@@ -41,15 +40,14 @@ public class JavaSwiftProcessor extends AbstractProcessor {
     }
 
     public static final String FOLDER = "SwiftGenerated";
+    public static final String PACKAGE_OPTION = "com.readdle.codegen.package";
 
     private Types typeUtils;
     private Elements elementUtils;
     private Filer filer;
     private Messager messager;
 
-    private String moduleName;
-    String[] importPackages;
-    HashMap<String, String> customTypeMappings = new HashMap<>();
+    SwiftModuleDescriptor moduleDescriptor;
 
     @Override
     public synchronized void init(ProcessingEnvironment processingEnv) {
@@ -59,12 +57,38 @@ public class JavaSwiftProcessor extends AbstractProcessor {
         filer = processingEnv.getFiler();
         messager = processingEnv.getMessager();
 
+        messager.printMessage(Diagnostic.Kind.NOTE, "JavaSwiftProcessor init started");
+
+        String packageJson = processingEnv.getOptions().get(PACKAGE_OPTION);
+
+        moduleDescriptor = new Gson().fromJson(packageJson, SwiftModuleDescriptor.class);
+        if (moduleDescriptor == null) {
+            messager.printMessage(Diagnostic.Kind.ERROR, "No package description with option: com.readdle.codegen.package", null);
+            return;
+        }
+
+        messager.printMessage(Diagnostic.Kind.NOTE, "Package moduleName: " + moduleDescriptor.moduleName);
+
+        if (moduleDescriptor.importPackages != null) {
+            for (String anImport : moduleDescriptor.importPackages) {
+                messager.printMessage(Diagnostic.Kind.NOTE, "Package import: " + anImport);
+            }
+        }
+
+        if (moduleDescriptor.customTypeMappings != null) {
+            for (String key : moduleDescriptor.customTypeMappings.keySet()) {
+                messager.printMessage(Diagnostic.Kind.NOTE, "Package custom mapping: " + key + " -> " + moduleDescriptor.customTypeMappings.get(key));
+            }
+        }
+
         try {
             generateJavaSwift(filer);
         } catch (IOException e) {
             e.printStackTrace();
             error(null, "Can't write to file: " + e.getMessage());
         }
+
+        messager.printMessage(Diagnostic.Kind.NOTE, "JavaSwiftProcessor init finished successfully");
     }
 
     @Override
@@ -83,6 +107,13 @@ public class JavaSwiftProcessor extends AbstractProcessor {
     }
 
     @Override
+    public Set<String> getSupportedOptions() {
+        Set<String> options = new HashSet<>(super.getSupportedOptions());
+        options.add(PACKAGE_OPTION);
+        return options;
+    }
+
+    @Override
     public boolean process(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv) {
         try {
             return processImpl(annotations, roundEnv);
@@ -96,36 +127,23 @@ public class JavaSwiftProcessor extends AbstractProcessor {
 
     private boolean processImpl(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv) {
         Filer filer = processingEnv.getFiler();
-        messager.printMessage(Diagnostic.Kind.NOTE, "Start SwiftJava code generation:");
+        messager.printMessage(Diagnostic.Kind.NOTE, "JavaSwiftProcessor start code generation");
+
+        messager.printMessage(Diagnostic.Kind.NOTE, "SwiftValue to process: "
+                + roundEnv.getElementsAnnotatedWith(SwiftValue.class).size());
+        messager.printMessage(Diagnostic.Kind.NOTE, "SwiftReference to process: "
+                + roundEnv.getElementsAnnotatedWith(SwiftReference.class).size());
+        messager.printMessage(Diagnostic.Kind.NOTE, "SwiftDelegate to process: "
+                + roundEnv.getElementsAnnotatedWith(SwiftDelegate.class).size());
+        messager.printMessage(Diagnostic.Kind.NOTE, "SwiftBlock to process: "
+                + roundEnv.getElementsAnnotatedWith(SwiftBlock.class).size());
 
         Map<String, SwiftValueDescriptor> swiftValues = new HashMap<>();
         Map<String, SwiftReferenceDescriptor> swiftReferences = new HashMap<>();
         Map<String, SwiftDelegateDescriptor> swiftDelegates = new HashMap<>();
         Map<String, SwiftBlockDescriptor> swiftBlocks = new HashMap<>();
 
-        for (Element annotatedElement : roundEnv.getElementsAnnotatedWith(SwiftModule.class)) {
-            SwiftModule swiftModule = annotatedElement.getAnnotation(SwiftModule.class);
-            moduleName = swiftModule.moduleName();
-            importPackages = swiftModule.importPackages();
-            TypeMapping[] customTypeMappings = swiftModule.customTypeMappings();
-            for (TypeMapping customTypeMapping : customTypeMappings) {
-                try {
-                    Class clazz = customTypeMapping.javaClass();
-                    String canonicalName = clazz.getCanonicalName();
-                    String swiftType = customTypeMapping.swiftType();
-                    messager.printMessage(Diagnostic.Kind.NOTE, "Added custom mapping from " + canonicalName + " to " + swiftType);
-                    this.customTypeMappings.put(canonicalName, customTypeMapping.swiftType());
-                }
-                catch (MirroredTypeException mirroredTypeException) {
-                    String canonicalName = mirroredTypeException.getTypeMirror().toString();
-                    String swiftType = customTypeMapping.swiftType();
-                    messager.printMessage(Diagnostic.Kind.NOTE, "Added custom mapping from " + canonicalName + " to " + swiftType);
-                    this.customTypeMappings.put(canonicalName, customTypeMapping.swiftType());
-                }
-            }
-        }
-
-        if (moduleName == null || importPackages == null) {
+        if (moduleDescriptor == null) {
             messager.printMessage(Diagnostic.Kind.ERROR, "No package description with SwiftModule.class", null);
         }
 
@@ -279,16 +297,16 @@ public class JavaSwiftProcessor extends AbstractProcessor {
             }
         }
 
-        messager.printMessage(Diagnostic.Kind.NOTE, "SwiftJava finished successfully!");
+        messager.printMessage(Diagnostic.Kind.NOTE, "JavaSwiftProcessor finished successfully!");
 
         return false;
     }
 
     private void generateJavaSwift(Filer filer) throws IOException {
-        String swiftFilePath = filer.createResource(StandardLocation.SOURCE_OUTPUT, FOLDER, "SwiftJava.swift", (Element) null).toUri().getPath();
+        String swiftFilePath = filer.getResource(StandardLocation.SOURCE_OUTPUT, FOLDER, "SwiftJava.swift").toUri().getPath();
         File swiftExtensionFile = new File(swiftFilePath);
         swiftExtensionFile.getParentFile().mkdir();
-        messager.printMessage(Diagnostic.Kind.NOTE, "SwiftJava will generate sources int0: " + swiftExtensionFile.getParent());
+        messager.printMessage(Diagnostic.Kind.NOTE, "JavaSwiftProcessor will generate sources at: " + swiftExtensionFile.getParent());
         SwiftWriter swiftWriter = new SwiftWriter(swiftExtensionFile);
         swiftWriter.emitImports(new String[0]);
         swiftWriter.emitEmptyLine();
@@ -337,8 +355,8 @@ public class JavaSwiftProcessor extends AbstractProcessor {
     }
 
     public SwiftEnvironment.Type parseJavaType(String javaType) {
-        if (customTypeMappings.containsKey(javaType)) {
-            return new SwiftEnvironment.Type(customTypeMappings.get(javaType), javaType);
+        if (moduleDescriptor.customTypeMappings.containsKey(javaType)) {
+            return new SwiftEnvironment.Type(moduleDescriptor.customTypeMappings.get(javaType), javaType);
         }
         switch (javaType) {
             case "void":

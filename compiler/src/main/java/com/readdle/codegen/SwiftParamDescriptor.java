@@ -1,10 +1,6 @@
 package com.readdle.codegen;
 
 import com.readdle.codegen.anotation.SwiftBlock;
-import com.readdle.codegen.anotation.SwiftModule;
-
-import java.util.HashMap;
-
 import javax.lang.model.element.VariableElement;
 
 import static java.util.Objects.requireNonNull;

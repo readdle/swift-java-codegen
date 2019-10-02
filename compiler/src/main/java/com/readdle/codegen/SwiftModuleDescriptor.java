@@ -1,8 +1,11 @@
 package com.readdle.codegen;
 
-public class SwiftModuleDescriptor {
+import java.util.HashMap;
 
-    private String moduleName;
-    private String[] imports;
+class SwiftModuleDescriptor {
+
+    String moduleName;
+    String[] importPackages;
+    HashMap<String, String> customTypeMappings;
 
 }

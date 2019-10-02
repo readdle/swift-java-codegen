@@ -36,7 +36,7 @@ class SwiftValueDescriptor {
     private List<JavaSwiftProcessor.WritableElement> functions = new LinkedList<>();
 
     SwiftValueDescriptor(TypeElement classElement, Filer filer, JavaSwiftProcessor processor) throws IllegalArgumentException {
-        this.importPackages = processor.importPackages;
+        this.importPackages = processor.moduleDescriptor.importPackages;
 
         // Get the full QualifiedTypeName
         try {
