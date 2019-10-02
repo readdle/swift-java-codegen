@@ -145,6 +145,7 @@ public class JavaSwiftProcessor extends AbstractProcessor {
 
         if (moduleDescriptor == null) {
             messager.printMessage(Diagnostic.Kind.ERROR, "No package description with SwiftModule.class", null);
+            return true; // Exit processing
         }
 
         for (Element annotatedElement : roundEnv.getElementsAnnotatedWith(SwiftValue.class)) {
