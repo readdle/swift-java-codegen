@@ -7,7 +7,7 @@ apply plugin: 'kotlin-android-extensions'
 swift {
     cleanEnabled true
     debug {
-        abiFilters("arm64-v8a", "x86_64")
+        abiFilters("arm64-v8a")
         extraBuildFlags("-Xswiftc", "-DDEBUG")
     }
 }
@@ -21,9 +21,9 @@ android {
         versionCode 1
         versionName "1.0"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
-       javaCompileOptions {
-           annotationProcessorOptions {
-               arguments = ["com.readdle.codegen.package": """{
+        javaCompileOptions {
+            annotationProcessorOptions {
+                arguments = ["com.readdle.codegen.package": """{
                    "moduleName": "SampleProject",
                    "importPackages": ["SampleAppCore"],
                    "customTypeMappings": {
@@ -31,9 +31,9 @@ android {
                    }
                }
                """
-               ]
-           }
-       }
+                ]
+            }
+        }
     }
     buildTypes {
         release {

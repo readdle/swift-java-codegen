@@ -81,13 +81,6 @@ public class JavaSwiftProcessor extends AbstractProcessor {
             }
         }
 
-        try {
-            generateJavaSwift(filer);
-        } catch (IOException e) {
-            e.printStackTrace();
-            error(null, "Can't write to file: " + e.getMessage());
-        }
-
         messager.printMessage(Diagnostic.Kind.NOTE, "JavaSwiftProcessor init finished successfully");
     }
 
@@ -128,6 +121,13 @@ public class JavaSwiftProcessor extends AbstractProcessor {
     private boolean processImpl(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv) {
         Filer filer = processingEnv.getFiler();
         messager.printMessage(Diagnostic.Kind.NOTE, "JavaSwiftProcessor start code generation");
+
+        try {
+            generateJavaSwift(filer);
+        } catch (IOException e) {
+            e.printStackTrace();
+            error(null, "Can't write to file: " + e.getMessage());
+        }
 
         messager.printMessage(Diagnostic.Kind.NOTE, "SwiftValue to process: "
                 + roundEnv.getElementsAnnotatedWith(SwiftValue.class).size());
