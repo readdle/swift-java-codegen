@@ -57,31 +57,31 @@ public class JavaSwiftProcessor extends AbstractProcessor {
         filer = processingEnv.getFiler();
         messager = processingEnv.getMessager();
 
-        messager.printMessage(Diagnostic.Kind.NOTE, "JavaSwiftProcessor init started");
+        note("JavaSwiftProcessor init started");
 
         String packageJson = processingEnv.getOptions().get(PACKAGE_OPTION);
 
         moduleDescriptor = new Gson().fromJson(packageJson, SwiftModuleDescriptor.class);
         if (moduleDescriptor == null) {
-            messager.printMessage(Diagnostic.Kind.ERROR, "No package description with option: com.readdle.codegen.package", null);
+            error(null, "No package description with option: com.readdle.codegen.package");
             return;
         }
 
-        messager.printMessage(Diagnostic.Kind.NOTE, "Package moduleName: " + moduleDescriptor.moduleName);
+        note("Package moduleName: " + moduleDescriptor.moduleName);
 
         if (moduleDescriptor.importPackages != null) {
             for (String anImport : moduleDescriptor.importPackages) {
-                messager.printMessage(Diagnostic.Kind.NOTE, "Package import: " + anImport);
+                note("Package import: " + anImport);
             }
         }
 
         if (moduleDescriptor.customTypeMappings != null) {
             for (String key : moduleDescriptor.customTypeMappings.keySet()) {
-                messager.printMessage(Diagnostic.Kind.NOTE, "Package custom mapping: " + key + " -> " + moduleDescriptor.customTypeMappings.get(key));
+                note("Package custom mapping: " + key + " -> " + moduleDescriptor.customTypeMappings.get(key));
             }
         }
 
-        messager.printMessage(Diagnostic.Kind.NOTE, "JavaSwiftProcessor init finished successfully");
+        note("JavaSwiftProcessor init finished successfully");
     }
 
     @Override
@@ -120,7 +120,7 @@ public class JavaSwiftProcessor extends AbstractProcessor {
 
     private boolean processImpl(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv) {
         Filer filer = processingEnv.getFiler();
-        messager.printMessage(Diagnostic.Kind.NOTE, "JavaSwiftProcessor start code generation");
+        note("JavaSwiftProcessor start code generation");
 
         try {
             generateJavaSwift(filer);
@@ -129,13 +129,13 @@ public class JavaSwiftProcessor extends AbstractProcessor {
             error(null, "Can't write to file: " + e.getMessage());
         }
 
-        messager.printMessage(Diagnostic.Kind.NOTE, "SwiftValue to process: "
+        note("SwiftValue to process: "
                 + roundEnv.getElementsAnnotatedWith(SwiftValue.class).size());
-        messager.printMessage(Diagnostic.Kind.NOTE, "SwiftReference to process: "
+        note("SwiftReference to process: "
                 + roundEnv.getElementsAnnotatedWith(SwiftReference.class).size());
-        messager.printMessage(Diagnostic.Kind.NOTE, "SwiftDelegate to process: "
+        note("SwiftDelegate to process: "
                 + roundEnv.getElementsAnnotatedWith(SwiftDelegate.class).size());
-        messager.printMessage(Diagnostic.Kind.NOTE, "SwiftBlock to process: "
+        note("SwiftBlock to process: "
                 + roundEnv.getElementsAnnotatedWith(SwiftBlock.class).size());
 
         Map<String, SwiftValueDescriptor> swiftValues = new HashMap<>();
@@ -241,9 +241,9 @@ public class JavaSwiftProcessor extends AbstractProcessor {
             try {
                 File file = valueDescriptor.generateCode();
                 /* Logging */
-                messager.printMessage(Diagnostic.Kind.NOTE, "Generate SwiftValue " + file.getName() + ":");
+                note("Generate SwiftValue " + file.getName() + ":");
                 for (WritableElement function : valueDescriptor.getFunctions()) {
-                    messager.printMessage(Diagnostic.Kind.NOTE, function.toString(valueDescriptor.getJavaFullName()));
+                    note(function.toString(valueDescriptor.getJavaFullName()));
                 }
                 /* Logging */
             } catch (IOException e) {
@@ -257,9 +257,9 @@ public class JavaSwiftProcessor extends AbstractProcessor {
             try {
                 File file = referenceDescriptor.generateCode();
                 /* Logging */
-                messager.printMessage(Diagnostic.Kind.NOTE, "Generate SwiftReference " + file.getName() + ":");
+                note("Generate SwiftReference " + file.getName() + ":");
                 for (WritableElement function : referenceDescriptor.functions) {
-                    messager.printMessage(Diagnostic.Kind.NOTE, function.toString(referenceDescriptor.getJavaFullName()));
+                    note(function.toString(referenceDescriptor.getJavaFullName()));
                 }
                 /* Logging */
             } catch (IOException e) {
@@ -273,9 +273,9 @@ public class JavaSwiftProcessor extends AbstractProcessor {
             try {
                 File file = delegateDescriptor.generateCode();
                 /* Logging */
-                messager.printMessage(Diagnostic.Kind.NOTE, "Generate SwiftDelegate" + file.getName() + ":");
+                note("Generate SwiftDelegate" + file.getName() + ":");
                 for (WritableElement function : delegateDescriptor.functions) {
-                    messager.printMessage(Diagnostic.Kind.NOTE, function.toString(delegateDescriptor.getJavaFullName()));
+                    note(function.toString(delegateDescriptor.getJavaFullName()));
                 }
                 /* Logging */
             } catch (IOException e) {
@@ -289,7 +289,7 @@ public class JavaSwiftProcessor extends AbstractProcessor {
             try {
                 File file = blockDescriptor.generateCode();
                 /* Logging */
-                messager.printMessage(Diagnostic.Kind.NOTE, "Generate SwiftBlock" + file.getName());
+                note("Generate SwiftBlock" + file.getName());
                 /* Logging */
             } catch (IOException e) {
                 e.printStackTrace();
@@ -298,7 +298,7 @@ public class JavaSwiftProcessor extends AbstractProcessor {
             }
         }
 
-        messager.printMessage(Diagnostic.Kind.NOTE, "JavaSwiftProcessor finished successfully!");
+        note("JavaSwiftProcessor finished successfully!");
 
         return false;
     }
@@ -307,7 +307,7 @@ public class JavaSwiftProcessor extends AbstractProcessor {
         String swiftFilePath = filer.getResource(StandardLocation.SOURCE_OUTPUT, FOLDER, "SwiftJava.swift").toUri().getPath();
         File swiftExtensionFile = new File(swiftFilePath);
         swiftExtensionFile.getParentFile().mkdir();
-        messager.printMessage(Diagnostic.Kind.NOTE, "JavaSwiftProcessor will generate sources at: " + swiftExtensionFile.getParent());
+        note("JavaSwiftProcessor will generate sources at: " + swiftExtensionFile.getParent());
         SwiftWriter swiftWriter = new SwiftWriter(swiftExtensionFile);
         swiftWriter.emitImports(new String[0]);
         swiftWriter.emitEmptyLine();
@@ -327,6 +327,10 @@ public class JavaSwiftProcessor extends AbstractProcessor {
         swiftWriter.emitStatement("}");
 
         swiftWriter.close();
+    }
+
+    private void note(String msg) {
+        messager.printMessage(Diagnostic.Kind.WARNING, msg);
     }
 
     private void error(Element e, String msg, Object... args) {
