@@ -19,7 +19,7 @@ public class SwiftParamDescriptor {
         if (swiftParam != null) {
             this.swiftType.swiftConstructorType = "SwiftBlock" + this.swiftType.swiftConstructorType;
         }
-        this.isOptional = JavaSwiftProcessor.isNullable(variableElement);
+        this.isOptional = processor.isNullable(variableElement);
     }
 
     @Override
@@ -29,5 +29,14 @@ public class SwiftParamDescriptor {
                 ", swiftType='" + swiftType + '\'' +
                 ", isOptional=" + isOptional +
                 '}';
+    }
+
+    public boolean isPrimitive() {
+        if (isOptional) {
+            return false;
+        }
+        else {
+            return swiftType.isPrimitiveType();
+        }
     }
 }

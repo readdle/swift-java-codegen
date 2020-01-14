@@ -33,7 +33,7 @@ class SwiftFuncDescriptor implements JavaSwiftProcessor.WritableElement {
         this.isStatic = executableElement.getModifiers().contains(Modifier.STATIC);
         this.isThrown = executableElement.getThrownTypes() != null && executableElement.getThrownTypes().size() > 0;
         this.returnSwiftType = processor.parseJavaType(executableElement.getReturnType().toString());
-        this.isReturnTypeOptional = JavaSwiftProcessor.isNullable(executableElement);
+        this.isReturnTypeOptional = processor.isNullable(executableElement);
 
         int paramsSize = executableElement.getParameters().size();
         this.params = new ArrayList<>(paramsSize);

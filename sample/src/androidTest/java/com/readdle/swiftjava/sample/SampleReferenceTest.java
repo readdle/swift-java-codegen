@@ -71,13 +71,13 @@ public class SampleReferenceTest {
         SampleDelegateAndroid delegateAndroid = new SampleDelegateAndroid() {
 
             @Override
-            void onSetSampleValue(SampleValue value) {
+            public void onSetSampleValue(@org.jetbrains.annotations.Nullable SampleValue value) {
                 isFlag[0] = true;
             }
         };
         sampleReference.setDelegate(delegateAndroid);
         Assert.assertTrue(System.currentTimeMillis() - sampleReference.tick() < 1000);
-        Assert.assertTrue(!delegateAndroid.sampleValue.string.isEmpty());
+        Assert.assertTrue(!delegateAndroid.getSampleValue().string.isEmpty());
         Assert.assertTrue(isFlag[0]);
         Assert.assertNull(sampleReference.funcWithNil());
         delegateAndroid.release();
@@ -90,7 +90,7 @@ public class SampleReferenceTest {
         sampleReference.tickWithBlock(new SampleReference.SampleInterfaceDelegateAndroid() {
 
             @Override
-            public void onCall(@NonNull Integer pr1, @NonNull Integer pr2, @NonNull Double pr3, @NonNull Double pr4) {
+            public void onCall(int pr1, int pr2, double pr3, double pr4) {
                 isFlag[0] = pr1;
             }
         });
@@ -205,7 +205,7 @@ public class SampleReferenceTest {
     public void testThrowableFunc() {
         SampleDelegateAndroid sampleDelegateAndroid = new SampleDelegateAndroid() {
             @Override
-            void onSetSampleValue(SampleValue value) {
+            public void onSetSampleValue(@org.jetbrains.annotations.Nullable SampleValue value) {
 
             }
         };
@@ -255,7 +255,7 @@ public class SampleReferenceTest {
     public void testLocalTableOverflow3() {
         sampleReference.oneMoreReferenceTableOverflow(new SampleDelegateAndroid() {
             @Override
-            void onSetSampleValue(SampleValue value) {
+            public void onSetSampleValue(SampleValue value) {
                 // empty
             }
         });

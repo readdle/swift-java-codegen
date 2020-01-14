@@ -25,6 +25,7 @@ import javax.lang.model.SourceVersion;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
+import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Name;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.util.Elements;
@@ -201,7 +202,7 @@ public class JavaSwiftProcessor extends AbstractProcessor {
             TypeElement typeElement = (TypeElement) annotatedElement;
 
             try {
-                SwiftDelegateDescriptor delegateDescriptor = new SwiftDelegateDescriptor(typeElement, filer, this);
+                SwiftDelegateDescriptor delegateDescriptor = new SwiftDelegateDescriptor(typeElement, filer, messager, this);
                 swiftDelegates.put(delegateDescriptor.simpleTypeName, delegateDescriptor);
             }
             catch (IllegalArgumentException e) {
@@ -337,7 +338,17 @@ public class JavaSwiftProcessor extends AbstractProcessor {
         messager.printMessage(Diagnostic.Kind.ERROR, String.format(msg, args), e);
     }
 
-    static boolean isNullable(Element element) {
+    boolean isNullable(Element element) {
+        note("Check nullability " + element.asType().toString());
+        if (element.asType().getKind().isPrimitive()) {
+            return false;
+        }
+        if (element.getKind() == ElementKind.METHOD) {
+            ExecutableElement executableElement = (ExecutableElement) element;
+            if (executableElement.getReturnType().getKind().isPrimitive()) {
+                return false;
+            }
+        }
         List<? extends AnnotationMirror> mirrors = element.getAnnotationMirrors();
         for (AnnotationMirror mirror : mirrors) {
             Name simpleName = mirror.getAnnotationType().asElement().getSimpleName();
@@ -366,6 +377,20 @@ public class JavaSwiftProcessor extends AbstractProcessor {
         switch (javaType) {
             case "void":
                 return null;
+            case "byte":
+                return new SwiftEnvironment.Type("Int8", javaType);
+            case "short":
+                return new SwiftEnvironment.Type("Int16", javaType);
+            case "int":
+                return new SwiftEnvironment.Type("Int", javaType);
+            case "long":
+                return new SwiftEnvironment.Type("Int64", javaType);
+            case "float":
+                return new SwiftEnvironment.Type("Float", javaType);
+            case "double":
+                return new SwiftEnvironment.Type("Double", javaType);
+            case "boolean":
+                return new SwiftEnvironment.Type("Bool", javaType);
             case "java.lang.Integer":
                 return new SwiftEnvironment.Type("Int", javaType);
             case "java.lang.Byte":

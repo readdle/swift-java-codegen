@@ -46,7 +46,7 @@ public class SampleReference {
     public interface SampleInterfaceDelegateAndroid {
 
         @SwiftCallbackFunc
-        void onCall(@NonNull Integer pr1, @NonNull Integer pr2, @NonNull Double pr3, @NonNull Double pr4);
+        void onCall(int pr1, int pr2, double pr3, double pr4);
 
     }
 

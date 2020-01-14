@@ -81,7 +81,7 @@ class SwiftBlockDescriptor {
                 this.funcName = executableElement.getSimpleName().toString();
                 this.isThrown = executableElement.getThrownTypes() != null && executableElement.getThrownTypes().size() > 0;
                 this.returnSwiftType = processor.parseJavaType(executableElement.getReturnType().toString());
-                this.isReturnTypeOptional = JavaSwiftProcessor.isNullable(executableElement);
+                this.isReturnTypeOptional = processor.isNullable(executableElement);
 
                 this.sig = "(";
 
@@ -160,7 +160,19 @@ class SwiftBlockDescriptor {
         }
 
         if (params.size() > 0) {
-            swiftWriter.emitStatement("do {");
+            boolean hasNonPrimitiveParam = false;
+            for (int i = 0; i < params.size(); i++) {
+                SwiftParamDescriptor param = params.get(i);
+                if (param.isOptional || !param.isPrimitive()) {
+                    hasNonPrimitiveParam = true;
+                    break;
+                }
+            }
+
+            if (hasNonPrimitiveParam) {
+                swiftWriter.emitStatement("do {");
+            }
+
             for (int i = 0; i < params.size(); i++) {
                 SwiftParamDescriptor param = params.get(i);
                 if (param.isOptional) {
@@ -171,20 +183,27 @@ class SwiftBlockDescriptor {
                     swiftWriter.emitStatement(String.format("java_%s = jnull()", param.name));
                     swiftWriter.emitStatement("}");
                 } else {
-                    swiftWriter.emitStatement(String.format("java_%s = try $%s.javaObject()", param.name, i + ""));
+                    if (param.isPrimitive()) {
+                        swiftWriter.emitStatement(String.format("java_%s = $%s.javaPrimitive()", param.name, i + ""));
+                    }
+                    else {
+                        swiftWriter.emitStatement(String.format("java_%s = try $%s.javaObject()", param.name, i + ""));
+                    }
                 }
             }
 
-            swiftWriter.emitStatement("}");
-            swiftWriter.emitStatement("catch {");
-            swiftWriter.emitStatement("let errorString = String(reflecting: type(of: error)) + String(describing: error)");
-            if (returnSwiftType == null) {
-                swiftWriter.emitStatement("assert(false, errorString)");
-                swiftWriter.emitStatement("return");
-            } else {
-                swiftWriter.emitStatement("fatalError(errorString)");
+            if (hasNonPrimitiveParam) {
+                swiftWriter.emitStatement("}");
+                swiftWriter.emitStatement("catch {");
+                swiftWriter.emitStatement("let errorString = String(reflecting: type(of: error)) + String(describing: error)");
+                if (returnSwiftType == null) {
+                    swiftWriter.emitStatement("assert(false, errorString)");
+                    swiftWriter.emitStatement("return");
+                } else {
+                    swiftWriter.emitStatement("fatalError(errorString)");
+                }
+                swiftWriter.emitStatement("}");
             }
-            swiftWriter.emitStatement("}");
         }
 
         String jniMethodTemplate;

@@ -53,6 +53,30 @@ public class Utils {
     }
 
     public static String javaClassToSig(String javaClass) {
+        if (javaClass.equals("boolean")) {
+            return "Z";
+        }
+        if (javaClass.equals("byte")) {
+            return "B";
+        }
+        if (javaClass.equals("char")) {
+            return "C";
+        }
+        if (javaClass.equals("short")) {
+            return "S";
+        }
+        if (javaClass.equals("int")) {
+            return "I";
+        }
+        if (javaClass.equals("long")) {
+            return "J";
+        }
+        if (javaClass.equals("float")) {
+            return "F";
+        }
+        if (javaClass.equals("double")) {
+            return "D";
+        }
         // First, remove all templates
         int templateStart = javaClass.indexOf("<");
         if (templateStart > 0) {
@@ -91,7 +115,8 @@ public class Utils {
 
             @Override
             public Void visitPrimitive(PrimitiveType primitiveType, Void v) {
-                throw new UnsupportedOperationException("Primitives not supported");
+                result.append(primitiveType.toString());
+                return null;
             }
 
             @Override

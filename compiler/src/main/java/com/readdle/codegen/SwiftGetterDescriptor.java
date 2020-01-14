@@ -22,7 +22,7 @@ class SwiftGetterDescriptor implements JavaSwiftProcessor.WritableElement {
         this.javaName = executableElement.getSimpleName().toString();
         this.isStatic = executableElement.getModifiers().contains(Modifier.STATIC);
         this.returnSwiftType = processor.parseJavaType(executableElement.getReturnType().toString());
-        this.isReturnTypeOptional = JavaSwiftProcessor.isNullable(executableElement);
+        this.isReturnTypeOptional = processor.isNullable(executableElement);
 
         if (executableElement.getThrownTypes().size() != 0) {
             throw new SwiftMappingException("Getter can't throw", executableElement);

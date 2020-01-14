@@ -10,6 +10,7 @@ import java.util.LinkedList;
 import java.util.List;
 
 import javax.annotation.processing.Filer;
+import javax.annotation.processing.Messager;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
@@ -18,6 +19,7 @@ import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.MirroredTypeException;
+import javax.tools.Diagnostic;
 import javax.tools.StandardLocation;
 
 import static com.readdle.codegen.JavaSwiftProcessor.FOLDER;
@@ -39,7 +41,7 @@ class SwiftDelegateDescriptor {
 
     private boolean isInterface;
 
-    SwiftDelegateDescriptor(TypeElement classElement, Filer filer, JavaSwiftProcessor processor) throws IllegalArgumentException {
+    SwiftDelegateDescriptor(TypeElement classElement, Filer filer, Messager messager, JavaSwiftProcessor processor) throws IllegalArgumentException {
         this.annotatedClassElement = classElement;
         this.isInterface = classElement.getKind() == ElementKind.INTERFACE;
         this.importPackages = processor.moduleDescriptor.importPackages;
@@ -135,26 +137,40 @@ class SwiftDelegateDescriptor {
                 throw new IllegalArgumentException(String.format("%s doesn't contain release native method", simpleTypeName));
             }
         }
+        try {
 
-        for (Element element : classElement.getEnclosedElements()) {
-            if (element.getKind() == ElementKind.METHOD) {
-                ExecutableElement executableElement = (ExecutableElement) element;
-                // Except init. We generate it's manually
-                if (executableElement.getModifiers().contains(Modifier.NATIVE) && !executableElement.getSimpleName().contentEquals("init")) {
-                    functions.add(new SwiftFuncDescriptor(executableElement, processor));
+            for (Element element : classElement.getEnclosedElements()) {
+                messager.printMessage(Diagnostic.Kind.WARNING, "Element: " + element);
+
+                if (element.getKind() == ElementKind.METHOD) {
+                    ExecutableElement executableElement = (ExecutableElement) element;
+                    // Except init. We generate it's manually
+                    if (executableElement.getModifiers().contains(Modifier.NATIVE) && !executableElement.getSimpleName().contentEquals("init")) {
+                        functions.add(new SwiftFuncDescriptor(executableElement, processor));
+                    }
+                }
+
+                if (element.getAnnotation(SwiftCallbackFunc.class) != null) {
+                    String message = String.format("%s SwiftCallbackFunc",
+                            element.getSimpleName());
+                    messager.printMessage(Diagnostic.Kind.WARNING, message);
+                }
+
+                if (element.getKind() == ElementKind.METHOD && element.getAnnotation(SwiftCallbackFunc.class) != null) {
+                    ExecutableElement executableElement = (ExecutableElement) element;
+                    if (executableElement.getModifiers().contains(Modifier.NATIVE)) {
+                        String message = String.format("%s is native method. Only java methods can be annotated with @%s",
+                                executableElement.getSimpleName(), SwiftCallbackFunc.class.getSimpleName());
+                        throw new SwiftMappingException(message, executableElement);
+                    }
+
+                    callbackFunctions.add(new SwiftCallbackFuncDescriptor(executableElement, processor));
                 }
             }
 
-            if (element.getKind() == ElementKind.METHOD && element.getAnnotation(SwiftCallbackFunc.class) != null) {
-                ExecutableElement executableElement = (ExecutableElement) element;
-                if (executableElement.getModifiers().contains(Modifier.NATIVE)) {
-                    String message = String.format("%s is native method. Only java methods can be annotated with @%s",
-                            executableElement.getSimpleName(), SwiftCallbackFunc.class.getSimpleName());
-                    throw new SwiftMappingException(message, executableElement);
-                }
-
-                callbackFunctions.add(new SwiftCallbackFuncDescriptor(executableElement, processor));
-            }
+        }
+        catch (Throwable e) {
+            messager.printMessage(Diagnostic.Kind.WARNING, "Error: " + e.toString());
         }
     }
 
