@@ -7,7 +7,6 @@ import android.util.Log
 import java.nio.ByteBuffer
 
 @SwiftDelegate(protocols = ["SampleDelegate"])
-//@UseExperimental(ExperimentalUnsignedTypes::class)
 abstract class SampleDelegateAndroid {
 
     // Swift JNI private native pointer
