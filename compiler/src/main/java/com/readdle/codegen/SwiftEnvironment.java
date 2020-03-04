@@ -42,6 +42,37 @@ class SwiftEnvironment {
                     swiftType.equals("Double");
         }
 
+        String javaSigType(boolean isOptional) {
+            if (isOptional) {
+                return "jobject";
+            }
+            else {
+                switch (swiftType) {
+                    case "Bool":
+                        return "jboolean";
+                    case "Int":
+                    case "Int32":
+                    case "UInt16":
+                        return "jint";
+                    case "Int8":
+                        return "jbyte";
+                    case "Int16":
+                    case "UInt8":
+                        return "jshort";
+                    case "Int64":
+                    case "UInt":
+                    case "UInt32":
+                        return "jlong";
+                    case "Float":
+                        return "jfloat";
+                    case "Double":
+                        return "jdouble";
+                    default:
+                        return "jobject";
+                }
+            }
+        }
+
         String returnTypeFunc(boolean isOptional) {
             if (isOptional) {
                 return "CallObjectMethod";

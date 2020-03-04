@@ -88,10 +88,15 @@ class SwiftFuncDescriptor implements JavaSwiftProcessor.WritableElement {
         swiftWriter.emit(String.format("public func %s(env: UnsafeMutablePointer<JNIEnv?>, %s", swiftFuncName, isStatic ? "clazz: jclass" : "this: jobject"));
 
         for (SwiftParamDescriptor param : params) {
-            swiftWriter.emit(String.format(", j%s: jobject%s", param.name, param.isOptional ? "?" : ""));
+            swiftWriter.emit(String.format(", j%s: %s%s", param.name, param.swiftType.javaSigType(param.isOptional), param.isOptional ? "?" : ""));
         }
 
-        swiftWriter.emit(String.format(")%s {\n", returnSwiftType != null ? " -> jobject?" : ""));
+        String retType = "";
+        if (returnSwiftType != null) {
+            retType = " -> " + returnSwiftType.javaSigType(isReturnTypeOptional) + "?";
+        }
+
+        swiftWriter.emit(String.format(")%s {\n", retType));
         swiftWriter.emitEmptyLine();
 
         if (!isStatic) {
@@ -112,7 +117,15 @@ class SwiftFuncDescriptor implements JavaSwiftProcessor.WritableElement {
         }
 
         for (SwiftParamDescriptor param : params) {
-            if (param.isOptional) {
+            if (param.isPrimitive()) {
+                if (param.swiftType.swiftType.equals("Bool")) {
+                    swiftWriter.emitStatement(String.format("%1$s = j%1$s == JNI_TRUE", param.name));
+                }
+                else {
+                    swiftWriter.emitStatement(String.format("%1$s = j%1$s", param.name));
+                }
+            }
+            else if (param.isOptional) {
                 swiftWriter.emitStatement(String.format("if let j%1$s = j%1$s {", param.name));
                 swiftWriter.emitStatement(String.format("%1$s = try %2$s.from(javaObject: j%1$s)", param.name, param.swiftType.swiftConstructorType));
                 swiftWriter.emitStatement("}");
@@ -166,20 +179,29 @@ class SwiftFuncDescriptor implements JavaSwiftProcessor.WritableElement {
         }
 
         if (returnSwiftType != null) {
-            swiftWriter.emitStatement("do {");
-            if (isReturnTypeOptional) {
-                swiftWriter.emitStatement("return try result?.javaObject()");
+            if (returnSwiftType.isPrimitiveType()) {
+                if (returnSwiftType.swiftType.equals("Bool")) {
+                    swiftWriter.emitStatement("return jboolean(result ? JNI_TRUE : JNI_FALSE)");
+                }
+                else {
+                    swiftWriter.emitStatement("return result");
+                }
             }
             else {
-                swiftWriter.emitStatement("return try result.javaObject()");
+                swiftWriter.emitStatement("do {");
+                if (isReturnTypeOptional) {
+                    swiftWriter.emitStatement("return try result?.javaObject()");
+                } else {
+                    swiftWriter.emitStatement("return try result.javaObject()");
+                }
+                swiftWriter.emitStatement("}");
+                swiftWriter.emitStatement("catch {");
+                swiftWriter.emitStatement("let nsError = error as NSError");
+                swiftWriter.emitStatement("let errorString = \"\\(nsError.domain): \\(nsError.code)\"");
+                swiftWriter.emitStatement("_ = JNI.api.ThrowNew(JNI.env, SwiftRuntimeErrorClass, errorString)");
+                swiftWriter.emitStatement("return nil");
+                swiftWriter.emitStatement("}");
             }
-            swiftWriter.emitStatement("}");
-            swiftWriter.emitStatement("catch {");
-            swiftWriter.emitStatement("let nsError = error as NSError");
-            swiftWriter.emitStatement("let errorString = \"\\(nsError.domain): \\(nsError.code)\"");
-            swiftWriter.emitStatement("_ = JNI.api.ThrowNew(JNI.env, SwiftRuntimeErrorClass, errorString)");
-            swiftWriter.emitStatement("return nil");
-            swiftWriter.emitStatement("}");
         }
 
         if (isThrown) {
