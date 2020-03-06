@@ -229,7 +229,12 @@ public class SwiftCallbackFuncDescriptor {
 
         if (returnSwiftType != null) {
             if (!isReturnTypeOptional && returnSwiftType.isPrimitiveType()) {
-                swiftWriter.emitStatement("return optionalResult");
+                if (returnSwiftType.swiftType.equals("Bool")) {
+                    swiftWriter.emitStatement("return optionalResult == JNI_TRUE");
+                }
+                else {
+                    swiftWriter.emitStatement("return optionalResult");
+                }
             }
             else {
                 swiftWriter.emitStatement("guard let result = optionalResult else {");

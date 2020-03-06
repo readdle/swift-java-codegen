@@ -75,7 +75,7 @@ class SwiftGetterDescriptor implements JavaSwiftProcessor.WritableElement {
         swiftWriter.emitStatement(String.format("let result = %s.%s", isStatic ? swiftType : "swiftSelf", swiftName));
 
         if (returnSwiftType != null) {
-            if (returnSwiftType.isPrimitiveType()) {
+            if (!isReturnTypeOptional && returnSwiftType.isPrimitiveType()) {
                 if (returnSwiftType.swiftType.equals("Bool")) {
                     swiftWriter.emitStatement("return jboolean(result ? JNI_TRUE : JNI_FALSE)");
                 }

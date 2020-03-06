@@ -79,7 +79,6 @@ public class Int8Test {
     }
 
     public static func testDecode(_ value: Int8TestStruct) -> Bool {
-        NSLog("!!!\(value.max)!!!")
         return value == Int8TestStruct()
     }
 

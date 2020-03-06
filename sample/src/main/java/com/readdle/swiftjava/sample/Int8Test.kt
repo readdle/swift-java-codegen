@@ -6,31 +6,6 @@ import com.readdle.codegen.anotation.SwiftReference
 import com.readdle.codegen.anotation.SwiftValue
 import java.lang.annotation.Native
 
-// TODO: fix it
-//    @SwiftDelegate(protocols = ["Int8TestParamProtocol"])
-//    interface ParamProtocol {
-//        @SwiftCallbackFunc
-//        fun testParam(param: Byte): Boolean
-//    }
-
-@SwiftDelegate(protocols = ["Int8TestReturnTypeProtocol"])
-interface ReturnTypeProtocol {
-    @SwiftCallbackFunc
-    fun testReturnType(): Byte
-}
-// TODO: fix it
-//    @SwiftDelegate(protocols = ["Int8TestOptionalParamProtocol"])
-//    interface OptionalParamProtocol {
-//        @SwiftCallbackFunc
-//        fun testOptionalParam(param: Byte?): Boolean
-//    }
-
-@SwiftDelegate(protocols = ["Int8TestOptionalReturnTypeProtocol"])
-interface OptionalReturnTypeProtocol {
-    @SwiftCallbackFunc
-    fun testOptionalReturnType(): Byte?
-}
-
 @SwiftValue
 data class Int8TestStruct(var zero: Byte = 0,
                           var max: Byte = Byte.MAX_VALUE,
@@ -40,6 +15,30 @@ data class Int8TestStruct(var zero: Byte = 0,
 
 @SwiftReference
 class Int8Test private constructor() {
+
+    @SwiftDelegate(protocols = ["Int8TestParamProtocol"])
+    interface Int8ParamProtocol {
+        @SwiftCallbackFunc
+        fun testParam(param: Byte): Boolean
+    }
+
+    @SwiftDelegate(protocols = ["Int8TestReturnTypeProtocol"])
+    interface Int8ReturnTypeProtocol {
+        @SwiftCallbackFunc
+        fun testReturnType(): Byte
+    }
+
+    @SwiftDelegate(protocols = ["Int8TestOptionalParamProtocol"])
+    interface Int8OptionalParamProtocol {
+        @SwiftCallbackFunc
+        fun testOptionalParam(param: Byte?): Boolean
+    }
+
+    @SwiftDelegate(protocols = ["Int8TestOptionalReturnTypeProtocol"])
+    interface Int8OptionalReturnTypeProtocol {
+        @SwiftCallbackFunc
+        fun testOptionalReturnType(): Byte?
+    }
 
     companion object {
         @JvmStatic
@@ -60,16 +59,20 @@ class Int8Test private constructor() {
         @JvmStatic
         external fun testOptionalParam(param: Byte?): Boolean
 
-        // TODO: fix it
-//        @JvmStatic
-//        external fun testOptionalReturnType(): Byte?
+        @JvmStatic
+        external fun testOptionalReturnType(): Byte?
 
         @JvmStatic
-        external fun testProtocolReturnType(callback: ReturnTypeProtocol): Byte
+        external fun testProtocolParam(callback: Int8ParamProtocol): Boolean
 
-        // TODO: fix it
-//        @JvmStatic
-//        external fun testProtocolOptionalReturnType(callback: OptionalReturnTypeProtocol): Byte?
+        @JvmStatic
+        external fun testProtocolReturnType(callback: Int8ReturnTypeProtocol): Byte
+
+        @JvmStatic
+        external fun testProtocolOptionalParam(callback: Int8OptionalParamProtocol): Boolean
+
+        @JvmStatic
+        external fun testProtocolOptionalReturnType(callback: Int8OptionalReturnTypeProtocol): Byte?
 
         @JvmStatic
         external fun testEncode():  Int8TestStruct

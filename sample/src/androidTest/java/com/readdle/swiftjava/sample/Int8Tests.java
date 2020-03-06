@@ -1,7 +1,6 @@
 package com.readdle.swiftjava.sample;
 
 import android.support.test.runner.AndroidJUnit4;
-import android.util.Log;
 
 import com.readdle.codegen.anotation.JavaSwift;
 
@@ -52,10 +51,35 @@ public class Int8Tests {
         Assert.assertFalse(Int8Test.testOptionalParam(Byte.MIN_VALUE));
     }
 
+    public void testOptionalReturnType() {
+        Byte result = Int8Test.testOptionalReturnType();
+        Assert.assertNotNull(result);
+        Assert.assertEquals(result.byteValue(), Byte.MAX_VALUE);
+    }
+
+    @Test
+    public void testProtocolParam() {
+        boolean result = Int8Test.testProtocolParam(param -> param == Byte.MAX_VALUE);
+        Assert.assertTrue(result);
+    }
+
     @Test
     public void testProtocolReturnType() {
         byte result = Int8Test.testProtocolReturnType(() -> (byte) 42);
         Assert.assertEquals(result, 42);
+    }
+
+    @Test
+    public void testProtocolOptionalParam() {
+        boolean result = Int8Test.testProtocolOptionalParam(param -> param != null && param == Byte.MAX_VALUE);
+        Assert.assertTrue(result);
+    }
+
+    @Test
+    public void testProtocolOptionalReturnType() {
+        Byte result = Int8Test.testProtocolOptionalReturnType(() -> (byte) 42);
+        Assert.assertNotNull(result);
+        Assert.assertEquals(result.byteValue(), 42);
     }
 
     @Test
