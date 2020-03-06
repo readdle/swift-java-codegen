@@ -1,5 +1,6 @@
 package com.readdle.codegen;
 
+import java.io.IOException;
 import java.util.List;
 
 import javax.lang.model.element.Element;
@@ -166,10 +167,22 @@ public class Utils {
         }
     }
 
-    public static PackageElement getPackage(Element type) {
+    private static PackageElement getPackage(Element type) {
         while (type.getKind() != ElementKind.PACKAGE) {
             type = type.getEnclosingElement();
         }
         return (PackageElement) type;
+    }
+
+    static void handleRuntimeError(SwiftWriter swiftWriter) throws IOException {
+        swiftWriter.emitStatement("let nsError = error as NSError");
+        swiftWriter.emitStatement("let errorString = \"\\(nsError.domain): \\(nsError.code)\"");
+        swiftWriter.emitStatement("_ = JNI.api.ThrowNew(JNI.env, SwiftRuntimeErrorClass, errorString)");
+    }
+
+    static void handleError(SwiftWriter swiftWriter) throws IOException {
+        swiftWriter.emitStatement("let nsError = error as NSError");
+        swiftWriter.emitStatement("let errorString = \"\\(nsError.domain): \\(nsError.code)\"");
+        swiftWriter.emitStatement("_ = JNI.api.ThrowNew(JNI.env, SwiftErrorClass, errorString)");
     }
 }

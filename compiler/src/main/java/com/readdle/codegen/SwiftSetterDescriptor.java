@@ -88,9 +88,7 @@ class SwiftSetterDescriptor implements JavaSwiftProcessor.WritableElement {
 
         swiftWriter.emitStatement("}");
         swiftWriter.emitStatement("catch {");
-        swiftWriter.emitStatement("let nsError = error as NSError");
-        swiftWriter.emitStatement("let errorString = \"\\(nsError.domain): \\(nsError.code)\"");
-        swiftWriter.emitStatement("_ = JNI.api.ThrowNew(JNI.env, SwiftRuntimeErrorClass, errorString)");
+        Utils.handleRuntimeError(swiftWriter);
         swiftWriter.emitStatement("return");
         swiftWriter.emitStatement("}");
 

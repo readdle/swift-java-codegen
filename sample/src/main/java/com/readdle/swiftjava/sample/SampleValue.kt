@@ -27,6 +27,18 @@ open class SampleValue protected constructor() {
     var uint32: UInt = 0U
     var uint64: ULong = 0U
 
+    var optionalInteger: Int? = 0
+    var optionalInt8: Byte? = 0
+    var optionalInt16: Short? = 0
+    var optionalInt32: Int? = 0
+    var optionalInt64: Long? = 0
+
+    var optionalUint: UInt? = 0U
+    var optionalUint8: UByte? = 0U
+    var optionalUint16: UShort? = 0U
+    var optionalUint32: UInt? = 0U
+    var optionalUint64: ULong? = 0U
+
     var objectArray: ArrayList<SampleValue> = ArrayList()
     var stringArray: ArrayList<String> = ArrayList()
     var numberArray: ArrayList<Int> = ArrayList()
@@ -59,33 +71,42 @@ open class SampleValue protected constructor() {
     }
 
     override fun toString(): String {
-        return "SampleValue{" +
-                "string='" + string + '\'' +
-                ", integer=" + integer +
-                ", int8=" + int8 +
-                ", int16=" + int16 +
-                ", int32=" + int32 +
-                ", int64=" + int64 +
-                ", uint=" + uint +
-                ", uint8=" + uint8 +
-                ", uint16=" + uint16 +
-                ", uint32=" + uint32 +
-                ", uint64=" + uint64 +
-                ", objectArray=" + objectArray +
-                ", stringArray=" + stringArray +
-                ", numberArray=" + numberArray +
-                ", arrayInArray=" + arrayInArray +
-                ", dictInArray=" + dictInArray +
-                ", dictSampleClass=" + dictSampleClass +
-                ", dictStrings=" + dictStrings +
-                ", dictNumbers=" + dictNumbers +
-                ", dict64Numbers=" + dict64Numbers +
-                ", dictInDict=" + dictInDict +
-                ", arrayInDict=" + arrayInDict +
-                ", set=" + set +
-                ", setValues=" + setValues +
-                '}'
+        return "SampleValue(string='$string', " +
+                "integer=$integer," +
+                " int8=$int8, " +
+                "int16=$int16, " +
+                "int32=$int32, " +
+                "int64=$int64, " +
+                "uint=$uint, " +
+                "uint8=$uint8, " +
+                "uint16=$uint16, " +
+                "uint32=$uint32, " +
+                "uint64=$uint64, " +
+                "optionalInteger=$optionalInteger, " +
+                "optionalInt8=$optionalInt8, " +
+                "optionalInt16=$optionalInt16, " +
+                "optionalInt32=$optionalInt32, " +
+                "optionalInt64=$optionalInt64, " +
+                "optionalUint=$optionalUint, " +
+                "optionalUint8=$optionalUint8, " +
+                "optionalUint16=$optionalUint16, " +
+                "optionalUint32=$optionalUint32, " +
+                "optionalUint64=$optionalUint64, " +
+                "objectArray=$objectArray, " +
+                "stringArray=$stringArray, " +
+                "numberArray=$numberArray, " +
+                "arrayInArray=$arrayInArray, " +
+                "dictInArray=$dictInArray, " +
+                "dictSampleClass=$dictSampleClass, " +
+                "dictStrings=$dictStrings, " +
+                "dictNumbers=$dictNumbers, " +
+                "dict64Numbers=$dict64Numbers, " +
+                "dictInDict=$dictInDict, " +
+                "arrayInDict=$arrayInDict, " +
+                "set=$set, " +
+                "setValues=$setValues)"
     }
+
 
     companion object {
         @JvmStatic
