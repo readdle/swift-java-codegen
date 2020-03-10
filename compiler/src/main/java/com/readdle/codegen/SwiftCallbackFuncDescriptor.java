@@ -141,18 +141,8 @@ public class SwiftCallbackFuncDescriptor {
         swiftWriter.emitStatement("}");
 
         if (params.size() > 0) {
-            boolean hasNonPrimitiveParam = false;
-            for (int i = 0; i < params.size(); i++) {
-                SwiftParamDescriptor param = params.get(i);
-                if (param.isOptional || !param.isPrimitive()) {
-                    hasNonPrimitiveParam = true;
-                    break;
-                }
-            }
 
-            if (hasNonPrimitiveParam) {
-                swiftWriter.emitStatement("do {");
-            }
+            swiftWriter.emitStatement("do {");
 
             for (SwiftParamDescriptor param : params) {
                 if (param.isOptional) {
@@ -161,7 +151,7 @@ public class SwiftCallbackFuncDescriptor {
                     swiftWriter.emitStatement("}");
                 } else {
                     if (param.isPrimitive()) {
-                        swiftWriter.emitStatement(String.format("java%s = %s.javaPrimitive()", param.name, param.name));
+                        swiftWriter.emitStatement(String.format("java%s = try %s.javaPrimitive()", param.name, param.name));
                     }
                     else {
                         swiftWriter.emitStatement(String.format("java%s = try %s.javaObject()", param.name, param.name));
@@ -169,21 +159,19 @@ public class SwiftCallbackFuncDescriptor {
                 }
             }
 
-            if (hasNonPrimitiveParam) {
-                swiftWriter.emitStatement("}");
-                swiftWriter.emitStatement("catch {");
-                swiftWriter.emitStatement("let errorString = String(reflecting: type(of: error)) + String(describing: error)");
-                if (returnSwiftType == null) {
-                    swiftWriter.emitStatement("assert(false, errorString)");
-                    swiftWriter.emitStatement("return");
-                } else if (isReturnTypeOptional) {
-                    swiftWriter.emitStatement("assert(false, errorString)");
-                    swiftWriter.emitStatement("return nil");
-                } else {
-                    swiftWriter.emitStatement("fatalError(errorString)");
-                }
-                swiftWriter.emitStatement("}");
+            swiftWriter.emitStatement("}");
+            swiftWriter.emitStatement("catch {");
+            swiftWriter.emitStatement("let errorString = String(reflecting: type(of: error)) + String(describing: error)");
+            if (returnSwiftType == null) {
+                swiftWriter.emitStatement("assert(false, errorString)");
+                swiftWriter.emitStatement("return");
+            } else if (isReturnTypeOptional) {
+                swiftWriter.emitStatement("assert(false, errorString)");
+                swiftWriter.emitStatement("return nil");
+            } else {
+                swiftWriter.emitStatement("fatalError(errorString)");
             }
+            swiftWriter.emitStatement("}");
         }
 
         String jniMethodTemplate;
@@ -229,12 +217,7 @@ public class SwiftCallbackFuncDescriptor {
 
         if (returnSwiftType != null) {
             if (!isReturnTypeOptional && returnSwiftType.isPrimitiveType()) {
-                if (returnSwiftType.swiftType.equals("Bool")) {
-                    swiftWriter.emitStatement("return optionalResult == JNI_TRUE");
-                }
-                else {
-                    swiftWriter.emitStatement("return optionalResult");
-                }
+                swiftWriter.emitStatement("return " + returnSwiftType.swiftType + "(fromJavaPrimitive: optionalResult)");
             }
             else {
                 swiftWriter.emitStatement("guard let result = optionalResult else {");

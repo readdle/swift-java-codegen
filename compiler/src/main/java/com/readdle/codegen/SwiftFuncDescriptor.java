@@ -118,12 +118,7 @@ class SwiftFuncDescriptor implements JavaSwiftProcessor.WritableElement {
 
         for (SwiftParamDescriptor param : params) {
             if (param.isPrimitive()) {
-                if (param.swiftType.swiftType.equals("Bool")) {
-                    swiftWriter.emitStatement(String.format("%1$s = j%1$s == JNI_TRUE", param.name));
-                }
-                else {
-                    swiftWriter.emitStatement(String.format("%1$s = j%1$s", param.name));
-                }
+                swiftWriter.emitStatement(String.format("%1$s = " + param.swiftType.swiftType + "(fromJavaPrimitive: j%1$s)", param.name));
             }
             else if (param.isOptional) {
                 swiftWriter.emitStatement(String.format("if let j%1$s = j%1$s {", param.name));
@@ -177,27 +172,22 @@ class SwiftFuncDescriptor implements JavaSwiftProcessor.WritableElement {
         }
 
         if (returnSwiftType != null) {
+            swiftWriter.emitStatement("do {");
             if (!isReturnTypeOptional && returnSwiftType.isPrimitiveType()) {
-                if (returnSwiftType.swiftType.equals("Bool")) {
-                    swiftWriter.emitStatement("return jboolean(result ? JNI_TRUE : JNI_FALSE)");
-                }
-                else {
-                    swiftWriter.emitStatement("return result");
-                }
+                swiftWriter.emitStatement("return try result.javaPrimitive()");
             }
             else {
-                swiftWriter.emitStatement("do {");
                 if (isReturnTypeOptional) {
                     swiftWriter.emitStatement("return try result?.javaObject()");
                 } else {
                     swiftWriter.emitStatement("return try result.javaObject()");
                 }
-                swiftWriter.emitStatement("}");
-                swiftWriter.emitStatement("catch {");
-                Utils.handleRuntimeError(swiftWriter);
-                swiftWriter.emitStatement("return nil");
-                swiftWriter.emitStatement("}");
             }
+            swiftWriter.emitStatement("}");
+            swiftWriter.emitStatement("catch {");
+            Utils.handleRuntimeError(swiftWriter);
+            swiftWriter.emitStatement("return nil");
+            swiftWriter.emitStatement("}");
         }
 
         if (isThrown) {

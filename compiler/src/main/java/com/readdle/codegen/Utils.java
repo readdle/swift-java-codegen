@@ -175,8 +175,8 @@ public class Utils {
     }
 
     static void handleRuntimeError(SwiftWriter swiftWriter) throws IOException {
-        swiftWriter.emitStatement("let nsError = error as NSError");
-        swiftWriter.emitStatement("let errorString = \"\\(nsError.domain): \\(nsError.code)\"");
+        swiftWriter.emitStatement("let errorType = type(of: error)");
+        swiftWriter.emitStatement("let errorString = \"\\(errorType) (\\(error.localizedDescription))\"");
         swiftWriter.emitStatement("_ = JNI.api.ThrowNew(JNI.env, SwiftRuntimeErrorClass, errorString)");
     }
 

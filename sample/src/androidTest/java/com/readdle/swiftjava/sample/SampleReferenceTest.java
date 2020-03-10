@@ -56,7 +56,7 @@ public class SampleReferenceTest {
             sampleReference.funcThrows();
             Assert.fail();
         } catch (SwiftError swiftError) {
-            Assert.assertTrue(swiftError.getMessage() != null);
+            Assert.assertEquals("Error: 1", swiftError.getMessage());
         }
     }
 
@@ -124,9 +124,9 @@ public class SampleReferenceTest {
         Exception exception1 = new Exception("");
         Exception exception2 = new Exception("QWERTY");
         Exception exception3 = new Exception("QWERTY:1");
-        Assert.assertTrue(sampleReference.exceptionCheck(exception1).getMessage().equals("java.lang.Exception:0"));
-        Assert.assertTrue(sampleReference.exceptionCheck(exception2).getMessage().equals("java.lang.Exception:0"));
-        Assert.assertTrue(sampleReference.exceptionCheck(exception3).getMessage().equals(exception3.getMessage()));
+        Assert.assertEquals("java.lang.Exception:0", sampleReference.exceptionCheck(exception1).getMessage());
+        Assert.assertEquals("java.lang.Exception:0", sampleReference.exceptionCheck(exception2).getMessage());
+        Assert.assertEquals(sampleReference.exceptionCheck(exception3).getMessage(), exception3.getMessage());
     }
 
     @Test
@@ -214,7 +214,7 @@ public class SampleReferenceTest {
             Assert.fail();
         }
         catch (Exception e) {
-            Assert.assertTrue(e.getMessage().equals("java.lang.IllegalArgumentException: 0"));
+            Assert.assertEquals("java.lang.IllegalArgumentException: 0", e.getMessage());
         }
         try {
             sampleReference.throwableFunc(sampleDelegateAndroid, false);
@@ -227,10 +227,10 @@ public class SampleReferenceTest {
             Assert.fail();
         }
         catch (Exception e) {
-            Assert.assertTrue(e.getMessage().equals("java.lang.IllegalArgumentException: 0"));
+            Assert.assertEquals("java.lang.IllegalArgumentException: 0", e.getMessage());
         }
         try {
-            Assert.assertTrue(sampleReference.throwableFuncWithReturnType(sampleDelegateAndroid, false).equals("throwableFuncWithReturnType"));
+            Assert.assertEquals("throwableFuncWithReturnType", sampleReference.throwableFuncWithReturnType(sampleDelegateAndroid, false));
         }
         catch (Exception e) {
             Assert.fail();
@@ -246,7 +246,7 @@ public class SampleReferenceTest {
             Assert.fail();
         }
         catch (SwiftRuntimeError error) {
-            Assert.assertTrue(error.getMessage().equals("java.lang.NullPointerException: 1"));
+            Assert.assertEquals("NSError (The operation could not be completed. (java.lang.NullPointerException error 1.))", error.getMessage());
         }
     }
     

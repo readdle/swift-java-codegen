@@ -8,10 +8,10 @@ import java.lang.annotation.Native
 
 @SwiftValue
 data class Int16TestStruct(var zero: Short = 0,
-                          var max: Short = Short.MAX_VALUE,
-                          var min: Short = Short.MIN_VALUE,
-                          var optional: Short? = 0,
-                          var optionalNil: Short? = null)
+                           var max: Short = Short.MAX_VALUE,
+                           var min: Short = Short.MIN_VALUE,
+                           var optional: Short? = 0,
+                           var optionalNil: Short? = null)
 
 @SwiftReference
 class Int16Test private constructor() {
@@ -75,7 +75,7 @@ class Int16Test private constructor() {
         external fun testProtocolOptionalReturnType(callback: Int16OptionalReturnTypeProtocol): Short?
 
         @JvmStatic
-        external fun testEncode():  Int16TestStruct
+        external fun testEncode(): Int16TestStruct
 
         @JvmStatic
         external fun testDecode(value: Int16TestStruct): Boolean

@@ -160,18 +160,8 @@ class SwiftBlockDescriptor {
         }
 
         if (params.size() > 0) {
-            boolean hasNonPrimitiveParam = false;
-            for (int i = 0; i < params.size(); i++) {
-                SwiftParamDescriptor param = params.get(i);
-                if (param.isOptional || !param.isPrimitive()) {
-                    hasNonPrimitiveParam = true;
-                    break;
-                }
-            }
 
-            if (hasNonPrimitiveParam) {
-                swiftWriter.emitStatement("do {");
-            }
+            swiftWriter.emitStatement("do {");
 
             for (int i = 0; i < params.size(); i++) {
                 SwiftParamDescriptor param = params.get(i);
@@ -184,7 +174,7 @@ class SwiftBlockDescriptor {
                     swiftWriter.emitStatement("}");
                 } else {
                     if (param.isPrimitive()) {
-                        swiftWriter.emitStatement(String.format("java_%s = $%s.javaPrimitive()", param.name, i + ""));
+                        swiftWriter.emitStatement(String.format("java_%s = try $%s.javaPrimitive()", param.name, i + ""));
                     }
                     else {
                         swiftWriter.emitStatement(String.format("java_%s = try $%s.javaObject()", param.name, i + ""));
@@ -192,18 +182,17 @@ class SwiftBlockDescriptor {
                 }
             }
 
-            if (hasNonPrimitiveParam) {
-                swiftWriter.emitStatement("}");
-                swiftWriter.emitStatement("catch {");
-                swiftWriter.emitStatement("let errorString = String(reflecting: type(of: error)) + String(describing: error)");
-                if (returnSwiftType == null) {
-                    swiftWriter.emitStatement("assert(false, errorString)");
-                    swiftWriter.emitStatement("return");
-                } else {
-                    swiftWriter.emitStatement("fatalError(errorString)");
-                }
-                swiftWriter.emitStatement("}");
+            swiftWriter.emitStatement("}");
+            swiftWriter.emitStatement("catch {");
+            swiftWriter.emitStatement("let errorString = String(reflecting: type(of: error)) + String(describing: error)");
+            if (returnSwiftType == null) {
+                swiftWriter.emitStatement("assert(false, errorString)");
+                swiftWriter.emitStatement("return");
+            } else {
+                swiftWriter.emitStatement("fatalError(errorString)");
             }
+            swiftWriter.emitStatement("}");
+
         }
 
         String jniMethodTemplate;

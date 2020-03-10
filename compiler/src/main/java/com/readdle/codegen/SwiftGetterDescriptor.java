@@ -75,27 +75,22 @@ class SwiftGetterDescriptor implements JavaSwiftProcessor.WritableElement {
         swiftWriter.emitStatement(String.format("let result = %s.%s", isStatic ? swiftType : "swiftSelf", swiftName));
 
         if (returnSwiftType != null) {
+            swiftWriter.emitStatement("do {");
             if (!isReturnTypeOptional && returnSwiftType.isPrimitiveType()) {
-                if (returnSwiftType.swiftType.equals("Bool")) {
-                    swiftWriter.emitStatement("return jboolean(result ? JNI_TRUE : JNI_FALSE)");
-                }
-                else {
-                    swiftWriter.emitStatement("return result");
-                }
+                swiftWriter.emitStatement("return try result.javaPrimitive()");
             }
             else {
-                swiftWriter.emitStatement("do {");
                 if (isReturnTypeOptional) {
                     swiftWriter.emitStatement("return try result?.javaObject()");
                 } else {
                     swiftWriter.emitStatement("return try result.javaObject()");
                 }
-                swiftWriter.emitStatement("}");
-                swiftWriter.emitStatement("catch {");
-                Utils.handleRuntimeError(swiftWriter);
-                swiftWriter.emitStatement("return nil");
-                swiftWriter.emitStatement("}");
             }
+            swiftWriter.emitStatement("}");
+            swiftWriter.emitStatement("catch {");
+            Utils.handleRuntimeError(swiftWriter);
+            swiftWriter.emitStatement("return nil");
+            swiftWriter.emitStatement("}");
         }
 
         swiftWriter.emitStatement("}");

@@ -8,10 +8,10 @@ import java.lang.annotation.Native
 
 @SwiftValue
 data class Int64TestStruct(var zero: Long = 0,
-                          var max: Long = Long.MAX_VALUE,
-                          var min: Long = Long.MIN_VALUE,
-                          var optional: Long? = 0,
-                          var optionalNil: Long? = null)
+                           var max: Long = Long.MAX_VALUE,
+                           var min: Long = Long.MIN_VALUE,
+                           var optional: Long? = 0,
+                           var optionalNil: Long? = null)
 
 @SwiftReference
 class Int64Test private constructor() {
@@ -75,7 +75,7 @@ class Int64Test private constructor() {
         external fun testProtocolOptionalReturnType(callback: Int64OptionalReturnTypeProtocol): Long?
 
         @JvmStatic
-        external fun testEncode():  Int64TestStruct
+        external fun testEncode(): Int64TestStruct
 
         @JvmStatic
         external fun testDecode(value: Int64TestStruct): Boolean

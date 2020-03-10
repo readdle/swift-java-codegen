@@ -67,12 +67,7 @@ class SwiftSetterDescriptor implements JavaSwiftProcessor.WritableElement {
         }
 
         if (param.isPrimitive()) {
-            if (param.swiftType.swiftType.equals("Bool")) {
-                swiftWriter.emitStatement(String.format("%1$s = j%1$s == JNI_TRUE", param.name));
-            }
-            else {
-                swiftWriter.emitStatement(String.format("%1$s = j%1$s", param.name));
-            }
+            swiftWriter.emitStatement(String.format("%1$s = " + param.swiftType.swiftType + "(fromJavaPrimitive: j%1$s)", param.name));
         }
         else if (param.isOptional) {
             swiftWriter.emitStatement(String.format("if let j%1$s = j%1$s {", param.name));
