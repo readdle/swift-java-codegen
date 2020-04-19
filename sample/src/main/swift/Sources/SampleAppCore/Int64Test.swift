@@ -4,6 +4,25 @@
 
 import Foundation
 
+public enum Int64Enum: Int64, Codable {
+    case one
+    case two
+    case three
+}
+
+public struct Int64OptionsSet: OptionSet, Codable {
+
+    public let rawValue: Int64
+
+    public init(rawValue: Int64) {
+        self.rawValue = rawValue
+    }
+
+    static let one = Int64OptionsSet(rawValue: 1 << 0)
+    static let two = Int64OptionsSet(rawValue: 1 << 1)
+    static let three = Int64OptionsSet(rawValue: 1 << 2)
+}
+
 public struct Int64TestStruct: Codable, Hashable {
     public var zero: Int64 = Int64.zero
     public var max: Int64 = Int64.max
@@ -82,5 +101,25 @@ public class Int64Test {
         return value == Int64TestStruct()
     }
 
+    public static func testEnumEncode(_ rawValue: Int64) -> Int64Enum {
+        switch rawValue {
+        case Int64Enum.one.rawValue: return Int64Enum.one
+        case Int64Enum.two.rawValue: return Int64Enum.two
+        case Int64Enum.three.rawValue: return Int64Enum.three
+        default: fatalError("Can't find enum with rawValue \(rawValue)")
+        }
+    }
+
+    public static func testEnumDecode(_ enumValue: Int64Enum) -> Int64 {
+        return enumValue.rawValue
+    }
+
+    public static func testOptionSetEncode(_ rawValue: Int64) -> Int64OptionsSet {
+        return Int64OptionsSet(rawValue: rawValue)
+    }
+
+    public static func testOptionSetDecode(_ optionSet: Int64OptionsSet) -> Int64 {
+        return optionSet.rawValue
+    }
 
 }

@@ -17,12 +17,19 @@ class SwiftGetterDescriptor implements JavaSwiftProcessor.WritableElement {
 
     private SwiftEnvironment.Type returnSwiftType;
     private boolean isReturnTypeOptional;
+    private boolean isReturnTypeUnsigned;
 
     SwiftGetterDescriptor(ExecutableElement executableElement, SwiftGetter getterAnnotation, JavaSwiftProcessor processor) {
         this.javaName = executableElement.getSimpleName().toString();
         this.isStatic = executableElement.getModifiers().contains(Modifier.STATIC);
-        this.returnSwiftType = processor.parseJavaType(executableElement.getReturnType().toString());
         this.isReturnTypeOptional = processor.isNullable(executableElement);
+        boolean isReturnTypeUnsigned = processor.isUnsigned(executableElement);
+        if (isReturnTypeUnsigned) {
+            this.returnSwiftType = processor.parseJavaType(executableElement.getReturnType().toString()).makeUnsigned();
+        }
+        else {
+            this.returnSwiftType = processor.parseJavaType(executableElement.getReturnType().toString());
+        }
 
         if (executableElement.getThrownTypes().size() != 0) {
             throw new SwiftMappingException("Getter can't throw", executableElement);

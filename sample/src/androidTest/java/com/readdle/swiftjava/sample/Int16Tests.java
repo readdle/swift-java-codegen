@@ -96,4 +96,32 @@ public class Int16Tests {
         Assert.assertFalse(Int16Test.testDecode(badParam));
     }
 
+    @Test
+    public void testEnumEncode() {
+        Assert.assertEquals(Int16Enum.ONE, Int16Test.testEnumEncode(Int16Enum.ONE.getRawValue()));
+        Assert.assertEquals(Int16Enum.TWO, Int16Test.testEnumEncode(Int16Enum.TWO.getRawValue()));
+        Assert.assertEquals(Int16Enum.THREE, Int16Test.testEnumEncode(Int16Enum.THREE.getRawValue()));
+    }
+
+    @Test
+    public void testEnumDecode() {
+        Assert.assertEquals(Int16Enum.ONE.getRawValue(), Int16Test.testEnumDecode(Int16Enum.ONE));
+        Assert.assertEquals(Int16Enum.TWO.getRawValue(), Int16Test.testEnumDecode(Int16Enum.TWO));
+        Assert.assertEquals(Int16Enum.THREE.getRawValue(), Int16Test.testEnumDecode(Int16Enum.THREE));
+    }
+
+    @Test
+    public void testOptionSetEncode() {
+        Assert.assertEquals(Int16OptionsSet.getOne(), Int16Test.testOptionSetEncode(Int16OptionsSet.getOne().getRawValue()));
+        Assert.assertEquals(Int16OptionsSet.getTwo(), Int16Test.testOptionSetEncode(Int16OptionsSet.getTwo().getRawValue()));
+        Assert.assertEquals(Int16OptionsSet.getThree(), Int16Test.testOptionSetEncode(Int16OptionsSet.getThree().getRawValue()));
+    }
+
+    @Test
+    public void testOptionSetDecode() {
+        Assert.assertEquals(Int16OptionsSet.getOne().getRawValue(), Int16Test.testOptionSetDecode(Int16OptionsSet.getOne()));
+        Assert.assertEquals(Int16OptionsSet.getTwo().getRawValue(), Int16Test.testOptionSetDecode(Int16OptionsSet.getTwo()));
+        Assert.assertEquals(Int16OptionsSet.getThree().getRawValue(), Int16Test.testOptionSetDecode(Int16OptionsSet.getThree()));
+    }
+
 }

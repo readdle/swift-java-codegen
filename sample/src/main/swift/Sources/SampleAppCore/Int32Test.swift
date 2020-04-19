@@ -4,6 +4,25 @@
 
 import Foundation
 
+public enum Int32Enum: Int32, Codable {
+    case one
+    case two
+    case three
+}
+
+public struct Int32OptionsSet: OptionSet, Codable {
+
+    public let rawValue: Int32
+
+    public init(rawValue: Int32) {
+        self.rawValue = rawValue
+    }
+
+    static let one = Int32OptionsSet(rawValue: 1 << 0)
+    static let two = Int32OptionsSet(rawValue: 1 << 1)
+    static let three = Int32OptionsSet(rawValue: 1 << 2)
+}
+
 public struct Int32TestStruct: Codable, Hashable {
     public var zero: Int32 = Int32.zero
     public var max: Int32 = Int32.max
@@ -82,5 +101,25 @@ public class Int32Test {
         return value == Int32TestStruct()
     }
 
+    public static func testEnumEncode(_ rawValue: Int) -> Int32Enum {
+        switch Int32(rawValue) {
+        case Int32Enum.one.rawValue: return Int32Enum.one
+        case Int32Enum.two.rawValue: return Int32Enum.two
+        case Int32Enum.three.rawValue: return Int32Enum.three
+        default: fatalError("Can't find enum with rawValue \(rawValue)")
+        }
+    }
+
+    public static func testEnumDecode(_ enumValue: Int32Enum) -> Int {
+        return Int(enumValue.rawValue)
+    }
+
+    public static func testOptionSetEncode(_ rawValue: Int) -> Int32OptionsSet {
+        return Int32OptionsSet(rawValue: Int32(rawValue))
+    }
+
+    public static func testOptionSetDecode(_ optionSet: Int32OptionsSet) -> Int {
+        return Int(optionSet.rawValue)
+    }
 
 }

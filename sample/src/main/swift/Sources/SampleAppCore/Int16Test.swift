@@ -4,6 +4,25 @@
 
 import Foundation
 
+public enum Int16Enum: Int16, Codable {
+    case one
+    case two
+    case three
+}
+
+public struct Int16OptionsSet: OptionSet, Codable {
+
+    public let rawValue: Int16
+
+    public init(rawValue: Int16) {
+        self.rawValue = rawValue
+    }
+
+    static let one = Int16OptionsSet(rawValue: 1 << 0)
+    static let two = Int16OptionsSet(rawValue: 1 << 1)
+    static let three = Int16OptionsSet(rawValue: 1 << 2)
+}
+
 public struct Int16TestStruct: Codable, Hashable {
     public var zero: Int16 = Int16.zero
     public var max: Int16 = Int16.max
@@ -82,5 +101,25 @@ public class Int16Test {
         return value == Int16TestStruct()
     }
 
+    public static func testEnumEncode(_ rawValue: Int16) -> Int16Enum {
+        switch rawValue {
+        case Int16Enum.one.rawValue: return Int16Enum.one
+        case Int16Enum.two.rawValue: return Int16Enum.two
+        case Int16Enum.three.rawValue: return Int16Enum.three
+        default: fatalError("Can't find enum with rawValue \(rawValue)")
+        }
+    }
+
+    public static func testEnumDecode(_ enumValue: Int16Enum) -> Int16 {
+        return enumValue.rawValue
+    }
+
+    public static func testOptionSetEncode(_ rawValue: Int16) -> Int16OptionsSet {
+        return Int16OptionsSet(rawValue: rawValue)
+    }
+
+    public static func testOptionSetDecode(_ optionSet: Int16OptionsSet) -> Int16 {
+        return optionSet.rawValue
+    }
 
 }

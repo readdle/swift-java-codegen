@@ -33,7 +33,7 @@ public class IntTests {
         }
         catch (Exception e) {
             Assert.assertTrue(e instanceof SwiftRuntimeError);
-            Assert.assertEquals(e.getMessage(), "JavaCodingError (Not enough bits to represent Int " + Long.MIN_VALUE + ")");
+            Assert.assertEquals(e.getMessage(), "Invalid value \"" + Long.MIN_VALUE + "\": Not enough bits to represent Int []");
         }
     }
 
@@ -45,7 +45,7 @@ public class IntTests {
         }
         catch (Exception e) {
             Assert.assertTrue(e instanceof SwiftRuntimeError);
-            Assert.assertEquals(e.getMessage(), "JavaCodingError (Not enough bits to represent Int " + Long.MAX_VALUE + ")");
+            Assert.assertEquals(e.getMessage(), "Invalid value \"" + Long.MAX_VALUE + "\": Not enough bits to represent Int []");
         }
     }
 
@@ -66,10 +66,15 @@ public class IntTests {
         Assert.assertFalse(IntTest.testOptionalParam(Integer.MIN_VALUE));
     }
 
+    @Test
     public void testOptionalReturnType() {
-        Integer result = IntTest.testOptionalReturnType();
-        Assert.assertNotNull(result);
-        Assert.assertEquals(result.intValue(), Integer.MAX_VALUE);
+        try {
+            IntTest.testOptionalReturnType();
+        }
+        catch (Exception e) {
+            Assert.assertTrue(e instanceof SwiftRuntimeError);
+            Assert.assertEquals(e.getMessage(), "Invalid value \"" + Long.MAX_VALUE + "\": Not enough bits to represent Int []");
+        }
     }
 
     @Test
@@ -109,6 +114,34 @@ public class IntTests {
         IntTestStruct badParam = new IntTestStruct(42, 42, 42, 42, 42);
         Assert.assertTrue(IntTest.testDecode(goodParam));
         Assert.assertFalse(IntTest.testDecode(badParam));
+    }
+
+    @Test
+    public void testEnumEncode() {
+        Assert.assertEquals(IntEnum.ONE, IntTest.testEnumEncode(IntEnum.ONE.getRawValue()));
+        Assert.assertEquals(IntEnum.TWO, IntTest.testEnumEncode(IntEnum.TWO.getRawValue()));
+        Assert.assertEquals(IntEnum.THREE, IntTest.testEnumEncode(IntEnum.THREE.getRawValue()));
+    }
+
+    @Test
+    public void testEnumDecode() {
+        Assert.assertEquals(IntEnum.ONE.getRawValue(), IntTest.testEnumDecode(IntEnum.ONE));
+        Assert.assertEquals(IntEnum.TWO.getRawValue(), IntTest.testEnumDecode(IntEnum.TWO));
+        Assert.assertEquals(IntEnum.THREE.getRawValue(), IntTest.testEnumDecode(IntEnum.THREE));
+    }
+
+    @Test
+    public void testOptionSetEncode() {
+        Assert.assertEquals(IntOptionsSet.getOne(), IntTest.testOptionSetEncode(IntOptionsSet.getOne().getRawValue()));
+        Assert.assertEquals(IntOptionsSet.getTwo(), IntTest.testOptionSetEncode(IntOptionsSet.getTwo().getRawValue()));
+        Assert.assertEquals(IntOptionsSet.getThree(), IntTest.testOptionSetEncode(IntOptionsSet.getThree().getRawValue()));
+    }
+
+    @Test
+    public void testOptionSetDecode() {
+        Assert.assertEquals(IntOptionsSet.getOne().getRawValue(), IntTest.testOptionSetDecode(IntOptionsSet.getOne()));
+        Assert.assertEquals(IntOptionsSet.getTwo().getRawValue(), IntTest.testOptionSetDecode(IntOptionsSet.getTwo()));
+        Assert.assertEquals(IntOptionsSet.getThree().getRawValue(), IntTest.testOptionSetDecode(IntOptionsSet.getThree()));
     }
 
 }

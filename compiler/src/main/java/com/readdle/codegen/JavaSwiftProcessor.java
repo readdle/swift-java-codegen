@@ -330,11 +330,11 @@ public class JavaSwiftProcessor extends AbstractProcessor {
         swiftWriter.close();
     }
 
-    private void note(String msg) {
+    void note(String msg) {
         messager.printMessage(Diagnostic.Kind.WARNING, msg);
     }
 
-    private void error(Element e, String msg, Object... args) {
+    void error(Element e, String msg, Object... args) {
         messager.printMessage(Diagnostic.Kind.ERROR, String.format(msg, args), e);
     }
 
@@ -360,6 +360,17 @@ public class JavaSwiftProcessor extends AbstractProcessor {
             }
         }
         return true;
+    }
+
+    boolean isUnsigned(Element element) {
+        List<? extends AnnotationMirror> mirrors = element.getAnnotationMirrors();
+        for (AnnotationMirror mirror : mirrors) {
+            Name simpleName = mirror.getAnnotationType().asElement().getSimpleName();
+            if (simpleName.contentEquals("Unsigned")) {
+                return true;
+            }
+        }
+        return false;
     }
 
     static String replaceLast(String text, char replace, char replacement) {

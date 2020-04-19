@@ -96,4 +96,32 @@ public class Int8Tests {
         Assert.assertFalse(Int8Test.testDecode(badParam));
     }
 
+    @Test
+    public void testEnumEncode() {
+        Assert.assertEquals(Int8Enum.ONE, Int8Test.testEnumEncode(Int8Enum.ONE.getRawValue()));
+        Assert.assertEquals(Int8Enum.TWO, Int8Test.testEnumEncode(Int8Enum.TWO.getRawValue()));
+        Assert.assertEquals(Int8Enum.THREE, Int8Test.testEnumEncode(Int8Enum.THREE.getRawValue()));
+    }
+
+    @Test
+    public void testEnumDecode() {
+        Assert.assertEquals(Int8Enum.ONE.getRawValue(), Int8Test.testEnumDecode(Int8Enum.ONE));
+        Assert.assertEquals(Int8Enum.TWO.getRawValue(), Int8Test.testEnumDecode(Int8Enum.TWO));
+        Assert.assertEquals(Int8Enum.THREE.getRawValue(), Int8Test.testEnumDecode(Int8Enum.THREE));
+    }
+
+    @Test
+    public void testOptionSetEncode() {
+        Assert.assertEquals(Int8OptionsSet.getOne(), Int8Test.testOptionSetEncode(Int8OptionsSet.getOne().getRawValue()));
+        Assert.assertEquals(Int8OptionsSet.getTwo(), Int8Test.testOptionSetEncode(Int8OptionsSet.getTwo().getRawValue()));
+        Assert.assertEquals(Int8OptionsSet.getThree(), Int8Test.testOptionSetEncode(Int8OptionsSet.getThree().getRawValue()));
+    }
+
+    @Test
+    public void testOptionSetDecode() {
+        Assert.assertEquals(Int8OptionsSet.getOne().getRawValue(), Int8Test.testOptionSetDecode(Int8OptionsSet.getOne()));
+        Assert.assertEquals(Int8OptionsSet.getTwo().getRawValue(), Int8Test.testOptionSetDecode(Int8OptionsSet.getTwo()));
+        Assert.assertEquals(Int8OptionsSet.getThree().getRawValue(), Int8Test.testOptionSetDecode(Int8OptionsSet.getThree()));
+    }
+
 }

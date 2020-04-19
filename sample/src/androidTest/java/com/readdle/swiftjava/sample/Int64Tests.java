@@ -96,4 +96,32 @@ public class Int64Tests {
         Assert.assertFalse(Int64Test.testDecode(badParam));
     }
 
+    @Test
+    public void testEnumEncode() {
+        Assert.assertEquals(Int64Enum.ONE, Int64Test.testEnumEncode(Int64Enum.ONE.getRawValue()));
+        Assert.assertEquals(Int64Enum.TWO, Int64Test.testEnumEncode(Int64Enum.TWO.getRawValue()));
+        Assert.assertEquals(Int64Enum.THREE, Int64Test.testEnumEncode(Int64Enum.THREE.getRawValue()));
+    }
+
+    @Test
+    public void testEnumDecode() {
+        Assert.assertEquals(Int64Enum.ONE.getRawValue(), Int64Test.testEnumDecode(Int64Enum.ONE));
+        Assert.assertEquals(Int64Enum.TWO.getRawValue(), Int64Test.testEnumDecode(Int64Enum.TWO));
+        Assert.assertEquals(Int64Enum.THREE.getRawValue(), Int64Test.testEnumDecode(Int64Enum.THREE));
+    }
+
+    @Test
+    public void testOptionSetEncode() {
+        Assert.assertEquals(Int64OptionsSet.getOne(), Int64Test.testOptionSetEncode(Int64OptionsSet.getOne().getRawValue()));
+        Assert.assertEquals(Int64OptionsSet.getTwo(), Int64Test.testOptionSetEncode(Int64OptionsSet.getTwo().getRawValue()));
+        Assert.assertEquals(Int64OptionsSet.getThree(), Int64Test.testOptionSetEncode(Int64OptionsSet.getThree().getRawValue()));
+    }
+
+    @Test
+    public void testOptionSetDecode() {
+        Assert.assertEquals(Int64OptionsSet.getOne().getRawValue(), Int64Test.testOptionSetDecode(Int64OptionsSet.getOne()));
+        Assert.assertEquals(Int64OptionsSet.getTwo().getRawValue(), Int64Test.testOptionSetDecode(Int64OptionsSet.getTwo()));
+        Assert.assertEquals(Int64OptionsSet.getThree().getRawValue(), Int64Test.testOptionSetDecode(Int64OptionsSet.getThree()));
+    }
+
 }

@@ -13,7 +13,13 @@ public class SwiftParamDescriptor {
 
     SwiftParamDescriptor(VariableElement variableElement, JavaSwiftProcessor processor) {
         this.name = variableElement.getSimpleName().toString();
-        this.swiftType = requireNonNull(processor.parseJavaType(Utils.typeToString(variableElement.asType())));
+        boolean isUnsigned = processor.isUnsigned(variableElement);
+        if (isUnsigned) {
+            this.swiftType = requireNonNull(processor.parseJavaType(Utils.typeToString(variableElement.asType()))).makeUnsigned();
+        }
+        else {
+            this.swiftType = requireNonNull(processor.parseJavaType(Utils.typeToString(variableElement.asType())));
+        }
 
         SwiftBlock swiftParam = variableElement.getAnnotation(SwiftBlock.class);
         if (swiftParam != null) {

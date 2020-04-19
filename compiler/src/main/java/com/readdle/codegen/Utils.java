@@ -175,9 +175,14 @@ public class Utils {
     }
 
     static void handleRuntimeError(SwiftWriter swiftWriter) throws IOException {
+        swiftWriter.emitStatement("if let codingError = error as? JavaCodingErrorDescription {");
+        swiftWriter.emitStatement("_ = JNI.api.ThrowNew(JNI.env, SwiftRuntimeErrorClass, codingError.detailedDescription)");
+        swiftWriter.emitStatement("}");
+        swiftWriter.emitStatement("else {");
         swiftWriter.emitStatement("let errorType = type(of: error)");
         swiftWriter.emitStatement("let errorString = \"\\(errorType) (\\(error.localizedDescription))\"");
         swiftWriter.emitStatement("_ = JNI.api.ThrowNew(JNI.env, SwiftRuntimeErrorClass, errorString)");
+        swiftWriter.emitStatement("}");
     }
 
     static void handleError(SwiftWriter swiftWriter) throws IOException {

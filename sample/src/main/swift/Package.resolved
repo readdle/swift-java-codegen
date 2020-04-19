@@ -15,8 +15,8 @@
         "repositoryURL": "https://github.com/readdle/java_swift.git",
         "state": {
           "branch": null,
-          "revision": "95c9e84ec1b60d1858ec14ba8a20e3f7b934476b",
-          "version": "2.1.8"
+          "revision": "30860b7664e0cffd11dbd15bc5e70952896207a2",
+          "version": "2.1.9"
         }
       },
       {
@@ -33,17 +33,17 @@
         "repositoryURL": "https://github.com/readdle/swift-java.git",
         "state": {
           "branch": null,
-          "revision": "85b9e5f8bb1e8857c592b94cac98abaddb307675",
-          "version": "0.2.3"
+          "revision": "38459fc901d2ecd9655994459a6f099537a2cb98",
+          "version": "0.2.4"
         }
       },
       {
         "package": "JavaCoder",
         "repositoryURL": "https://github.com/readdle/swift-java-coder.git",
         "state": {
-          "branch": null,
-          "revision": "065a7d03a5a77637ea5fc64ead050bbb93a9f8c3",
-          "version": "1.0.17"
+          "branch": "dev/kotlin-support",
+          "revision": "e4b105dc830e59a116ec48216061b478aaefddff",
+          "version": null
         }
       }
     ]

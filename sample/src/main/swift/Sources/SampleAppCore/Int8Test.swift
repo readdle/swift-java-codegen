@@ -4,6 +4,25 @@
 
 import Foundation
 
+public enum Int8Enum: Int8, Codable {
+    case one
+    case two
+    case three
+}
+
+public struct Int8OptionsSet: OptionSet, Codable {
+
+    public let rawValue: Int8
+
+    public init(rawValue: Int8) {
+        self.rawValue = rawValue
+    }
+
+    static let one = Int8OptionsSet(rawValue: 1 << 0)
+    static let two = Int8OptionsSet(rawValue: 1 << 1)
+    static let three = Int8OptionsSet(rawValue: 1 << 2)
+}
+
 public struct Int8TestStruct: Codable, Hashable {
     public var zero: Int8 = Int8.zero
     public var max: Int8 = Int8.max
@@ -82,5 +101,25 @@ public class Int8Test {
         return value == Int8TestStruct()
     }
 
+    public static func testEnumEncode(_ rawValue: Int8) -> Int8Enum {
+        switch rawValue {
+        case Int8Enum.one.rawValue: return Int8Enum.one
+        case Int8Enum.two.rawValue: return Int8Enum.two
+        case Int8Enum.three.rawValue: return Int8Enum.three
+        default: fatalError("Can't find enum with rawValue \(rawValue)")
+        }
+    }
+
+    public static func testEnumDecode(_ enumValue: Int8Enum) -> Int8 {
+        return enumValue.rawValue
+    }
+
+    public static func testOptionSetEncode(_ rawValue: Int8) -> Int8OptionsSet {
+        return Int8OptionsSet(rawValue: rawValue)
+    }
+
+    public static func testOptionSetDecode(_ optionSet: Int8OptionsSet) -> Int8 {
+        return optionSet.rawValue
+    }
 
 }

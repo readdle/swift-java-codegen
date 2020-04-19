@@ -7,6 +7,41 @@ import com.readdle.codegen.anotation.SwiftValue
 import java.lang.annotation.Native
 
 @SwiftValue
+enum class Int64Enum(val rawValue: Long) {
+
+    ONE(0), TWO(1), THREE(2);
+
+    companion object {
+
+        private val values = HashMap<Long, Int64Enum>()
+
+        @JvmStatic
+        fun valueOf(rawValue: Long): Int64Enum {
+            return values[rawValue]!!
+        }
+
+        init {
+            enumValues<Int64Enum>().forEach {
+                values[it.rawValue] = it
+            }
+        }
+    }
+
+}
+
+@SwiftValue
+data class Int64OptionsSet(val rawValue: Long = 0) {
+    companion object {
+        @JvmStatic
+        val  one = Int64OptionsSet(1)
+        @JvmStatic
+        val  two = Int64OptionsSet(2)
+        @JvmStatic
+        val  three = Int64OptionsSet(4)
+    }
+}
+
+@SwiftValue
 data class Int64TestStruct(var zero: Long = 0,
                            var max: Long = Long.MAX_VALUE,
                            var min: Long = Long.MIN_VALUE,
@@ -79,6 +114,18 @@ class Int64Test private constructor() {
 
         @JvmStatic
         external fun testDecode(value: Int64TestStruct): Boolean
+        
+        @JvmStatic
+        external fun testEnumEncode(rawValue: Long) : Int64Enum
+
+        @JvmStatic
+        external fun testEnumDecode(enum: Int64Enum) : Long
+
+        @JvmStatic
+        external fun testOptionSetEncode(rawValue: Long) : Int64OptionsSet
+
+        @JvmStatic
+        external fun testOptionSetDecode(enum: Int64OptionsSet) : Long
     }
 
     @Native

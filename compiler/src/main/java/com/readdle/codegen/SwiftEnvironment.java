@@ -38,6 +38,7 @@ class SwiftEnvironment {
                     swiftType.equals("UInt8") ||
                     swiftType.equals("UInt16") ||
                     swiftType.equals("UInt32") ||
+                    swiftType.equals("UInt64") ||
                     swiftType.equals("Float") ||
                     swiftType.equals("Double");
         }
@@ -52,16 +53,17 @@ class SwiftEnvironment {
                         return "jboolean";
                     case "Int":
                     case "Int32":
-                    case "UInt16":
-                        return "jint";
-                    case "Int8":
-                        return "jbyte";
-                    case "Int16":
-                    case "UInt8":
-                        return "jshort";
-                    case "Int64":
                     case "UInt":
                     case "UInt32":
+                        return "jint";
+                    case "Int8":
+                    case "UInt8":
+                        return "jbyte";
+                    case "Int16":
+                    case "UInt16":
+                        return "jshort";
+                    case "Int64":
+                    case "UInt64":
                         return "jlong";
                     case "Float":
                         return "jfloat";
@@ -83,16 +85,17 @@ class SwiftEnvironment {
                         return "CallBooleanMethod";
                     case "Int":
                     case "Int32":
-                    case "UInt16":
-                        return "CallIntMethod";
-                    case "Int8":
-                        return "CallByteMethod";
-                    case "Int16":
-                    case "UInt8":
-                        return "CallShortMethod";
-                    case "Int64":
                     case "UInt":
                     case "UInt32":
+                        return "CallIntMethod";
+                    case "Int8":
+                    case "UInt8":
+                        return "CallByteMethod";
+                    case "Int16":
+                    case "UInt16":
+                        return "CallShortMethod";
+                    case "Int64":
+                    case "UInt64":
                         return "CallLongMethod";
                     case "Float":
                         return "CallFloatMethod";
@@ -114,16 +117,17 @@ class SwiftEnvironment {
                         return "CallStaticBooleanMethod";
                     case "Int":
                     case "Int32":
-                    case "UInt16":
-                        return "CallStaticIntMethod";
-                    case "Int8":
-                        return "CallStaticByteMethod";
-                    case "Int16":
-                    case "UInt8":
-                        return "CallStaticShortMethod";
-                    case "Int64":
                     case "UInt":
                     case "UInt32":
+                        return "CallStaticIntMethod";
+                    case "Int8":
+                    case "UInt8":
+                        return "CallStaticByteMethod";
+                    case "Int16":
+                    case "UInt16":
+                        return "CallStaticShortMethod";
+                    case "Int64":
+                    case "UInt64":
                         return "CallStaticLongMethod";
                     case "Float":
                         return "CallStaticFloatMethod";
@@ -132,6 +136,19 @@ class SwiftEnvironment {
                     default:
                         return "CallStaticObjectMethod";
                 }
+            }
+        }
+
+        Type makeUnsigned() {
+            switch (swiftType) {
+                case "Int":
+                case "Int8":
+                case "Int16":
+                case "Int32":
+                case "Int64":
+                    return new Type("U" + swiftType, javaType, "U" + swiftConstructorType);
+                default:
+                    throw new IllegalStateException(swiftType + " can't be unsigned");
             }
         }
     }

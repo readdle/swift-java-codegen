@@ -7,6 +7,41 @@ import com.readdle.codegen.anotation.SwiftValue
 import java.lang.annotation.Native
 
 @SwiftValue
+enum class Int8Enum(val rawValue: Byte) {
+
+    ONE(0), TWO(1), THREE(2);
+
+    companion object {
+
+        private val values = HashMap<Byte, Int8Enum>()
+
+        @JvmStatic
+        fun valueOf(rawValue: Byte): Int8Enum {
+            return values[rawValue]!!
+        }
+
+        init {
+            enumValues<Int8Enum>().forEach {
+                values[it.rawValue] = it
+            }
+        }
+    }
+
+}
+
+@SwiftValue
+data class Int8OptionsSet(val rawValue: Byte = 0) {
+    companion object {
+        @JvmStatic
+        val  one = Int8OptionsSet(1)
+        @JvmStatic
+        val  two = Int8OptionsSet(2)
+        @JvmStatic
+        val  three = Int8OptionsSet(4)
+    }
+}
+
+@SwiftValue
 data class Int8TestStruct(var zero: Byte = 0,
                           var max: Byte = Byte.MAX_VALUE,
                           var min: Byte = Byte.MIN_VALUE,
@@ -79,6 +114,18 @@ class Int8Test private constructor() {
 
         @JvmStatic
         external fun testDecode(value: Int8TestStruct): Boolean
+
+        @JvmStatic
+        external fun testEnumEncode(rawValue: Byte) : Int8Enum
+
+        @JvmStatic
+        external fun testEnumDecode(enum: Int8Enum) : Byte
+
+        @JvmStatic
+        external fun testOptionSetEncode(rawValue: Byte) : Int8OptionsSet
+
+        @JvmStatic
+        external fun testOptionSetDecode(enum: Int8OptionsSet) : Byte
     }
 
     @Native
