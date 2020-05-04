@@ -124,4 +124,14 @@ public class Int8Tests {
         Assert.assertEquals(Int8OptionsSet.getThree().getRawValue(), Int8Test.testOptionSetDecode(Int8OptionsSet.getThree()));
     }
 
+    @Test
+    public void testBlock() {
+        Assert.assertTrue(Int8Test.testBlock(value -> value));
+    }
+
+    @Test
+    public void testOptionalBlock() {
+        Assert.assertTrue(Int8Test.testOptionalBlock(value -> value));
+    }
+
 }

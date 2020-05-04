@@ -91,4 +91,14 @@ public class BoolTests {
         Assert.assertFalse(BoolTest.testDecode(badParam));
     }
 
+    @Test
+    public void testBlock() {
+        Assert.assertTrue(BoolTest.testBlock(value -> value));
+    }
+
+    @Test
+    public void testOptionalBlock() {
+        Assert.assertTrue(BoolTest.testOptionalBlock(value -> value));
+    }
+
 }

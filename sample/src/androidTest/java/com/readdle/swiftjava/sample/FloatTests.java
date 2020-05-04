@@ -98,4 +98,14 @@ public class FloatTests {
         Assert.assertFalse(FloatTest.testDecode(badParam));
     }
 
+    @Test
+    public void testBlock() {
+        Assert.assertTrue(FloatTest.testBlock(value -> value));
+    }
+
+    @Test
+    public void testOptionalBlock() {
+        Assert.assertTrue(FloatTest.testOptionalBlock(value -> value));
+    }
+
 }

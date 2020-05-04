@@ -124,4 +124,14 @@ public class Int16Tests {
         Assert.assertEquals(Int16OptionsSet.getThree().getRawValue(), Int16Test.testOptionSetDecode(Int16OptionsSet.getThree()));
     }
 
+    @Test
+    public void testBlock() {
+        Assert.assertTrue(Int16Test.testBlock(value -> value));
+    }
+
+    @Test
+    public void testOptionalBlock() {
+        Assert.assertTrue(Int16Test.testOptionalBlock(value -> value));
+    }
+
 }

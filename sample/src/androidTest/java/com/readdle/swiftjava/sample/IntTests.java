@@ -144,4 +144,14 @@ public class IntTests {
         Assert.assertEquals(IntOptionsSet.getThree().getRawValue(), IntTest.testOptionSetDecode(IntOptionsSet.getThree()));
     }
 
+    @Test
+    public void testBlock() {
+        Assert.assertTrue(IntTest.testBlock(value -> value));
+    }
+
+    @Test
+    public void testOptionalBlock() {
+        Assert.assertTrue(IntTest.testOptionalBlock(value -> value));
+    }
+
 }

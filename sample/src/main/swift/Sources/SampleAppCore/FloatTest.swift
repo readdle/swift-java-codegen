@@ -28,6 +28,9 @@ public protocol FloatTestOptionalReturnTypeProtocol {
     func testOptionalReturnType() -> Float?
 }
 
+public typealias FloatBlock = (_ value: Float) -> Float
+public typealias OptionalFloatBlock = (_ value: Float?) -> Float?
+
 public class FloatTest {
 
     public static func testZero() -> Float {
@@ -80,6 +83,16 @@ public class FloatTest {
 
     public static func testDecode(_ value: FloatTestStruct) -> Bool {
         return value == FloatTestStruct()
+    }
+
+    public static func testBlock(_ block: FloatBlock) -> Bool {
+        let value = block(0)
+        return value == 0
+    }
+
+    public static func testOptionalBlock(_ block: OptionalFloatBlock) -> Bool {
+        let value = block(nil)
+        return value == nil
     }
 
 }

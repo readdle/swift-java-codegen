@@ -1,9 +1,6 @@
 package com.readdle.swiftjava.sample
 
-import com.readdle.codegen.anotation.SwiftCallbackFunc
-import com.readdle.codegen.anotation.SwiftDelegate
-import com.readdle.codegen.anotation.SwiftReference
-import com.readdle.codegen.anotation.SwiftValue
+import com.readdle.codegen.anotation.*
 import java.lang.annotation.Native
 
 @SwiftValue
@@ -39,6 +36,16 @@ class BoolTest private constructor() {
         fun testOptionalReturnType(): Boolean?
     }
 
+    @SwiftBlock("(Bool) -> Bool")
+    interface BoolBlock {
+        fun call(value: Boolean): Boolean
+    }
+
+    @SwiftBlock("(Bool?) -> Bool?")
+    interface OptionalBoolBlock {
+        fun call(value: Boolean?): Boolean?
+    }
+
     companion object {
         @JvmStatic
         external fun testYes(): Boolean
@@ -71,10 +78,16 @@ class BoolTest private constructor() {
         external fun testProtocolOptionalReturnType(callback: BoolOptionalReturnTypeProtocol): Boolean?
 
         @JvmStatic
-        external fun testEncode():  BoolTestStruct
+        external fun testEncode(): BoolTestStruct
 
         @JvmStatic
         external fun testDecode(value: BoolTestStruct): Boolean
+
+        @JvmStatic
+        external fun testBlock(@SwiftBlock block: BoolBlock): Boolean
+
+        @JvmStatic
+        external fun testOptionalBlock(@SwiftBlock block: OptionalBoolBlock): Boolean
     }
 
     @Native

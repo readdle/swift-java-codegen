@@ -27,6 +27,9 @@ public protocol BoolTestOptionalReturnTypeProtocol {
     func testOptionalReturnType() -> Bool?
 }
 
+public typealias BoolBlock = (_ boolValue: Bool) -> Bool
+public typealias OptionalBoolBlock = (_ boolValue: Bool?) -> Bool?
+
 public class BoolTest {
 
     public static func testYes() -> Bool {
@@ -75,6 +78,16 @@ public class BoolTest {
 
     public static func testDecode(_ value: BoolTestStruct) -> Bool {
         return value == BoolTestStruct()
+    }
+
+    public static func testBlock(_ block: BoolBlock) -> Bool {
+        let value = block(true)
+        return value == true
+    }
+
+    public static func testOptionalBlock(_ block: OptionalBoolBlock) -> Bool {
+        let value = block(nil)
+        return value == nil
     }
 
 }

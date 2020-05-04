@@ -98,4 +98,14 @@ public class DoubleTests {
         Assert.assertFalse(DoubleTest.testDecode(badParam));
     }
 
+    @Test
+    public void testBlock() {
+        Assert.assertTrue(DoubleTest.testBlock(value -> value));
+    }
+
+    @Test
+    public void testOptionalBoolBlock() {
+        Assert.assertTrue(DoubleTest.testOptionalBlock(value -> value));
+    }
+
 }

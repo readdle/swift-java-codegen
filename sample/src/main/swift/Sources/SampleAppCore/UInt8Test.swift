@@ -47,6 +47,9 @@ public protocol UInt8TestOptionalReturnTypeProtocol {
     func testOptionalReturnType() -> UInt8?
 }
 
+public typealias UInt8Block = (_ value: UInt8) -> UInt8
+public typealias OptionalUInt8Block = (_ value: UInt8?) -> UInt8?
+
 public class UInt8Test {
 
     public static func testZero() -> UInt8 {
@@ -120,6 +123,16 @@ public class UInt8Test {
 
     public static func testOptionSetDecode(_ optionSet: UInt8OptionsSet) -> UInt8 {
         return optionSet.rawValue
+    }
+
+    public static func testBlock(_ block: UInt8Block) -> Bool {
+        let value = block(0)
+        return value == 0
+    }
+
+    public static func testOptionalBlock(_ block: OptionalUInt8Block) -> Bool {
+        let value = block(nil)
+        return value == nil
     }
 
 }

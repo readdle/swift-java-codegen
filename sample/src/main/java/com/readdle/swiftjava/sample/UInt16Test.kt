@@ -75,6 +75,18 @@ class UInt16Test private constructor() {
         fun testOptionalReturnType(): Short?
     }
 
+    @SwiftBlock("(UInt16) -> UInt16")
+    interface UInt16Block {
+        @Unsigned
+        fun call(@Unsigned value: Short): Short
+    }
+
+    @SwiftBlock("(UInt16?) -> UInt16?")
+    interface OptionalUInt16Block {
+        @Unsigned
+        fun call(@Unsigned value: Short?): Short?
+    }
+
     companion object {
         @JvmStatic @Unsigned
         external fun testZero(): Short
@@ -126,6 +138,12 @@ class UInt16Test private constructor() {
 
         @JvmStatic @Unsigned
         external fun testOptionSetDecode(enum: UInt16OptionsSet) : Short
+        
+        @JvmStatic
+        external fun testBlock(@SwiftBlock block: UInt16Block): Boolean
+
+        @JvmStatic
+        external fun testOptionalBlock(@SwiftBlock block: OptionalUInt16Block): Boolean
     }
 
     @Native

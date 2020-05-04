@@ -1,9 +1,6 @@
 package com.readdle.swiftjava.sample
 
-import com.readdle.codegen.anotation.SwiftCallbackFunc
-import com.readdle.codegen.anotation.SwiftDelegate
-import com.readdle.codegen.anotation.SwiftReference
-import com.readdle.codegen.anotation.SwiftValue
+import com.readdle.codegen.anotation.*
 import java.lang.annotation.Native
 
 @SwiftValue
@@ -75,6 +72,16 @@ class Int16Test private constructor() {
         fun testOptionalReturnType(): Short?
     }
 
+    @SwiftBlock("(Int16) -> Int16")
+    interface Int16Block {
+        fun call(value: Short): Short
+    }
+
+    @SwiftBlock("(Int16?) -> Int16?")
+    interface OptionalInt16Block {
+        fun call(value: Short?): Short?
+    }
+
     companion object {
         @JvmStatic
         external fun testZero(): Short
@@ -126,6 +133,12 @@ class Int16Test private constructor() {
 
         @JvmStatic
         external fun testOptionSetDecode(enum: Int16OptionsSet) : Short
+        
+        @JvmStatic
+        external fun testBlock(@SwiftBlock block: Int16Block): Boolean
+
+        @JvmStatic
+        external fun testOptionalBlock(@SwiftBlock block: OptionalInt16Block): Boolean
     }
 
     @Native

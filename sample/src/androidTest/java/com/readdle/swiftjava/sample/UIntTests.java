@@ -140,4 +140,14 @@ public class UIntTests {
         Assert.assertEquals(UIntOptionsSet.getThree().getRawValue(),UIntTest.testOptionSetDecode(UIntOptionsSet.getThree()));
     }
 
+    @Test
+    public void testBlock() {
+        Assert.assertTrue(UIntTest.testBlock(value -> value));
+    }
+
+    @Test
+    public void testOptionalBlock() {
+        Assert.assertTrue(UIntTest.testOptionalBlock(value -> value));
+    }
+
 }

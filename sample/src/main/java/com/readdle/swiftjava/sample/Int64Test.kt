@@ -1,9 +1,6 @@
 package com.readdle.swiftjava.sample
 
-import com.readdle.codegen.anotation.SwiftCallbackFunc
-import com.readdle.codegen.anotation.SwiftDelegate
-import com.readdle.codegen.anotation.SwiftReference
-import com.readdle.codegen.anotation.SwiftValue
+import com.readdle.codegen.anotation.*
 import java.lang.annotation.Native
 
 @SwiftValue
@@ -75,6 +72,16 @@ class Int64Test private constructor() {
         fun testOptionalReturnType(): Long?
     }
 
+    @SwiftBlock("(Int64) -> Int64")
+    interface Int64Block {
+        fun call(value: Long): Long
+    }
+
+    @SwiftBlock("(Int64?) -> Int64?")
+    interface OptionalInt64Block {
+        fun call(value: Long?): Long?
+    }
+
     companion object {
         @JvmStatic
         external fun testZero(): Long
@@ -126,6 +133,12 @@ class Int64Test private constructor() {
 
         @JvmStatic
         external fun testOptionSetDecode(enum: Int64OptionsSet) : Long
+        
+        @JvmStatic
+        external fun testBlock(@SwiftBlock block: Int64Block): Boolean
+
+        @JvmStatic
+        external fun testOptionalBlock(@SwiftBlock block: OptionalInt64Block): Boolean
     }
 
     @Native

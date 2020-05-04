@@ -47,6 +47,9 @@ public protocol Int64TestOptionalReturnTypeProtocol {
     func testOptionalReturnType() -> Int64?
 }
 
+public typealias Int64Block = (_ value: Int64) -> Int64
+public typealias OptionalInt64Block = (_ value: Int64?) -> Int64?
+
 public class Int64Test {
 
     public static func testZero() -> Int64 {
@@ -120,6 +123,16 @@ public class Int64Test {
 
     public static func testOptionSetDecode(_ optionSet: Int64OptionsSet) -> Int64 {
         return optionSet.rawValue
+    }
+
+    public static func testBlock(_ block: Int64Block) -> Bool {
+        let value = block(0)
+        return value == 0
+    }
+
+    public static func testOptionalBlock(_ block: OptionalInt64Block) -> Bool {
+        let value = block(nil)
+        return value == nil
     }
 
 }

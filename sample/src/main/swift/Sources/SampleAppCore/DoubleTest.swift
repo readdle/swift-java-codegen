@@ -28,6 +28,9 @@ public protocol DoubleTestOptionalReturnTypeProtocol {
     func testOptionalReturnType() -> Double?
 }
 
+public typealias DoubleBlock = (_ value: Double) -> Double
+public typealias OptionalDoubleBlock = (_ value: Double?) -> Double?
+
 public class DoubleTest {
 
     public static func testZero() -> Double {
@@ -80,6 +83,16 @@ public class DoubleTest {
 
     public static func testDecode(_ value: DoubleTestStruct) -> Bool {
         return value == DoubleTestStruct()
+    }
+
+    public static func testBlock(_ block: DoubleBlock) -> Bool {
+        let value = block(0)
+        return value == 0
+    }
+
+    public static func testOptionalBlock(_ block: OptionalDoubleBlock) -> Bool {
+        let value = block(nil)
+        return value == nil
     }
 
 }

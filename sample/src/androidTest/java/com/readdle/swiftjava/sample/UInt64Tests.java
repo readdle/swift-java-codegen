@@ -127,4 +127,14 @@ public class UInt64Tests {
         Assert.assertEquals(UInt64OptionsSet.getThree().getRawValue(),UInt64Test.testOptionSetDecode(UInt64OptionsSet.getThree()));
     }
 
+    @Test
+    public void testBlock() {
+        Assert.assertTrue(UInt64Test.testBlock(value -> value));
+    }
+
+    @Test
+    public void testOptionalBlock() {
+        Assert.assertTrue(UInt64Test.testOptionalBlock(value -> value));
+    }
+
 }

@@ -382,7 +382,7 @@ public class JavaSwiftProcessor extends AbstractProcessor {
     }
 
     public SwiftEnvironment.Type parseJavaType(String javaType) {
-        if (moduleDescriptor.customTypeMappings.containsKey(javaType)) {
+        if (moduleDescriptor.customTypeMappings != null && moduleDescriptor.customTypeMappings.containsKey(javaType)) {
             return new SwiftEnvironment.Type(moduleDescriptor.customTypeMappings.get(javaType), javaType);
         }
         switch (javaType) {

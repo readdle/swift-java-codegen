@@ -127,4 +127,14 @@ public class UInt8Tests {
         Assert.assertEquals(UInt8OptionsSet.getThree().getRawValue(),UInt8Test.testOptionSetDecode(UInt8OptionsSet.getThree()));
     }
 
+    @Test
+    public void testBlock() {
+        Assert.assertTrue(UInt8Test.testBlock(value -> value));
+    }
+
+    @Test
+    public void testOptionalBlock() {
+        Assert.assertTrue(UInt8Test.testOptionalBlock(value -> value));
+    }
+
 }

@@ -47,6 +47,9 @@ public protocol UIntTestOptionalReturnTypeProtocol {
     func testOptionalReturnType() -> UInt?
 }
 
+public typealias UIntBlock = (_ value: UInt) -> UInt
+public typealias OptionalUIntBlock = (_ value: UInt?) -> UInt?
+
 public class UIntTest {
 
     public static func testZero() -> UInt {
@@ -132,6 +135,16 @@ public class UIntTest {
 
     public static func testOptionSetDecode(_ optionSet: UIntOptionsSet) -> UInt {
         return optionSet.rawValue
+    }
+
+    public static func testBlock(_ block: UIntBlock) -> Bool {
+        let value = block(0)
+        return value == 0
+    }
+
+    public static func testOptionalBlock(_ block: OptionalUIntBlock) -> Bool {
+        let value = block(nil)
+        return value == nil
     }
 
 }

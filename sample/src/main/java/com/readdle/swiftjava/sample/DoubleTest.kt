@@ -1,9 +1,6 @@
 package com.readdle.swiftjava.sample
 
-import com.readdle.codegen.anotation.SwiftCallbackFunc
-import com.readdle.codegen.anotation.SwiftDelegate
-import com.readdle.codegen.anotation.SwiftReference
-import com.readdle.codegen.anotation.SwiftValue
+import com.readdle.codegen.anotation.*
 import java.lang.annotation.Native
 
 @SwiftValue
@@ -38,6 +35,16 @@ class DoubleTest private constructor() {
     interface DoubleOptionalReturnTypeProtocol {
         @SwiftCallbackFunc
         fun testOptionalReturnType(): Double?
+    }
+
+    @SwiftBlock("(Double) -> Double")
+    interface DoubleBlock {
+        fun call(value: Double): Double
+    }
+
+    @SwiftBlock("(Double?) -> Double?")
+    interface OptionalDoubleBlock {
+        fun call(value: Double?): Double?
     }
 
     companion object {
@@ -79,6 +86,12 @@ class DoubleTest private constructor() {
 
         @JvmStatic
         external fun testDecode(value: DoubleTestStruct): Boolean
+
+        @JvmStatic
+        external fun testBlock(@SwiftBlock block: DoubleBlock): Boolean
+
+        @JvmStatic
+        external fun testOptionalBlock(@SwiftBlock block: OptionalDoubleBlock): Boolean
     }
 
     @Native

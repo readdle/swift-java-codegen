@@ -76,6 +76,18 @@ class UIntTest private constructor() {
         fun testOptionalReturnType(): Int?
     }
 
+    @SwiftBlock("(UInt) -> UInt")
+    interface UIntBlock {
+        @Unsigned
+        fun call(@Unsigned value: Int): Int
+    }
+
+    @SwiftBlock("(UInt?) -> UInt?")
+    interface OptionalUIntBlock {
+        @Unsigned
+        fun call(@Unsigned value: Int?): Int?
+    }
+
     companion object {
         @JvmStatic @Unsigned
         external fun testZero(): Int
@@ -127,6 +139,12 @@ class UIntTest private constructor() {
 
         @JvmStatic @Unsigned
         external fun testOptionSetDecode(enum: UIntOptionsSet) : Int
+
+        @JvmStatic
+        external fun testBlock(@SwiftBlock block: UIntBlock): Boolean
+
+        @JvmStatic
+        external fun testOptionalBlock(@SwiftBlock block: OptionalUIntBlock): Boolean
     }
 
     @Native

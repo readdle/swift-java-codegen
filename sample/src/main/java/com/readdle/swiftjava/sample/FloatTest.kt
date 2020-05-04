@@ -1,9 +1,6 @@
 package com.readdle.swiftjava.sample
 
-import com.readdle.codegen.anotation.SwiftCallbackFunc
-import com.readdle.codegen.anotation.SwiftDelegate
-import com.readdle.codegen.anotation.SwiftReference
-import com.readdle.codegen.anotation.SwiftValue
+import com.readdle.codegen.anotation.*
 import java.lang.annotation.Native
 
 @SwiftValue
@@ -38,6 +35,16 @@ class FloatTest private constructor() {
     interface FloatOptionalReturnTypeProtocol {
         @SwiftCallbackFunc
         fun testOptionalReturnType(): Float?
+    }
+
+    @SwiftBlock("(Float) -> Float")
+    interface FloatBlock {
+        fun call(value: Float): Float
+    }
+
+    @SwiftBlock("(Float?) -> Float?")
+    interface OptionalFloatBlock {
+        fun call(value: Float?): Float?
     }
 
     companion object {
@@ -79,6 +86,12 @@ class FloatTest private constructor() {
 
         @JvmStatic
         external fun testDecode(value: FloatTestStruct): Boolean
+
+        @JvmStatic
+        external fun testBlock(@SwiftBlock block: FloatBlock): Boolean
+
+        @JvmStatic
+        external fun testOptionalBlock(@SwiftBlock block: OptionalFloatBlock): Boolean
     }
 
     @Native

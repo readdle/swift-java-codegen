@@ -84,6 +84,18 @@ class UInt8Test private constructor() {
         fun testOptionalReturnType(): Byte?
     }
 
+    @SwiftBlock("(UInt8) -> UInt8")
+    interface UInt8Block {
+        @Unsigned
+        fun call(@Unsigned value: Byte): Byte
+    }
+
+    @SwiftBlock("(UInt8?) -> UInt8?")
+    interface OptionalUInt8Block {
+        @Unsigned
+        fun call(@Unsigned value: Byte?): Byte?
+    }
+
     companion object {
         @JvmStatic @Unsigned
         external fun testZero(): Byte
@@ -135,6 +147,12 @@ class UInt8Test private constructor() {
 
         @JvmStatic @Unsigned
         external fun testOptionSetDecode(enum: UInt8OptionsSet) : Byte
+        
+        @JvmStatic
+        external fun testBlock(@SwiftBlock block: UInt8Block): Boolean
+
+        @JvmStatic
+        external fun testOptionalBlock(@SwiftBlock block: OptionalUInt8Block): Boolean
     }
 
     @Native

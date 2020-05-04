@@ -124,4 +124,14 @@ public class Int64Tests {
         Assert.assertEquals(Int64OptionsSet.getThree().getRawValue(), Int64Test.testOptionSetDecode(Int64OptionsSet.getThree()));
     }
 
+    @Test
+    public void testBlock() {
+        Assert.assertTrue(Int64Test.testBlock(value -> value));
+    }
+
+    @Test
+    public void testOptionalBlock() {
+        Assert.assertTrue(Int64Test.testOptionalBlock(value -> value));
+    }
+
 }

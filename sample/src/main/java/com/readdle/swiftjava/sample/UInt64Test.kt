@@ -75,6 +75,18 @@ class UInt64Test private constructor() {
         fun testOptionalReturnType(): Long?
     }
 
+    @SwiftBlock("(UInt64) -> UInt64")
+    interface UInt64Block {
+        @Unsigned
+        fun call(@Unsigned value: Long): Long
+    }
+
+    @SwiftBlock("(UInt64?) -> UInt64?")
+    interface OptionalUInt64Block {
+        @Unsigned
+        fun call(@Unsigned value: Long?): Long?
+    }
+
     companion object {
         @JvmStatic @Unsigned
         external fun testZero(): Long
@@ -126,6 +138,12 @@ class UInt64Test private constructor() {
 
         @JvmStatic @Unsigned
         external fun testOptionSetDecode(enum: UInt64OptionsSet) : Long
+        
+        @JvmStatic
+        external fun testBlock(@SwiftBlock block: UInt64Block): Boolean
+
+        @JvmStatic
+        external fun testOptionalBlock(@SwiftBlock block: OptionalUInt64Block): Boolean
     }
 
     @Native

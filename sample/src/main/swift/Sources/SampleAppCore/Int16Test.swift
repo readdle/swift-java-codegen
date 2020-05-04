@@ -47,6 +47,9 @@ public protocol Int16TestOptionalReturnTypeProtocol {
     func testOptionalReturnType() -> Int16?
 }
 
+public typealias Int16Block = (_ value: Int16) -> Int16
+public typealias OptionalInt16Block = (_ value: Int16?) -> Int16?
+
 public class Int16Test {
 
     public static func testZero() -> Int16 {
@@ -120,6 +123,16 @@ public class Int16Test {
 
     public static func testOptionSetDecode(_ optionSet: Int16OptionsSet) -> Int16 {
         return optionSet.rawValue
+    }
+
+    public static func testBlock(_ block: Int16Block) -> Bool {
+        let value = block(0)
+        return value == 0
+    }
+
+    public static func testOptionalBlock(_ block: OptionalInt16Block) -> Bool {
+        let value = block(nil)
+        return value == nil
     }
 
 }

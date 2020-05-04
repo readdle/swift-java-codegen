@@ -127,4 +127,14 @@ public class UInt16Tests {
         Assert.assertEquals(UInt16OptionsSet.getThree().getRawValue(),UInt16Test.testOptionSetDecode(UInt16OptionsSet.getThree()));
     }
 
+    @Test
+    public void testBlock() {
+        Assert.assertTrue(UInt16Test.testBlock(value -> value));
+    }
+
+    @Test
+    public void testOptionalBlock() {
+        Assert.assertTrue(UInt16Test.testOptionalBlock(value -> value));
+    }
+
 }
