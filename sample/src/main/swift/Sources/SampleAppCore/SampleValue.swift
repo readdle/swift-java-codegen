@@ -16,6 +16,18 @@ public struct SampleValue: Codable, Hashable {
     public var uint32: UInt32 = 32
     public var uint64: UInt64 = 64
 
+    public var optionalInteger: Int? = 32
+    public var optionalInt8: Int8? = 8
+    public var optionalInt16: Int16? = 16
+    public var optionalInt32: Int32? = 32
+    public var optionalInt64: Int64? = 64
+
+    public var optionalUint: UInt? = 32
+    public var optionalUint8: UInt8? = 8
+    public var optionalUint16: UInt16? = 16
+    public var optionalUint32: UInt32? = 32
+    public var optionalUint64: UInt64? = 64
+
     public var objectArray: [SampleValue] = []
     public var stringArray: [String] = ["one", "two", "free"]
     public var numberArray: [Int] = [1, 2, 3]

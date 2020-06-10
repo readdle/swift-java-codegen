@@ -32,8 +32,14 @@ class SwiftFuncDescriptor implements JavaSwiftProcessor.WritableElement {
 
         this.isStatic = executableElement.getModifiers().contains(Modifier.STATIC);
         this.isThrown = executableElement.getThrownTypes() != null && executableElement.getThrownTypes().size() > 0;
-        this.returnSwiftType = processor.parseJavaType(executableElement.getReturnType().toString());
-        this.isReturnTypeOptional = JavaSwiftProcessor.isNullable(executableElement);
+        this.isReturnTypeOptional = processor.isNullable(executableElement);
+        boolean isReturnTypeUnsigned = processor.isUnsigned(executableElement);
+        if (isReturnTypeUnsigned) {
+            this.returnSwiftType = processor.parseJavaType(executableElement.getReturnType().toString()).makeUnsigned();
+        }
+        else {
+            this.returnSwiftType = processor.parseJavaType(executableElement.getReturnType().toString());
+        }
 
         int paramsSize = executableElement.getParameters().size();
         this.params = new ArrayList<>(paramsSize);
@@ -88,10 +94,15 @@ class SwiftFuncDescriptor implements JavaSwiftProcessor.WritableElement {
         swiftWriter.emit(String.format("public func %s(env: UnsafeMutablePointer<JNIEnv?>, %s", swiftFuncName, isStatic ? "clazz: jclass" : "this: jobject"));
 
         for (SwiftParamDescriptor param : params) {
-            swiftWriter.emit(String.format(", j%s: jobject%s", param.name, param.isOptional ? "?" : ""));
+            swiftWriter.emit(String.format(", j%s: %s%s", param.name, param.swiftType.javaSigType(param.isOptional), param.isOptional ? "?" : ""));
         }
 
-        swiftWriter.emit(String.format(")%s {\n", returnSwiftType != null ? " -> jobject?" : ""));
+        String retType = "";
+        if (returnSwiftType != null) {
+            retType = " -> " + returnSwiftType.javaSigType(isReturnTypeOptional) + "?";
+        }
+
+        swiftWriter.emit(String.format(")%s {\n", retType));
         swiftWriter.emitEmptyLine();
 
         if (!isStatic) {
@@ -112,7 +123,10 @@ class SwiftFuncDescriptor implements JavaSwiftProcessor.WritableElement {
         }
 
         for (SwiftParamDescriptor param : params) {
-            if (param.isOptional) {
+            if (param.isPrimitive()) {
+                swiftWriter.emitStatement(String.format("%1$s = " + param.swiftType.swiftType + "(fromJavaPrimitive: j%1$s)", param.name));
+            }
+            else if (param.isOptional) {
                 swiftWriter.emitStatement(String.format("if let j%1$s = j%1$s {", param.name));
                 swiftWriter.emitStatement(String.format("%1$s = try %2$s.from(javaObject: j%1$s)", param.name, param.swiftType.swiftConstructorType));
                 swiftWriter.emitStatement("}");
@@ -128,9 +142,7 @@ class SwiftFuncDescriptor implements JavaSwiftProcessor.WritableElement {
         if (shouldCatchPreamble) {
             swiftWriter.emitStatement("}");
             swiftWriter.emitStatement("catch {");
-            swiftWriter.emitStatement("let nsError = error as NSError");
-            swiftWriter.emitStatement("let errorString = \"\\(nsError.domain): \\(nsError.code)\"");
-            swiftWriter.emitStatement("_ = JNI.api.ThrowNew(JNI.env, SwiftRuntimeErrorClass, errorString)");
+            Utils.handleRuntimeError(swiftWriter);
             swiftWriter.emitStatement(String.format("return%s", returnSwiftType != null ? " nil" : ""));
             swiftWriter.emitStatement("}");
         }
@@ -167,17 +179,19 @@ class SwiftFuncDescriptor implements JavaSwiftProcessor.WritableElement {
 
         if (returnSwiftType != null) {
             swiftWriter.emitStatement("do {");
-            if (isReturnTypeOptional) {
-                swiftWriter.emitStatement("return try result?.javaObject()");
+            if (!isReturnTypeOptional && returnSwiftType.isPrimitiveType()) {
+                swiftWriter.emitStatement("return try result.javaPrimitive()");
             }
             else {
-                swiftWriter.emitStatement("return try result.javaObject()");
+                if (isReturnTypeOptional) {
+                    swiftWriter.emitStatement("return try result?.javaObject()");
+                } else {
+                    swiftWriter.emitStatement("return try result.javaObject()");
+                }
             }
             swiftWriter.emitStatement("}");
             swiftWriter.emitStatement("catch {");
-            swiftWriter.emitStatement("let nsError = error as NSError");
-            swiftWriter.emitStatement("let errorString = \"\\(nsError.domain): \\(nsError.code)\"");
-            swiftWriter.emitStatement("_ = JNI.api.ThrowNew(JNI.env, SwiftRuntimeErrorClass, errorString)");
+            Utils.handleRuntimeError(swiftWriter);
             swiftWriter.emitStatement("return nil");
             swiftWriter.emitStatement("}");
         }
@@ -185,9 +199,7 @@ class SwiftFuncDescriptor implements JavaSwiftProcessor.WritableElement {
         if (isThrown) {
             swiftWriter.emitStatement("}");
             swiftWriter.emitStatement("catch {");
-            swiftWriter.emitStatement("let nsError = error as NSError");
-            swiftWriter.emitStatement("let errorString = \"\\(nsError.domain): \\(nsError.code)\"");
-            swiftWriter.emitStatement("_ = JNI.api.ThrowNew(JNI.env, SwiftErrorClass, errorString)");
+            Utils.handleError(swiftWriter);
             swiftWriter.emitStatement(String.format("return%s", returnSwiftType != null ? " nil" : ""));
             swiftWriter.emitStatement("}");
         }

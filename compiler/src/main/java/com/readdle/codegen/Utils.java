@@ -1,5 +1,6 @@
 package com.readdle.codegen;
 
+import java.io.IOException;
 import java.util.List;
 
 import javax.lang.model.element.Element;
@@ -53,6 +54,30 @@ public class Utils {
     }
 
     public static String javaClassToSig(String javaClass) {
+        if (javaClass.equals("boolean")) {
+            return "Z";
+        }
+        if (javaClass.equals("byte")) {
+            return "B";
+        }
+        if (javaClass.equals("char")) {
+            return "C";
+        }
+        if (javaClass.equals("short")) {
+            return "S";
+        }
+        if (javaClass.equals("int")) {
+            return "I";
+        }
+        if (javaClass.equals("long")) {
+            return "J";
+        }
+        if (javaClass.equals("float")) {
+            return "F";
+        }
+        if (javaClass.equals("double")) {
+            return "D";
+        }
         // First, remove all templates
         int templateStart = javaClass.indexOf("<");
         if (templateStart > 0) {
@@ -91,7 +116,8 @@ public class Utils {
 
             @Override
             public Void visitPrimitive(PrimitiveType primitiveType, Void v) {
-                throw new UnsupportedOperationException("Primitives not supported");
+                result.append(primitiveType.toString());
+                return null;
             }
 
             @Override
@@ -141,10 +167,27 @@ public class Utils {
         }
     }
 
-    public static PackageElement getPackage(Element type) {
+    private static PackageElement getPackage(Element type) {
         while (type.getKind() != ElementKind.PACKAGE) {
             type = type.getEnclosingElement();
         }
         return (PackageElement) type;
+    }
+
+    static void handleRuntimeError(SwiftWriter swiftWriter) throws IOException {
+        swiftWriter.emitStatement("if let codingError = error as? JavaCodingErrorDescription {");
+        swiftWriter.emitStatement("_ = JNI.api.ThrowNew(JNI.env, SwiftRuntimeErrorClass, codingError.detailedDescription)");
+        swiftWriter.emitStatement("}");
+        swiftWriter.emitStatement("else {");
+        swiftWriter.emitStatement("let errorType = type(of: error)");
+        swiftWriter.emitStatement("let errorString = \"\\(errorType) (\\(error.localizedDescription))\"");
+        swiftWriter.emitStatement("_ = JNI.api.ThrowNew(JNI.env, SwiftRuntimeErrorClass, errorString)");
+        swiftWriter.emitStatement("}");
+    }
+
+    static void handleError(SwiftWriter swiftWriter) throws IOException {
+        swiftWriter.emitStatement("let nsError = error as NSError");
+        swiftWriter.emitStatement("let errorString = \"\\(nsError.domain): \\(nsError.code)\"");
+        swiftWriter.emitStatement("_ = JNI.api.ThrowNew(JNI.env, SwiftErrorClass, errorString)");
     }
 }

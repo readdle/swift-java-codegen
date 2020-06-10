@@ -87,7 +87,7 @@ class SwiftValueDescriptor {
             }
         }
 
-        if (!hasEmptyConstructor) {
+        if (!hasEmptyConstructor && classElement.getKind() != ElementKind.ENUM) {
             // No empty constructor found
             throw new IllegalArgumentException(String.format("The class %s must provide an public empty default constructor",
                     classElement.getQualifiedName().toString()));

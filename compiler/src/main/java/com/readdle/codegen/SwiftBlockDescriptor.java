@@ -80,8 +80,14 @@ class SwiftBlockDescriptor {
                 // Except init. We generate it's manually
                 this.funcName = executableElement.getSimpleName().toString();
                 this.isThrown = executableElement.getThrownTypes() != null && executableElement.getThrownTypes().size() > 0;
-                this.returnSwiftType = processor.parseJavaType(executableElement.getReturnType().toString());
-                this.isReturnTypeOptional = JavaSwiftProcessor.isNullable(executableElement);
+                this.isReturnTypeOptional = processor.isNullable(executableElement);
+                boolean isReturnTypeUnsigned = processor.isUnsigned(executableElement);
+                if (isReturnTypeUnsigned) {
+                    this.returnSwiftType = processor.parseJavaType(executableElement.getReturnType().toString()).makeUnsigned();
+                }
+                else {
+                    this.returnSwiftType = processor.parseJavaType(executableElement.getReturnType().toString());
+                }
 
                 this.sig = "(";
 
@@ -160,7 +166,9 @@ class SwiftBlockDescriptor {
         }
 
         if (params.size() > 0) {
+
             swiftWriter.emitStatement("do {");
+
             for (int i = 0; i < params.size(); i++) {
                 SwiftParamDescriptor param = params.get(i);
                 if (param.isOptional) {
@@ -171,7 +179,12 @@ class SwiftBlockDescriptor {
                     swiftWriter.emitStatement(String.format("java_%s = jnull()", param.name));
                     swiftWriter.emitStatement("}");
                 } else {
-                    swiftWriter.emitStatement(String.format("java_%s = try $%s.javaObject()", param.name, i + ""));
+                    if (param.isPrimitive()) {
+                        swiftWriter.emitStatement(String.format("java_%s = try $%s.javaPrimitive()", param.name, i + ""));
+                    }
+                    else {
+                        swiftWriter.emitStatement(String.format("java_%s = try $%s.javaObject()", param.name, i + ""));
+                    }
                 }
             }
 
@@ -185,11 +198,13 @@ class SwiftBlockDescriptor {
                 swiftWriter.emitStatement("fatalError(errorString)");
             }
             swiftWriter.emitStatement("}");
+
         }
 
         String jniMethodTemplate;
         if (returnSwiftType != null) {
-            jniMethodTemplate = "let optionalResult = JNI.CallObjectMethod(self.jniObject, %s.javaMethod%s";
+            String methodCallMethod = returnSwiftType.returnTypeFunc(isReturnTypeOptional);
+            jniMethodTemplate = "let optionalResult = JNI." + methodCallMethod + "(self.jniObject, %s.javaMethod%s";
         }
         else {
             jniMethodTemplate = "JNI.CallVoidMethod(self.jniObject, %s.javaMethod%s";
@@ -217,19 +232,29 @@ class SwiftBlockDescriptor {
         swiftWriter.emitStatement("}");
 
         if (returnSwiftType != null) {
-            swiftWriter.emitStatement("guard let result = optionalResult else {");
-            swiftWriter.emitStatement(isReturnTypeOptional ? "return nil" : "fatalError(\"Don't support nil here!\")");
-            swiftWriter.emitStatement("}");
-            swiftWriter.emitStatement("defer {");
-            swiftWriter.emitStatement("JNI.DeleteLocalRef(result)");
-            swiftWriter.emitStatement("}");
-            swiftWriter.emitStatement("do {");
-            swiftWriter.emitStatement(String.format("return try %s.from(javaObject: result)", returnSwiftType.swiftConstructorType));
-            swiftWriter.emitStatement("}");
-            swiftWriter.emitStatement("catch {");
-            swiftWriter.emitStatement("let errorString = String(reflecting: type(of: error)) + String(describing: error)");
-            swiftWriter.emitStatement("fatalError(errorString)");
-            swiftWriter.emitStatement("}");
+            if (!isReturnTypeOptional && returnSwiftType.isPrimitiveType()) {
+                swiftWriter.emitStatement("return " + returnSwiftType.swiftType + "(fromJavaPrimitive: optionalResult)");
+            }
+            else {
+                swiftWriter.emitStatement("guard let result = optionalResult else {");
+                if (isReturnTypeOptional) {
+                    swiftWriter.emitStatement("return nil");
+                } else {
+                    swiftWriter.emitStatement("fatalError(\"Don't support nil here!\")");
+                }
+                swiftWriter.emitStatement("}");
+
+                swiftWriter.emitStatement("defer {");
+                swiftWriter.emitStatement("JNI.DeleteLocalRef(result)");
+                swiftWriter.emitStatement("}");
+                swiftWriter.emitStatement("do {");
+                swiftWriter.emitStatement(String.format("return try %s.from(javaObject: result)", returnSwiftType.swiftConstructorType));
+                swiftWriter.emitStatement("}");
+                swiftWriter.emitStatement("catch {");
+                swiftWriter.emitStatement("let errorString = String(reflecting: type(of: error)) + String(describing: error)");
+                swiftWriter.emitStatement("fatalError(errorString)");
+                swiftWriter.emitStatement("}");
+            }
         }
 
         swiftWriter.emitStatement("}");

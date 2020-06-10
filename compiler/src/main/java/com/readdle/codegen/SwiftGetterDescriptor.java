@@ -17,12 +17,19 @@ class SwiftGetterDescriptor implements JavaSwiftProcessor.WritableElement {
 
     private SwiftEnvironment.Type returnSwiftType;
     private boolean isReturnTypeOptional;
+    private boolean isReturnTypeUnsigned;
 
     SwiftGetterDescriptor(ExecutableElement executableElement, SwiftGetter getterAnnotation, JavaSwiftProcessor processor) {
         this.javaName = executableElement.getSimpleName().toString();
         this.isStatic = executableElement.getModifiers().contains(Modifier.STATIC);
-        this.returnSwiftType = processor.parseJavaType(executableElement.getReturnType().toString());
-        this.isReturnTypeOptional = JavaSwiftProcessor.isNullable(executableElement);
+        this.isReturnTypeOptional = processor.isNullable(executableElement);
+        boolean isReturnTypeUnsigned = processor.isUnsigned(executableElement);
+        if (isReturnTypeUnsigned) {
+            this.returnSwiftType = processor.parseJavaType(executableElement.getReturnType().toString()).makeUnsigned();
+        }
+        else {
+            this.returnSwiftType = processor.parseJavaType(executableElement.getReturnType().toString());
+        }
 
         if (executableElement.getThrownTypes().size() != 0) {
             throw new SwiftMappingException("Getter can't throw", executableElement);
@@ -52,7 +59,13 @@ class SwiftGetterDescriptor implements JavaSwiftProcessor.WritableElement {
         swiftWriter.emitEmptyLine();
         swiftWriter.emitStatement(String.format("@_silgen_name(\"%s\")", swiftFuncName));
         swiftWriter.emit(String.format("public func %s(env: UnsafeMutablePointer<JNIEnv?>, %s", swiftFuncName, isStatic ? "clazz: jclass" : "this: jobject"));
-        swiftWriter.emit(String.format(")%s {\n", returnSwiftType != null ? " -> jobject?" : ""));
+
+        String retType = "";
+        if (returnSwiftType != null) {
+            retType = " -> " + returnSwiftType.javaSigType(isReturnTypeOptional) + "?";
+        }
+
+        swiftWriter.emit(String.format(")%s {\n", retType));
         swiftWriter.emitEmptyLine();
 
         if (!isStatic) {
@@ -61,9 +74,7 @@ class SwiftGetterDescriptor implements JavaSwiftProcessor.WritableElement {
             swiftWriter.emitStatement(String.format("swiftSelf = try %s.from(javaObject: this)", swiftType));
             swiftWriter.emitStatement("}");
             swiftWriter.emitStatement("catch {");
-            swiftWriter.emitStatement("let nsError = error as NSError");
-            swiftWriter.emitStatement("let errorString = \"\\(nsError.domain): \\(nsError.code)\"");
-            swiftWriter.emitStatement("_ = JNI.api.ThrowNew(JNI.env, SwiftRuntimeErrorClass, errorString)");
+            Utils.handleRuntimeError(swiftWriter);
             swiftWriter.emitStatement(String.format("return%s", returnSwiftType != null ? " nil" : ""));
             swiftWriter.emitStatement("}");
         }
@@ -72,17 +83,19 @@ class SwiftGetterDescriptor implements JavaSwiftProcessor.WritableElement {
 
         if (returnSwiftType != null) {
             swiftWriter.emitStatement("do {");
-            if (isReturnTypeOptional) {
-                swiftWriter.emitStatement("return try result?.javaObject()");
+            if (!isReturnTypeOptional && returnSwiftType.isPrimitiveType()) {
+                swiftWriter.emitStatement("return try result.javaPrimitive()");
             }
             else {
-                swiftWriter.emitStatement("return try result.javaObject()");
+                if (isReturnTypeOptional) {
+                    swiftWriter.emitStatement("return try result?.javaObject()");
+                } else {
+                    swiftWriter.emitStatement("return try result.javaObject()");
+                }
             }
             swiftWriter.emitStatement("}");
             swiftWriter.emitStatement("catch {");
-            swiftWriter.emitStatement("let nsError = error as NSError");
-            swiftWriter.emitStatement("let errorString = \"\\(nsError.domain): \\(nsError.code)\"");
-            swiftWriter.emitStatement("_ = JNI.api.ThrowNew(JNI.env, SwiftRuntimeErrorClass, errorString)");
+            Utils.handleRuntimeError(swiftWriter);
             swiftWriter.emitStatement("return nil");
             swiftWriter.emitStatement("}");
         }

@@ -28,9 +28,9 @@ jobs:
     - name: Download Android Emulator
       run: $ANDROID_HOME/tools/bin/sdkmanager "system-images;android-29;google_apis;x86_64"
     - name: Create Android Emulator
-      run: $ANDROID_HOME/tools/bin/avdmanager create avd -n ci-test -k "system-images;android-29;google_apis;x86_64" -d "pixel"
+      run: $ANDROID_HOME/tools/bin/avdmanager create avd -n ci-test -k "system-images;android-29;google_apis;x86_64" -d "pixel" --force
     - name: Start Android Emulator
-      run: $ANDROID_HOME/emulator/emulator-headless -avd ci-test -noaudio > /dev/null &
+      run: $ANDROID_HOME/emulator/emulator -no-window -avd ci-test -noaudio > /dev/null &
     - name: Run connected android tests
       run: export TOOLCHAINS=org.swift.50320190830a;
         export ANDROID_NDK_HOME=$(pwd)/android-ndk-r17c;

@@ -51,7 +51,7 @@ class SwiftSetterDescriptor implements JavaSwiftProcessor.WritableElement {
         swiftWriter.emitEmptyLine();
         swiftWriter.emitStatement(String.format("@_silgen_name(\"%s\")", swiftFuncName));
         swiftWriter.emit(String.format("public func %s(env: UnsafeMutablePointer<JNIEnv?>, %s", swiftFuncName, isStatic ? "clazz: jclass" : "this: jobject"));
-        swiftWriter.emit(String.format(", j%s: jobject%s) {\n", param.name, param.isOptional ? "?" : ""));
+        swiftWriter.emit(String.format(", j%s: %s%s) {\n", param.name, param.swiftType.javaSigType(param.isOptional), param.isOptional ? "?" : ""));
         swiftWriter.emitEmptyLine();
 
         if (!isStatic) {
@@ -66,7 +66,10 @@ class SwiftSetterDescriptor implements JavaSwiftProcessor.WritableElement {
             swiftWriter.emitStatement(String.format("swiftSelf = try %s.from(javaObject: this)", swiftType));
         }
 
-        if (param.isOptional) {
+        if (param.isPrimitive()) {
+            swiftWriter.emitStatement(String.format("%1$s = " + param.swiftType.swiftType + "(fromJavaPrimitive: j%1$s)", param.name));
+        }
+        else if (param.isOptional) {
             swiftWriter.emitStatement(String.format("if let j%1$s = j%1$s {", param.name));
             swiftWriter.emitStatement(String.format("%1$s = try %2$s.from(javaObject: j%1$s)", param.name, param.swiftType.swiftConstructorType));
             swiftWriter.emitStatement("}");
@@ -80,9 +83,7 @@ class SwiftSetterDescriptor implements JavaSwiftProcessor.WritableElement {
 
         swiftWriter.emitStatement("}");
         swiftWriter.emitStatement("catch {");
-        swiftWriter.emitStatement("let nsError = error as NSError");
-        swiftWriter.emitStatement("let errorString = \"\\(nsError.domain): \\(nsError.code)\"");
-        swiftWriter.emitStatement("_ = JNI.api.ThrowNew(JNI.env, SwiftRuntimeErrorClass, errorString)");
+        Utils.handleRuntimeError(swiftWriter);
         swiftWriter.emitStatement("return");
         swiftWriter.emitStatement("}");
 
