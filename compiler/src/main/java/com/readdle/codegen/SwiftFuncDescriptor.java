@@ -116,7 +116,21 @@ class SwiftFuncDescriptor implements JavaSwiftProcessor.WritableElement {
             swiftWriter.emitStatement(String.format("let %s: %s%s", param.name, param.swiftType.swiftType, param.isOptional ? "?" : ""));
         }
 
-        boolean shouldCatchPreamble = params.size() > 0 || !isStatic;
+
+        boolean shouldCatchPreamble = false;
+        if (isStatic) {
+            for (SwiftParamDescriptor param : params) {
+                // primitive types constructors not throw
+                if (param.isOptional || !param.isPrimitive()) {
+                    shouldCatchPreamble = true;
+                    break;
+                }
+            }
+        }
+        else {
+            shouldCatchPreamble = true;
+        }
+
         if (shouldCatchPreamble) {
             swiftWriter.emitStatement("do {");
         }
