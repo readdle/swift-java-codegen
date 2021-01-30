@@ -151,6 +151,33 @@ class SwiftEnvironment {
                     throw new IllegalStateException(swiftType + " can't be unsigned");
             }
         }
+
+        public String primitiveDefaultValue() {
+            switch (swiftType) {
+                case "Bool":
+                    return "jboolean(JNI_FALSE)";
+                case "Int":
+                case "Int32":
+                case "UInt":
+                case "UInt32":
+                    return "jint(0)";
+                case "Int8":
+                case "UInt8":
+                    return "jbyte(0)";
+                case "Int16":
+                case "UInt16":
+                    return "jshort(0)";
+                case "Int64":
+                case "UInt64":
+                    return "jlong(0)";
+                case "Float":
+                    return "jfloat(0)";
+                case "Double":
+                    return "jdouble(0)";
+                default:
+                    throw new IllegalStateException(swiftType + " is not primitive");
+            }
+        }
     }
 
 }
