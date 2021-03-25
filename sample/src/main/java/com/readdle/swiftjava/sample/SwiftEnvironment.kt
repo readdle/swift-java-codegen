@@ -17,6 +17,9 @@ class SwiftEnvironment private constructor() {
 
         @JvmStatic
         external fun initEnvironment()
+
+        @JvmStatic
+        external fun is64BitArch(): Boolean
     }
 
 }
