@@ -10,7 +10,6 @@ swift {
     useKapt true
     cleanEnabled true
     debug {
-        abiFilters("arm64-v8a")
         extraBuildFlags("-Xswiftc", "-DDEBUG")
     }
 }
@@ -41,7 +40,16 @@ android {
     buildTypes {
         release {
             minifyEnabled false
+            debuggable false
+            jniDebuggable false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+        debug {
+            debuggable true
+            jniDebuggable true
+            ndk {
+                abiFilters = ["arm64-v8a", "x86_64"]
+            }
         }
     }
 }
