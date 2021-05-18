@@ -1,9 +1,8 @@
 package com.readdle.swiftjava.sample;
 
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
-import android.support.test.runner.AndroidJUnit4;
-import android.util.Log;
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.test.ext.junit.runners.AndroidJUnit4;
 
 import com.readdle.codegen.anotation.JavaSwift;
 import com.readdle.codegen.anotation.SwiftError;

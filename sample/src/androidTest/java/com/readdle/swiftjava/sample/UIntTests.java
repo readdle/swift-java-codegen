@@ -1,6 +1,6 @@
 package com.readdle.swiftjava.sample;
 
-import android.support.test.runner.AndroidJUnit4;
+import androidx.test.ext.junit.runners.AndroidJUnit4;
 
 import com.readdle.codegen.anotation.JavaSwift;
 import com.readdle.codegen.anotation.SwiftRuntimeError;
@@ -37,7 +37,10 @@ public class UIntTests {
     public void testMax() {
         try {
             Assert.assertEquals(UIntTest.testMax(), MAX_VALUE);
-            Assert.fail();
+            if (SwiftEnvironment.is64BitArch()) {
+                // Only on 64 bit arch there is not enough bytes to represent system UInt.max
+                Assert.fail();
+            }
         }
         catch (Exception e) {
             Assert.assertTrue(e instanceof SwiftRuntimeError);

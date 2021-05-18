@@ -1,6 +1,6 @@
 package com.readdle.swiftjava.sample;
 
-import android.support.test.runner.AndroidJUnit4;
+import androidx.test.ext.junit.runners.AndroidJUnit4;
 
 import com.readdle.codegen.anotation.JavaSwift;
 import com.readdle.codegen.anotation.SwiftRuntimeError;
@@ -29,9 +29,11 @@ public class IntTests {
     public void testMin() {
         try {
             Assert.assertEquals(IntTest.testMin(), Integer.MIN_VALUE);
-            Assert.fail();
-        }
-        catch (Exception e) {
+            if (SwiftEnvironment.is64BitArch()) {
+                // Only on 64 bit arch there is not enough bytes to represent system Int.min
+                Assert.fail();
+            }
+        } catch (Exception e) {
             Assert.assertTrue(e instanceof SwiftRuntimeError);
             Assert.assertEquals(e.getMessage(), "Invalid value \"" + Long.MIN_VALUE + "\": Not enough bits to represent Int []");
         }
@@ -41,7 +43,10 @@ public class IntTests {
     public void testMax() {
         try {
             Assert.assertEquals(IntTest.testMax(), Integer.MAX_VALUE);
-            Assert.fail();
+            if (SwiftEnvironment.is64BitArch()) {
+                // Only on 64 bit arch there is not enough bytes to represent system Int.maxå
+                Assert.fail();
+            }
         }
         catch (Exception e) {
             Assert.assertTrue(e instanceof SwiftRuntimeError);

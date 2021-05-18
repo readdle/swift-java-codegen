@@ -15,4 +15,12 @@ public class SwiftEnvironment {
         AnyCodable.RegisterType(FourthChild.self)
     }
 
+    public static func is64BitArch() -> Bool {
+        #if arch(x86_64) || arch(arm64)
+        return true
+        #else
+        return false
+        #endif
+    }
+
 }

@@ -62,7 +62,10 @@ class SwiftGetterDescriptor implements JavaSwiftProcessor.WritableElement {
 
         String retType = "";
         if (returnSwiftType != null) {
-            retType = " -> " + returnSwiftType.javaSigType(isReturnTypeOptional) + "?";
+            retType = " -> " + returnSwiftType.javaSigType(isReturnTypeOptional);
+            if (isReturnTypeOptional || !returnSwiftType.isPrimitiveType()) {
+                retType += "?";
+            }
         }
 
         swiftWriter.emit(String.format(")%s {\n", retType));
@@ -75,7 +78,12 @@ class SwiftGetterDescriptor implements JavaSwiftProcessor.WritableElement {
             swiftWriter.emitStatement("}");
             swiftWriter.emitStatement("catch {");
             Utils.handleRuntimeError(swiftWriter);
-            swiftWriter.emitStatement(String.format("return%s", returnSwiftType != null ? " nil" : ""));
+            if (!isReturnTypeOptional && returnSwiftType.isPrimitiveType()) {
+                swiftWriter.emitStatement("return " + returnSwiftType.primitiveDefaultValue());
+            }
+            else {
+                swiftWriter.emitStatement("return nil");
+            }
             swiftWriter.emitStatement("}");
         }
 
@@ -96,7 +104,12 @@ class SwiftGetterDescriptor implements JavaSwiftProcessor.WritableElement {
             swiftWriter.emitStatement("}");
             swiftWriter.emitStatement("catch {");
             Utils.handleRuntimeError(swiftWriter);
-            swiftWriter.emitStatement("return nil");
+            if (!isReturnTypeOptional && returnSwiftType.isPrimitiveType()) {
+                swiftWriter.emitStatement("return " + returnSwiftType.primitiveDefaultValue());
+            }
+            else {
+                swiftWriter.emitStatement("return nil");
+            }
             swiftWriter.emitStatement("}");
         }
 
