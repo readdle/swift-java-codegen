@@ -1,5 +1,18 @@
-apply plugin: 'java'
+apply plugin: 'java-library'
+apply plugin: 'maven-publish'
 
 archivesBaseName = "annotations"
 
-apply from: rootProject.file('bintray-publish.gradle')
+java {
+    sourceCompatibility = JavaVersion.VERSION_1_8
+    targetCompatibility = JavaVersion.VERSION_1_8
+
+    withSourcesJar()
+    withJavadocJar()
+}
+
+ext {
+    PUBLISH_ARTIFACT_ID = 'annotations'
+}
+
+apply from: "${rootProject.projectDir}/publish-module.gradle"
