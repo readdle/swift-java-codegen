@@ -4,7 +4,6 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.readdle.codegen.anotation.JavaSwift
 import com.readdle.codegen.anotation.SwiftError
 import com.readdle.swiftjava.sample.SampleValue.Companion.funcThrows
-import com.readdle.swiftjava.sample.SampleValue.Companion.randomValue
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Test
@@ -21,7 +20,7 @@ class SampleValueTest {
 
     @Test
     fun testGetRandomValue() {
-        val sampleValue = randomValue.copy()
+        val sampleValue = SampleValue.getRandomValue().copy()
         Assert.assertNotNull(sampleValue)
         Assert.assertTrue(sampleValue.string.isNotEmpty())
         Assert.assertTrue(sampleValue.integer == 32)
@@ -51,15 +50,15 @@ class SampleValueTest {
 
     @Test
     fun testSaveValue() {
-        val sampleValue = randomValue
+        val sampleValue = SampleValue.getRandomValue()
         sampleValue.string = UUID.randomUUID().toString()
         sampleValue.saveValue()
     }
 
     @Test
     fun testIsSame() {
-        val otherValue = randomValue
-        val sampleValue = randomValue
+        val otherValue = SampleValue.getRandomValue()
+        val sampleValue = SampleValue.getRandomValue()
         sampleValue.string = otherValue.string
         Assert.assertTrue(sampleValue.isSame(otherValue))
     }

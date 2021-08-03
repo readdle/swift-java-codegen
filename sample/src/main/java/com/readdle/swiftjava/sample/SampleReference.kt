@@ -108,15 +108,15 @@ class SampleReference private constructor() {
     external fun oneMoreReferenceTableOverflow(delegate: SampleDelegateAndroid)
 
     companion object {
+
         @JvmStatic
         external fun init(): SampleReference
 
-        @JvmStatic
-        @get:SwiftGetter("staticString")
-        @set:SwiftSetter("staticString")
-        var staticString: String
-            external get
-            external set
+        @JvmStatic @SwiftGetter("staticString")
+        external fun getStaticString(): String
+
+        @JvmStatic @SwiftSetter("staticString")
+        external fun setStaticString(value: String)
 
     }
 }

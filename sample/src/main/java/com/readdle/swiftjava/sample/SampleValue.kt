@@ -109,8 +109,10 @@ open class SampleValue protected constructor() {
 
 
     companion object {
+
         @JvmStatic
-        val randomValue: SampleValue external get
+        external fun getRandomValue(): SampleValue
+
         @JvmStatic
         @Throws(SwiftError::class)
         external fun funcThrows()
