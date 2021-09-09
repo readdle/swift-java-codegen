@@ -50,25 +50,25 @@ class SwiftEnvironment {
             else {
                 switch (swiftType) {
                     case "Bool":
-                        return "jboolean";
+                        return "JavaBoolean";
                     case "Int":
                     case "Int32":
                     case "UInt":
                     case "UInt32":
-                        return "jint";
+                        return "JavaInt";
                     case "Int8":
                     case "UInt8":
-                        return "jbyte";
+                        return "JavaByte";
                     case "Int16":
                     case "UInt16":
-                        return "jshort";
+                        return "JavaShort";
                     case "Int64":
                     case "UInt64":
-                        return "jlong";
+                        return "JavaLong";
                     case "Float":
-                        return "jfloat";
+                        return "JavaFloat";
                     case "Double":
-                        return "jdouble";
+                        return "JavaDouble";
                     default:
                         return "jobject";
                 }
@@ -155,25 +155,25 @@ class SwiftEnvironment {
         public String primitiveDefaultValue() {
             switch (swiftType) {
                 case "Bool":
-                    return "jboolean(JNI_FALSE)";
+                    return "JavaBoolean.defaultValue()";
                 case "Int":
                 case "Int32":
                 case "UInt":
                 case "UInt32":
-                    return "jint(0)";
+                    return "JavaInt.defaultValue()";
                 case "Int8":
                 case "UInt8":
-                    return "jbyte(0)";
+                    return "JavaByte.defaultValue()";
                 case "Int16":
                 case "UInt16":
-                    return "jshort(0)";
+                    return "JavaShort.defaultValue()";
                 case "Int64":
                 case "UInt64":
-                    return "jlong(0)";
+                    return "JavaLong.defaultValue()";
                 case "Float":
-                    return "jfloat(0)";
+                    return "JavaFloat.defaultValue()";
                 case "Double":
-                    return "jdouble(0)";
+                    return "JavaDouble.defaultValue()";
                 default:
                     throw new IllegalStateException(swiftType + " is not primitive");
             }

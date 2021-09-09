@@ -41,8 +41,8 @@
         "package": "JavaCoder",
         "repositoryURL": "https://github.com/readdle/swift-java-coder.git",
         "state": {
-          "branch": "dev/kotlin-support",
-          "revision": "a794ec4cf4d825bfc10d1848342634f7b0ca3f32",
+          "branch": "dev/arm-32-float-issue",
+          "revision": "6f8ec27054dee14086a9e56fde000ab9ff5e00d4",
           "version": null
         }
       }
