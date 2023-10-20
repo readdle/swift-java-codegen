@@ -90,7 +90,7 @@ class SwiftFuncDescriptor implements JavaSwiftProcessor.WritableElement {
         String swiftFuncName = Utils.mangleFunctionName(javaFullName, javaMethodName, params);
 
         swiftWriter.emitEmptyLine();
-        swiftWriter.emitStatement(String.format("@_silgen_name(\"%s\")", swiftFuncName));
+        swiftWriter.emitStatement(String.format("@_cdecl(\"%s\")", swiftFuncName));
         swiftWriter.emit(String.format("public func %s(env: UnsafeMutablePointer<JNIEnv?>, %s", swiftFuncName, isStatic ? "clazz: jclass" : "this: jobject"));
 
         for (SwiftParamDescriptor param : params) {

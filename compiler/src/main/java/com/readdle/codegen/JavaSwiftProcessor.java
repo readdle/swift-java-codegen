@@ -316,13 +316,13 @@ public class JavaSwiftProcessor extends AbstractProcessor {
         swiftWriter.emitStatement("public let SwiftRuntimeErrorClass = JNI.GlobalFindClass(\"com/readdle/codegen/anotation/SwiftRuntimeError\")");
         swiftWriter.emitEmptyLine();
         // TODO: remove when JavaCoder become deprecated
-        swiftWriter.emitStatement("@_silgen_name(\"Java_com_readdle_codegen_anotation_JavaSwift_init\")");
+        swiftWriter.emitStatement("@_cdecl(\"Java_com_readdle_codegen_anotation_JavaSwift_init\")");
         swiftWriter.emitStatement("public func Java_com_readdle_codegen_anotation_JavaBridgeable_init(env: UnsafeMutablePointer<JNIEnv?>, clazz: jclass) {");
         swiftWriter.emitStatement("JavaCoderConfig.RegisterBasicJavaTypes()");
         swiftWriter.emitStatement("}");
 
         // TODO: move to sample project
-        swiftWriter.emitStatement("@_silgen_name(\"Java_com_readdle_codegen_anotation_JavaSwift_dumpReferenceTables\")");
+        swiftWriter.emitStatement("@_cdecl(\"Java_com_readdle_codegen_anotation_JavaSwift_dumpReferenceTables\")");
         swiftWriter.emitStatement("public func Java_com_readdle_codegen_anotation_JavaBridgeable_dumpReferenceTables(env: UnsafeMutablePointer<JNIEnv?>, clazz: jclass) {");
         swiftWriter.emitStatement("JNI.dumpReferenceTables()");
         swiftWriter.emitStatement("}");

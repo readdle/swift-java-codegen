@@ -49,7 +49,7 @@ class SwiftSetterDescriptor implements JavaSwiftProcessor.WritableElement {
         String swiftFuncName = Utils.mangleFunctionName(javaFullName, javaName, Collections.singletonList(param));
 
         swiftWriter.emitEmptyLine();
-        swiftWriter.emitStatement(String.format("@_silgen_name(\"%s\")", swiftFuncName));
+        swiftWriter.emitStatement(String.format("@_cdecl(\"%s\")", swiftFuncName));
         swiftWriter.emit(String.format("public func %s(env: UnsafeMutablePointer<JNIEnv?>, %s", swiftFuncName, isStatic ? "clazz: jclass" : "this: jobject"));
         swiftWriter.emit(String.format(", j%s: %s%s) {\n", param.name, param.swiftType.javaSigType(param.isOptional), param.isOptional ? "?" : ""));
         swiftWriter.emitEmptyLine();

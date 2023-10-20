@@ -257,7 +257,7 @@ class SwiftDelegateDescriptor {
         if (!isInterface) {
             String swiftFuncName = Utils.mangleFunctionName(javaFullName, "init", new ArrayList<>());
             swiftWriter.emitEmptyLine();
-            swiftWriter.emitStatement(String.format("@_silgen_name(\"%s\")", swiftFuncName));
+            swiftWriter.emitStatement(String.format("@_cdecl(\"%s\")", swiftFuncName));
             swiftWriter.emitStatement(String.format("public func %s(env: UnsafeMutablePointer<JNIEnv?>, this: jobject) {", swiftFuncName));
             swiftWriter.emitStatement(String.format("let swiftSelf = %s(jniObject: this)", simpleTypeName));
             swiftWriter.emitStatement("let nativePointer = jlong(Int(bitPattern: Unmanaged.passRetained(swiftSelf).toOpaque()))");
