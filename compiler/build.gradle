@@ -5,7 +5,7 @@ archivesBaseName = "compiler"
 
 dependencies {
     api project(':library')
-    api 'com.google.code.gson:gson:2.8.6'
+    api 'com.google.code.gson:gson:2.10'
 }
 
 java {
