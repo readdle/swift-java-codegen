@@ -31,8 +31,8 @@ jobs:
         adb wait-for-device;
         ./gradlew sample:cAT
 
-  android-x86:
-    runs-on: macos-13
+  android-arm64-v8a:
+    runs-on: macos-13-xlarge
     
     steps:
     - uses: actions/checkout@v1
@@ -44,10 +44,12 @@ jobs:
       run: wget https://github.com/readdle/swift-android-toolchain/releases/latest/download/swift-android.zip;
         unzip swift-android.zip;
         swift-android/bin/swift-android tools --update;
+    - name: Accept Android SDK licenses
+      run: yes | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --licenses
     - name: Install Android Emulator
-      run: $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --install "system-images;android-29;google_apis;x86"
+      run: $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --install "system-images;android-29;google_apis;arm64-v8a"
     - name: Create Android Emulator
-      run: $ANDROID_HOME/cmdline-tools/latest/bin/avdmanager create avd -n ci-test -k "system-images;android-29;google_apis;x86" -d "pixel" --force
+      run: $ANDROID_HOME/cmdline-tools/latest/bin/avdmanager create avd -n ci-test -k "system-images;android-29;google_apis;arm64-v8a" -d "pixel" --force
     - name: Start Android Emulator
       run: $ANDROID_HOME/emulator/emulator -no-window -avd ci-test -noaudio > /dev/null &
     - name: Run connected android tests
