@@ -67,13 +67,6 @@ class SwiftValueDescriptor {
             enclosingElement = enclosingElement.getEnclosingElement();
         }
 
-
-        // Check if it's an abstract class
-        if (classElement.getModifiers().contains(Modifier.ABSTRACT)) {
-            throw new IllegalArgumentException(String.format("The class %s is abstract. You can't annotate abstract classes with @%s",
-                    classElement.getQualifiedName().toString(), SwiftValue.class.getSimpleName()));
-        }
-
         boolean hasEmptyConstructor = false;
 
         // Check if an empty constructor is given
