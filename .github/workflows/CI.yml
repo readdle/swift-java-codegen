@@ -32,7 +32,7 @@ jobs:
         ./gradlew sample:cAT
 
   android-arm64-v8a:
-    runs-on: macos-13-xlarge
+    runs-on: macos-13-arm64
     
     steps:
     - uses: actions/checkout@v1
