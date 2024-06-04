@@ -42,8 +42,8 @@
         "repositoryURL": "https://github.com/readdle/swift-java-coder.git",
         "state": {
           "branch": null,
-          "revision": "d65e2ca83c524e9fde6ff90d291115c57a268217",
-          "version": "1.1.1"
+          "revision": "d46cfd9f0efb61e45b08a01160a9e4aa35ae4817",
+          "version": "1.1.2"
         }
       }
     ]
