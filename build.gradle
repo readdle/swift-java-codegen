@@ -34,5 +34,5 @@ apply from: "${rootDir}/publish-root.gradle"
 
 ext {
     PUBLISH_GROUP_ID = 'com.readdle.swift.java.codegen'
-    PUBLISH_VERSION = "0.9.4"
+    PUBLISH_VERSION = "0.9.5"
 }
