@@ -19,7 +19,7 @@ class SampleEnumWithValueTests {
     @Test
     fun testNone() {
         val value = SampleEnumWithValue.copy(SampleEnumWithValue.None)
-        Assert.assertTrue(value is SampleEnumWithValue.None)
+        Assert.assertTrue(value == SampleEnumWithValue.None)
     }
 
     @Test
