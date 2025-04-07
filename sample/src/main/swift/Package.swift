@@ -13,7 +13,7 @@ let package = Package(
         .library(name: packageName, type: .dynamic, targets: [generatedName])
     ],
     dependencies: [
-        .package(url: "https://github.com/readdle/java_swift.git", .upToNextMinor(from: "2.2.0")),
+        .package(url: "https://github.com/readdle/java_swift.git", .upToNextMinor(from: "2.2.3")),
         .package(url: "https://github.com/readdle/swift-java.git", .upToNextMinor(from: "0.3.0")),
         .package(url: "https://github.com/readdle/swift-java-coder.git", .upToNextMinor(from: "1.1.2")),
         .package(url: "https://github.com/readdle/swift-anycodable.git", .upToNextMinor(from: "1.0.3")),

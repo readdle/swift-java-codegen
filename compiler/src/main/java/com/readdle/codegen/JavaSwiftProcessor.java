@@ -64,7 +64,6 @@ public class JavaSwiftProcessor extends AbstractProcessor {
 
         moduleDescriptor = new Gson().fromJson(packageJson, SwiftModuleDescriptor.class);
         if (moduleDescriptor == null) {
-            error(null, "No package description with option: com.readdle.codegen.package");
             return;
         }
 
