@@ -30,11 +30,13 @@ class SwiftReferenceDescriptor {
     private String javaFullName;
     private String simpleTypeName;
     private String[] importPackages;
+    private boolean useSwiftJavaJniCore;
 
     List<JavaSwiftProcessor.WritableElement> functions = new LinkedList<>();
 
     SwiftReferenceDescriptor(TypeElement classElement, Filer filer, JavaSwiftProcessor processor) throws IllegalArgumentException {
         this.importPackages = processor.moduleDescriptor.importPackages;
+        this.useSwiftJavaJniCore = processor.moduleDescriptor.useSwiftJavaJniCore;
 
         // Get the full QualifiedTypeName
         try {
@@ -136,7 +138,7 @@ class SwiftReferenceDescriptor {
         SwiftWriter swiftWriter = new SwiftWriter(swiftExtensionFile);
 
         // Write imports
-        swiftWriter.emitImports(importPackages);
+        swiftWriter.emitImports(importPackages, useSwiftJavaJniCore);
         swiftWriter.emitEmptyLine();
 
         swiftWriter.emitStatement(String.format("private let javaClass = JNI.GlobalFindClass(\"%s\")!", javaFullName));

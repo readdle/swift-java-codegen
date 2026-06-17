@@ -33,6 +33,7 @@ class SwiftDelegateDescriptor {
     private String javaFullName;
     String simpleTypeName;
     private String[] importPackages;
+    private boolean useSwiftJavaJniCore;
     private String pointerBasicTypeSig;
 
     List<SwiftFuncDescriptor> functions = new LinkedList<>();
@@ -45,6 +46,7 @@ class SwiftDelegateDescriptor {
         this.annotatedClassElement = classElement;
         this.isInterface = classElement.getKind() == ElementKind.INTERFACE;
         this.importPackages = processor.moduleDescriptor.importPackages;
+        this.useSwiftJavaJniCore = processor.moduleDescriptor.useSwiftJavaJniCore;
 
         // Get the full QualifiedTypeName
         try {
@@ -179,7 +181,7 @@ class SwiftDelegateDescriptor {
         SwiftWriter swiftWriter = new SwiftWriter(swiftExtensionFile);
 
         // Write imports
-        swiftWriter.emitImports(importPackages);
+        swiftWriter.emitImports(importPackages, useSwiftJavaJniCore);
         swiftWriter.emitEmptyLine();
 
         swiftWriter.emitStatement(String.format("private let javaClass = JNI.GlobalFindClass(\"%s\")!", javaFullName));

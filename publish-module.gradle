@@ -46,6 +46,11 @@ ext["signing.keyId"] = rootProject.ext["signing.keyId"]
 ext["signing.password"] = rootProject.ext["signing.password"]
 ext["signing.secretKeyRingFile"] = rootProject.ext["signing.secretKeyRingFile"]
 
-signing {
-    sign publishing.publications
+// Only configure signing when a signing key is available (CI/remote release).
+// This lets `publishToMavenLocal` work locally without GPG keys configured.
+def signingKeyId = (rootProject.ext["signing.keyId"] ?: "").toString().trim()
+if (!signingKeyId.isEmpty()) {
+    signing {
+        sign publishing.publications
+    }
 }

@@ -30,6 +30,7 @@ class SwiftValueDescriptor {
     private String javaFullName;
     private String simpleTypeName;
     private String[] importPackages;
+    private boolean useSwiftJavaJniCore;
 
     private boolean hasSubclasses = false;
 
@@ -37,6 +38,7 @@ class SwiftValueDescriptor {
 
     SwiftValueDescriptor(TypeElement classElement, Filer filer, JavaSwiftProcessor processor) throws IllegalArgumentException {
         this.importPackages = processor.moduleDescriptor.importPackages;
+        this.useSwiftJavaJniCore = processor.moduleDescriptor.useSwiftJavaJniCore;
 
         // Get the full QualifiedTypeName
         try {
@@ -112,7 +114,7 @@ class SwiftValueDescriptor {
         SwiftWriter swiftWriter = new SwiftWriter(swiftExtensionFile);
 
         // Write imports
-        swiftWriter.emitImports(importPackages);
+        swiftWriter.emitImports(importPackages, useSwiftJavaJniCore);
 
         swiftWriter.emitEmptyLine();
         swiftWriter.beginExtension(simpleTypeName);
