@@ -7,5 +7,6 @@ class SwiftModuleDescriptor {
     String moduleName;
     String[] importPackages;
     HashMap<String, String> customTypeMappings;
+    boolean useSwiftJavaJniCore;
 
 }

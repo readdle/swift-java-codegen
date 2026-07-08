@@ -122,6 +122,11 @@ public class JavaSwiftProcessor extends AbstractProcessor {
         Filer filer = processingEnv.getFiler();
         note("JavaSwiftProcessor start code generation");
 
+        if (moduleDescriptor == null) {
+            messager.printMessage(Diagnostic.Kind.ERROR, "No package description with SwiftModule.class", null);
+            return true; // Exit processing
+        }
+
         try {
             generateJavaSwift(filer);
         } catch (IOException e) {
@@ -142,11 +147,6 @@ public class JavaSwiftProcessor extends AbstractProcessor {
         Map<String, SwiftReferenceDescriptor> swiftReferences = new HashMap<>();
         Map<String, SwiftDelegateDescriptor> swiftDelegates = new HashMap<>();
         Map<String, SwiftBlockDescriptor> swiftBlocks = new HashMap<>();
-
-        if (moduleDescriptor == null) {
-            messager.printMessage(Diagnostic.Kind.ERROR, "No package description with SwiftModule.class", null);
-            return true; // Exit processing
-        }
 
         for (Element annotatedElement : roundEnv.getElementsAnnotatedWith(SwiftValue.class)) {
             // Check if a class has been annotated with @SwiftValue
@@ -309,7 +309,7 @@ public class JavaSwiftProcessor extends AbstractProcessor {
         swiftExtensionFile.getParentFile().mkdir();
         note("JavaSwiftProcessor will generate sources at: " + swiftExtensionFile.getParent());
         SwiftWriter swiftWriter = new SwiftWriter(swiftExtensionFile);
-        swiftWriter.emitImports(new String[0]);
+        swiftWriter.emitImports(new String[0], moduleDescriptor.useSwiftJavaJniCore);
         swiftWriter.emitEmptyLine();
         swiftWriter.emitStatement("public let SwiftErrorClass = JNI.GlobalFindClass(\"com/readdle/codegen/anotation/SwiftError\")");
         swiftWriter.emitStatement("public let SwiftRuntimeErrorClass = JNI.GlobalFindClass(\"com/readdle/codegen/anotation/SwiftRuntimeError\")");

@@ -30,6 +30,7 @@ class SwiftBlockDescriptor {
     String simpleTypeName;
     private String swiftType;
     private String[] importPackages;
+    private boolean useSwiftJavaJniCore;
 
     private String blockSignature;
 
@@ -44,6 +45,7 @@ class SwiftBlockDescriptor {
     SwiftBlockDescriptor(TypeElement classElement, Filer filer, JavaSwiftProcessor processor) throws IllegalArgumentException {
         this.annotatedClassElement = classElement;
         this.importPackages = processor.moduleDescriptor.importPackages;
+        this.useSwiftJavaJniCore = processor.moduleDescriptor.useSwiftJavaJniCore;
 
         // Get the full QualifiedTypeName
         try {
@@ -114,7 +116,7 @@ class SwiftBlockDescriptor {
         SwiftWriter swiftWriter = new SwiftWriter(swiftExtensionFile);
 
         // Write imports
-        swiftWriter.emitImports(importPackages);
+        swiftWriter.emitImports(importPackages, useSwiftJavaJniCore);
         swiftWriter.emitEmptyLine();
 
         swiftWriter.emitStatement(String.format("private let javaClass = JNI.GlobalFindClass(\"%s\")!", javaFullName));

@@ -69,14 +69,22 @@ public class SwiftWriter {
         this.writer.close();
     }
 
-    private static final String[] defaultImports = {"Foundation", "Java", "java_swift", "JavaCoder", "AnyCodable"};
+    // Readdle stack dependencies
+    private static final String[] legacyDefaultImports = {"Foundation", "Java", "java_swift", "JavaCoder", "AnyCodable"};
 
-    public void emitImports(String[] importPackages) throws IOException {
+    // swiftlang jni-core based stack: JavaCoder + java_swift compatibility shim.
+    private static final String[] jniCoreDefaultImports = {"Foundation", "java_swift", "JavaCoder", "AnyCodable"};
+
+    static String[] defaultImports(boolean useSwiftJavaJniCore) {
+        return useSwiftJavaJniCore ? jniCoreDefaultImports : legacyDefaultImports;
+    }
+
+    public void emitImports(String[] importPackages, boolean useSwiftJavaJniCore) throws IOException {
         this.writer.append("/* This file was generated with Readdle SwiftJava Codegen */\n");
         this.writer.append("/* Don't change it manually! */\n");
 
         List<String> allPackages = new ArrayList<>();
-        allPackages.addAll(Arrays.asList(defaultImports));
+        allPackages.addAll(Arrays.asList(defaultImports(useSwiftJavaJniCore)));
         allPackages.addAll(Arrays.asList(importPackages));
         Collections.sort(allPackages, Collator.getInstance(Locale.US));
 

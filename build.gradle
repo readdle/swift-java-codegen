@@ -11,7 +11,7 @@ buildscript {
 
     dependencies {
         classpath 'com.android.tools.build:gradle:8.3.2'
-        classpath "com.readdle.android.swift:gradle:6.0.3"
+        classpath "com.readdle.android.swift:gradle:6.2.1"
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
         classpath "org.jetbrains.kotlin:kotlin-android-extensions:$kotlin_version"
         classpath 'io.github.gradle-nexus:publish-plugin:1.1.0'
@@ -34,5 +34,5 @@ apply from: "${rootDir}/publish-root.gradle"
 
 ext {
     PUBLISH_GROUP_ID = 'com.readdle.swift.java.codegen'
-    PUBLISH_VERSION = "0.9.6"
+    PUBLISH_VERSION = "0.9.7"
 }
